@@ -37,4 +37,4 @@ Use my bitcoin address:  31vArgW2AwpKUkMkKMTj5UFmjCYLp6F1Ck
 
 Or
 
-[![Bitcoin Donate Button](https://i.stack.imgur.com/MnQ6V.png)](https://isxgames.github.io/Tehbot/bitcoin-redirect)
+[![Bitcoin Donate Button](https://i.stack.imgur.com/MnQ6V.png)](https://isxgames.github.io/Tehbot/bitcoin-redirect.html)
