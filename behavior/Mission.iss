@@ -122,7 +122,7 @@ objectdef obj_Mission inherits obj_State
 		}
 		
 		variable filepath MissionData = "${Script[Tehbot].CurrentDirectory}/data/${Config.MissionFile}"
-		runscript ${MissionData}
+		runscript "${MissionData}"
 		
 		
 		if ${This.IsIdle}
