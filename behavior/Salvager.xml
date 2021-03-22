@@ -1,0 +1,365 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ISUI>
+	<template name='Information.Font'>	
+		<Name>Terminal</Name>
+		<Size>8</Size>
+		<Color>FFFFFFFF</Color>
+	</template>	
+	<template name='Text.Font'>	
+		<Name>Verdana</Name>
+		<Size>12</Size>
+		<Color>FFFFFFFF</Color>
+		<Bold />
+	</template>	
+	<template name='Checkbox.Font'>	
+		<Name>Verdana</Name>
+		<Size>12</Size>
+		<Color>FFFFFFFF</Color>
+		<Bold />
+	</template>	
+	<template name='Button.Font'>	
+		<Name>Verdana</Name>
+		<Size>12</Size>
+		<Color>FF000000</Color>
+		<Bold />
+	</template>	
+
+	<window name='Tehbot_DedicatedSalvager'>
+		<Visible>1</Visible>
+		<BackGroundColor></BackGroundColor>
+		<Border>0</Border>
+		<X>200</X>
+		<Y>300</Y>
+		<Width>800</Width>
+		<Height>600</Height>
+		<TitleBar>
+			<Width>100%</Width>
+			<Height>20</Height>
+			<Border>0</Border>
+			<BackgroundColor>FF000000</BackgroundColor>
+			<Children>
+				<Text name='Tehbot_DedicatedSalvager_TitleBar_Title'>
+					<X>0</X>
+					<Y>3</Y>
+					<Width>100%</Width>
+					<Height>20</Height>
+					<Alignment>Center</Alignment>
+					<Text>Dedicated Salvager Configuration</Text>
+				</Text>
+				<button	Name='Close'>
+					<X>r40</X>
+					<Y>0</Y>
+					<Width>40</Width>
+					<Height>20</Height>
+					<Text>Close</Text>
+					<OnLeftClick>
+						if !${EVE.Bookmark[${Script[Tehbot].VariableScope.Salvager.Config.Dropoff}](exists)}
+						{
+							Script[Tehbot].VariableScope.UI:Update["obj_Salvage", "Unable to verify Dropoff bookmark", "r"]
+						}
+						if ${Script[Tehbot].VariableScope.Salvager.Config.BeltPatrolEnabled}
+						{
+							if !${EVE.Bookmark[${Script[Tehbot].VariableScope.Salvager.Config.BeltPatrol}](exists)}
+							{
+								Script[Tehbot].VariableScope.UI:Update["obj_Salvage", "Unable to verify Belt Patrol bookmark", "r"]
+							}
+						}
+
+						Script[Tehbot].VariableScope.Salvager.LocalUI:Stop
+						ui -unload "&filepath;/Salvager"
+					</OnLeftClick>
+				</button>
+			</Children>
+		</TitleBar>
+		<Children name="Tehbot_DedicatedSalvager_Children">
+			<Frame name="Tehbot_DedicatedSalvager_Frame">
+				<X>0</X>
+				<Y>5</Y>
+				<Width>100%</Width>
+				<Height>100%</Height>
+				<BackgroundColor>FF000000</BackgroundColor>
+				<Border>1</Border>
+				<BorderColor>FFFFFFFF</BorderColor>
+				<Children name="Tehbot_DedicatedSalvager_Frame_Children">
+				
+					<Text name='SalvageFrameTitle'> 
+						<X>1%</X> 
+						<Y>2%</Y> 
+						<Width>32%</Width> 
+						<Height>4%</Height> 
+						<Text>Salvage Search String</Text>
+						<OnLoad>
+							This.Font:SetColor[FFFFFF00]
+						</OnLoad>
+					</Text>
+					<Frame name="SalvageFrame">
+						<X>0%</X>
+						<Y>4%</Y>
+						<Width>100%</Width>
+						<Height>5%</Height>
+						<BackgroundColor>FF000000</BackgroundColor>
+						<Border>1</Border>
+						<BorderColor>FFFFFFFF</BorderColor>
+						<Children>
+							<Textentry name='Search'> 
+								<X>1%</X> 
+								<Y>10%</Y> 
+								<Width>98%</Width> 
+								<Height>80%</Height> 
+								<OnLoad>
+									This:SetText[${Script[Tehbot].VariableScope.Salvager.Config.Prefix}]
+								</OnLoad>
+								<OnChange>
+									Script[Tehbot].VariableScope.Salvager.Config:SetPrefix[${This.Text}]
+								</OnChange>
+								<OnMouseEnter>
+									UIElement[Information@InformationFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:SetText["This field is to specify the search string to use for your salvage bookmarks.  Any bookmark which includes this string in the name will be used as a salvage location."]
+								</OnMouseEnter>
+								<OnMouseExit>
+									UIElement[Information@InformationFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:SetText[""]
+								</OnMouseExit>
+							</Textentry>
+						</Children>
+					</Frame>
+				
+					<Text name='DropoffFrameTitle'> 
+						<X>1%</X> 
+						<Y>10%</Y> 
+						<Width>32%</Width> 
+						<Height>4%</Height> 
+						<Text>Dropoff Configuration</Text>
+						<OnLoad>
+							This.Font:SetColor[FFFFFF00]
+						</OnLoad>
+					</Text>
+					<Frame name="DropoffFrame">
+						<X>0%</X>
+						<Y>12%</Y>
+						<Width>100%</Width>
+						<Height>30%</Height>
+						<BackgroundColor>FF000000</BackgroundColor>
+						<Border>1</Border>
+						<BorderColor>FFFFFFFF</BorderColor>
+						<Children>
+							<Text name='DropoffTitle'> 
+								<X>34%</X> 
+								<Y>3%</Y> 
+								<Width>32%</Width> 
+								<Height>10%</Height> 
+								<Alignment>Center</Alignment>
+								<Text>Dropoff Bookmark</Text>
+							</Text>						 
+							<Textentry Name="Dropoff">
+								<BackgroundColor>FF000000</BackgroundColor>
+								<Border>1</Border>
+								<BorderColor>FFFFFFFF</BorderColor>
+								<X>34%</X>
+								<Y>10%</Y>
+								<Width>32%</Width>
+								<Height>15%</Height>
+								<OnLoad>
+									This:SetText[${Script[Tehbot].VariableScope.Salvager.Config.Dropoff}]
+								</OnLoad>
+								<OnChange>
+									if ${This.Text.Length}
+									{
+										Script[Tehbot].VariableScope.Salvager.Config:SetDropoff[${This.Text}]
+									}
+									else
+									{
+										Script[Tehbot].VariableScope.Salvager.Config:SetDropoff[\"\"]
+									}
+									UIElement[DropoffList@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:Show
+									Script[Tehbot].VariableScope.Salvager.LocalUI:Start
+								</OnChange>
+								<OnMouseEnter>
+									UIElement[Information@InformationFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:SetText["This field needs to contain the exact bookmark for the station in which you would like to drop off salvage loot."]
+								</OnMouseEnter>
+								<OnMouseExit>
+									UIElement[Information@InformationFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:SetText[""]
+								</OnMouseExit>
+							</Textentry>
+							<listbox Name="DropoffList">
+								<BackgroundColor>FF000000</BackgroundColor>
+								<Border>1</Border>
+								<BorderColor>FFFFFFFF</BorderColor>
+								<X>34%</X>
+								<Y>25%</Y>
+								<Width>32%</Width>
+								<Height>70%</Height>
+								<OnLoad>
+									This:SetZOrder[alwaysontop]
+									This:Hide
+								</OnLoad>
+								<OnSelect>
+									UIElement[Dropoff@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:SetText[${This.SelectedItem.Text}]
+									Script[Tehbot].VariableScope.Salvager.Config:SetDropoff[${This.SelectedItem.Text}]
+									Script[Tehbot].VariableScope.Salvager.LocalUI:Stop
+									This:Hide
+								</OnSelect>
+								<OnMouseEnter>
+									UIElement[Information@InformationFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:SetText["This field needs to contain the exact bookmark for the station in which you would like to drop off salvage loot."]
+								</OnMouseEnter>
+								<OnMouseExit>
+									UIElement[Information@InformationFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:SetText[""]
+								</OnMouseExit>
+							</listbox>
+
+							<Text name='DropoffSubTypeTitle'> 
+								<X>67%</X> 
+								<Y>3%</Y> 
+								<Width>32%</Width> 
+								<Height>10%</Height> 
+								<Alignment>Center</Alignment>
+								<Text>Corporation Folder</Text>
+								<OnLoad>
+									switch ${Script[Tehbot].VariableScope.Salvager.Config.DropoffType}
+									{
+										case Corporation Hangar
+											break
+										default
+											This:Hide
+											break
+									}
+								</OnLoad>
+							</Text>
+							<listbox Name="DropoffSubType">
+								<BackgroundColor>FF000000</BackgroundColor>
+								<Border>1</Border>
+								<BorderColor>FFFFFFFF</BorderColor>
+								<X>67%</X>
+								<Y>10%</Y>
+								<Width>32%</Width>
+								<Height>85%</Height>
+								<OnLoad>
+									switch ${Script[Tehbot].VariableScope.Salvager.Config.DropoffType}
+									{
+										case Corporation Hangar
+											This:AddItem[Corporation Folder 1]
+											This:AddItem[Corporation Folder 2]
+											This:AddItem[Corporation Folder 3]
+											This:AddItem[Corporation Folder 4]
+											This:AddItem[Corporation Folder 5]
+											This:AddItem[Corporation Folder 6]
+											This:AddItem[Corporation Folder 7]
+											break
+										default
+											This:Hide
+											break
+									}
+									This.ItemByText["${Script[Tehbot].VariableScope.Salvager.Config.DropoffSubType}"]:Select
+								</OnLoad>
+								<OnSelect>
+									Script[Tehbot].VariableScope.Salvager.Config:SetDropoffSubType[${This.SelectedItem.Text}]
+								</OnSelect>
+								<OnMouseEnter>
+									UIElement[Information@InformationFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:SetText["This field is used to further configure your dropoff type for types that have additional options, like Corporate Hangars."]
+								</OnMouseEnter>
+								<OnMouseExit>
+									UIElement[Information@InformationFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:SetText[""]
+								</OnMouseExit>
+							</listbox>
+
+							<Text name='DropoffTypeTitle'> 
+								<X>1%</X> 
+								<Y>3%</Y> 
+								<Width>32%</Width> 
+								<Height>10%</Height> 
+								<Alignment>Center</Alignment>
+								<Text>Unload To</Text>
+							</Text>
+							<listbox Name="DropoffType">
+								<BackgroundColor>FF000000</BackgroundColor>
+								<Border>1</Border>
+								<BorderColor>FFFFFFFF</BorderColor>
+								<X>1%</X>
+								<Y>10%</Y>
+								<Width>32%</Width>
+								<Height>20%</Height>
+								<Items>
+									<Item>Personal Hangar</Item>
+									<Item>Corporation Hangar</Item>
+								</Items>
+								<OnLoad>
+									This.ItemByText[${Script[Tehbot].VariableScope.Salvager.Config.DropoffType}]:Select
+								</OnLoad>
+								<OnSelect>
+									Script[Tehbot].VariableScope.Salvager.Config:SetDropoffType[${This.SelectedItem.Text}]
+									UIElement[DropoffSubType@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:ClearItems
+									switch ${This.SelectedItem.Text}
+									{
+										case Corporation Hangar
+											UIElement[DropoffSubType@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:AddItem[Corporation Folder 1]
+											UIElement[DropoffSubType@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:AddItem[Corporation Folder 2]
+											UIElement[DropoffSubType@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:AddItem[Corporation Folder 3]
+											UIElement[DropoffSubType@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:AddItem[Corporation Folder 4]
+											UIElement[DropoffSubType@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:AddItem[Corporation Folder 5]
+											UIElement[DropoffSubType@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:AddItem[Corporation Folder 6]
+											UIElement[DropoffSubType@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:AddItem[Corporation Folder 7]
+											UIElement[DropoffSubType@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager].ItemByText["${Script[Tehbot].VariableScope.Salvager.Config.DropoffSubType}"]:Select
+											UIElement[DropoffSubTypeTitle@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:SetText[Corporate Folder]
+											UIElement[DropoffSubTypeTitle@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:Show
+											UIElement[DropoffSubType@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:Show
+											UIElement[Dropoff_Container@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:Hide
+											UIElement[Dropoff_ContainerTitle@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:Hide
+											Script[Tehbot].VariableScope.Salvager.Config:SetDropoffContainer[\"\"]
+											UIElement[DropoffTitle@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:SetText[Station Bookmark]
+											break
+										case Personal Hangar
+											UIElement[DropoffSubTypeTitle@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:Hide
+											UIElement[DropoffSubType@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:Hide
+											Script[Tehbot].VariableScope.Salvager.Config:SetDropoffSubType[\"\"]
+											UIElement[Dropoff_Container@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:Hide
+											UIElement[Dropoff_ContainerTitle@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:Hide
+											Script[Tehbot].VariableScope.Salvager.Config:SetDropoffContainer[\"\"]
+											UIElement[DropoffTitle@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:SetText[Station Bookmark]
+									}
+									UIElement[Dropoff_Container@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:SetText[${Script[Tehbot].VariableScope.Salvager.Config.DropoffContainer}]
+								</OnSelect>
+								<OnMouseEnter>
+									UIElement[Information@InformationFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:SetText["Use this field to configure where you would like Tehbot to unload salvage loot."]
+								</OnMouseEnter>
+								<OnMouseExit>
+									UIElement[Information@InformationFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:SetText[""]
+								</OnMouseExit>
+							</listbox>
+				
+						</Children>
+					</Frame>
+					
+					<Text name='InformationFrameTitle'> 
+						<X>1%</X> 
+						<Y>80%</Y> 
+						<Width>32%</Width> 
+						<Height>4%</Height> 
+						<Text>Information</Text>
+						<OnLoad>
+							This.Font:SetColor[FFFFFF00]
+						</OnLoad>
+					</Text>
+					<Frame name="InformationFrame">
+						<X>0%</X>
+						<Y>82%</Y>
+						<Width>100%</Width>
+						<Height>18%</Height>
+						<BackgroundColor>FF000000</BackgroundColor>
+						<Border>1</Border>
+						<BorderColor>FFFFFFFF</BorderColor>
+						<Children>
+							<Text name='Information'> 
+								<X>5%</X> 
+								<Y>5%</Y> 
+								<Width>90%</Width> 
+								<Height>90%</Height> 
+								<Wrap />
+								<VerticalAlignment>Center</VerticalAlignment>
+							</Text>
+						</Children>
+					</Frame>
+					
+				</Children>
+			</Frame>
+		</Children>
+	</window>
+	
+</ISUI>

@@ -1,0 +1,5 @@
+data/*
+!data/*.xml
+!data/MissionDataExample.iss
+config/*
+reference/*

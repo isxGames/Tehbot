@@ -1,0 +1,492 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ISUI>
+	<template name='Console.Font'>	
+		<Name>Terminal</Name>
+		<Size>8</Size>
+		<Color>FFFFFFFF</Color>
+	</template>	
+
+	<template name='Button.Font'>	
+		<Name>Verdana</Name>
+		<Size>12</Size>
+		<Color>FF000000</Color>
+		<Bold />
+	</template>	
+
+	<template name='Gauge.Font'>	
+		<Name>Verdana</Name>
+		<Size>16</Size>
+		<Color>FFFF0000</Color>
+		<Bold />
+	</template>	
+	
+	<template name='TitleBar.Font'>	
+		<Name>Verdana</Name>
+		<Size>16</Size>
+		<Color>FFFFFFFF</Color>
+		<Bold />
+	</template>	
+
+	<template name='Checkbox.Font'>	
+		<Name>Verdana</Name>
+		<Size>12</Size>
+		<Color>FFFFFFFF</Color>
+		<Bold />
+	</template>	
+
+	<template name='Text.Font'>	
+		<Name>Verdana</Name>
+		<Size>12</Size>
+		<Color>FFFFFFFF</Color>
+		<Bold />
+	</template>	
+	
+	<template name='Tabcontrol.Font'>	
+		<Name>Verdana</Name>
+		<Size>12</Size>
+		<Color>FFFFFFFF</Color>
+		<Bold />
+	</template>	
+
+	<window name='Tehbot'>
+		<Visible>1</Visible>
+		<BackGroundColor></BackGroundColor>
+		<Border>0</Border>
+		<X>200</X>
+		<Y>300</Y>
+		<Width>550</Width>
+		<Height>320</Height>
+		<TitleBar>
+			<Width>100%</Width>
+			<Height>20</Height>
+			<Border>0</Border>
+			<BackgroundColor>FF888888</BackgroundColor>
+			<Children>
+				<Text name='Tehbot_TitleBar_Title'>
+					<Alignment>Center</Alignment>
+					<X>0</X>
+					<Y>3</Y>
+					<Width>100%</Width>
+					<Height>20</Height>
+					<Text>Tehbot</Text>
+				</Text>
+				<button	Name='Close'>
+					<Font template='Button.Font' />
+					<BackgroundColor>FF000000</BackgroundColor>
+					<X>r40</X>
+					<Y>0</Y>
+					<Width>40</Width>
+					<Height>20</Height>
+					<Text>Close</Text>
+					<OnLeftClick>
+						endscript Tehbot
+					</OnLeftClick>
+				</button>
+				<button	Name='Hide'>
+					<Font template='Button.Font' />
+					<BackgroundColor>FF000000</BackgroundColor>
+					<X>r80</X>
+					<Y>0</Y>
+					<Width>40</Width>
+					<Height>20</Height>
+					<Text>Hide</Text>
+					<OnLoad>
+						if ${Script[Tehbot].VariableScope.Config.Common.Hidden}
+						{
+							UIElement[TehbotTab@Tehbot]:Hide
+							This:SetText[Show]
+						}
+						else
+						{
+							UIElement[TehbotTab@Tehbot]:Show
+							This:SetText[Hide]
+						}
+					</OnLoad>
+					<OnLeftClick>
+						if ${UIElement[TehbotTab@Tehbot].Visible}
+						{
+							UIElement[TehbotTab@Tehbot]:Hide
+							This:SetText[Show]
+							Script[Tehbot].VariableScope.Config.Common:SetHidden[TRUE]
+						}
+						else
+						{
+							UIElement[TehbotTab@Tehbot]:Show
+							This:SetText[Hide]
+							Script[Tehbot].VariableScope.Config.Common:SetHidden[FALSE]
+						}
+					</OnLeftClick>
+				</button>
+				<button	Name='Run'>
+					<Font template='Button.Font' />
+					<BackgroundColor>FF000000</BackgroundColor>
+					<X>0</X>
+					<Y>0</Y>
+					<Width>40</Width>
+					<Height>20</Height>
+					<Text>Run</Text>
+					<OnLeftClick>
+						if ${Script[Tehbot].VariableScope.Tehbot.Paused}
+						{
+							Script[Tehbot].VariableScope.Tehbot:Resume
+						}
+						else
+						{
+							Script[Tehbot].VariableScope.Tehbot:Pause
+						}
+					</OnLeftClick>
+					<OnRightClick>
+						if ${Script[Tehbot].VariableScope.Tehbot.Paused}
+						{
+							relay all Script[Tehbot].VariableScope.Tehbot:Resume
+						}
+						else
+						{
+							relay all Script[Tehbot].VariableScope.Tehbot:Pause
+						}
+					</OnRightClick>
+				</button>
+			</Children>
+		</TitleBar>
+		<Children name="Tehbot_Children">
+			<TabControl	Name='TehbotTab'>
+				<X>0</X>
+				<Y>5</Y>
+				<Width>100%</Width>
+				<Height>100%</Height>
+				<Tabs>
+					<Tab Name='Status'>
+						<frame name='FillerFrame'>
+							<BackgroundColor>FF000000</BackgroundColor>
+							<Border>1</Border>
+							<BorderColor>FFFFFFFF</BorderColor>
+							<X>0</X>
+							<Y>0</Y>
+							<Height>100%</Height>
+							<Width>100%</Width>
+							<OnLoad>
+								This:SetLeftClickThru[TRUE]
+							</OnLoad>
+						 </frame>					
+						<console Name="StatusConsole">
+							<Font template='Console.Font' />
+							<BackgroundColor>FF000000</BackgroundColor>
+							<X>0</X>
+							<Y>0</Y>
+							<Width>100%</Width>
+							<Height>90%</Height>
+						</console>
+						<combobox Name="Tehbot_Mode">
+							<BackgroundColor>FF000000</BackgroundColor>
+							<X>1%</X>
+							<Y>92%</Y>
+							<Width>48%</Width>
+							<Height>6%</Height>
+							<OnSelect>
+								variable int counter
+								if !${This.SelectedItem.Value.Equal[${Script[Tehbot].VariableScope.Config.Common.Tehbot_Mode}]}
+								{
+									Script[Tehbot].VariableScope.Config.Common:SetTehbot_Mode[${This.SelectedItem.Value}]
+									for ( counter:Set[1] ; ${counter} &lt;= ${This.Items} ; counter:Inc )
+									{
+										Script[Tehbot].VariableScope.${This.OrderedItem[${counter}].Value}:Stop
+									}
+								}
+								if ${Script[Tehbot].VariableScope.UI.Reloaded}
+								{
+									if !${Script[Tehbot].VariableScope.Tehbot.Paused}
+									{
+										Script[Tehbot].VariableScope.UI:Update["Tehbot", "Paused", "r"]
+										Script[Tehbot].VariableScope.Tehbot:Pause
+									}
+								}
+							</OnSelect>
+						</combobox>
+						<button	Name='ModuleSettings'>
+							<Font template='Button.Font' />
+							<BackgroundColor>FF000000</BackgroundColor>
+							<X>50%</X>
+							<Y>92%</Y>
+							<Width>20%</Width>
+							<Height>6%</Height>
+							<Text>Configuration</Text>
+							<OnLeftClick>
+								timedcommand 0 "ui -load \"${Script[Tehbot].VariableScope.Dynamic.Behaviors[${Script[Tehbot].VariableScope.Config.Common.Tehbot_Mode}].ConfigPath}${Script[Tehbot].VariableScope.Config.Common.Tehbot_Mode}.xml\""
+							</OnLeftClick>
+						</button>
+						<Checkbox name='AutoStart'>
+							<X>75%</X>
+							<Y>92%</Y>
+							<Width>48%</Width> 
+							<Height>6%</Height> 
+							<Text>Start automatically</Text>
+							<OnLoad>
+								if ${Script[Tehbot].VariableScope.Config.Common.AutoStart}
+								{
+									This:SetChecked
+								}
+							</OnLoad>
+							<OnLeftClick>
+								Script[Tehbot].VariableScope.Config.Common:SetAutoStart[${This.Checked}]
+							</OnLeftClick>
+						</Checkbox>
+					</Tab>
+
+					<Tab Name='Settings'>
+						<frame name='SettingsFillerFrame'>
+							<BackgroundColor>FF000000</BackgroundColor>
+							<Border>1</Border>
+							<BorderColor>FFFFFFFF</BorderColor>
+							<X>0</X>
+							<Y>0</Y>
+							<Height>100%</Height>
+							<Width>100%</Width>
+							<OnLoad>
+								This:SetLeftClickThru[TRUE]
+							</OnLoad>
+						</frame>					
+
+						<Checkbox name='Disable3D'>
+							<X>1%</X>
+							<Y>50%</Y>
+							<Width>48%</Width> 
+							<Height>6%</Height> 
+							<Text>Disable 3D Rendering</Text>
+							<OnLoad>
+								if ${Script[Tehbot].VariableScope.Config.Common.Disable3D}
+								{
+									This:SetChecked
+								}
+								This:SetZOrder[movetop]
+							</OnLoad>
+							<OnLeftClick>
+								Script[Tehbot].VariableScope.Config.Common:SetDisable3D[${This.Checked}]
+								This:SetZOrder[movetop]
+							</OnLeftClick>
+						</Checkbox>
+						<Checkbox name='CloseChatInvites'>
+							<X>51%</X>
+							<Y>50%</Y>
+							<Width>48%</Width> 
+							<Height>6%</Height> 
+							<Text>Auto-close Chat Invites</Text>
+							<OnLoad>
+								if ${Script[Tehbot].VariableScope.Config.Common.CloseChatInvites}
+								{
+									This:SetChecked
+								}
+								This:SetZOrder[movetop]
+							</OnLoad>
+							<OnLeftClick>
+								Script[Tehbot].VariableScope.Config.Common:SetCloseChatInvites[${This.Checked}]
+								This:SetZOrder[movetop]
+							</OnLeftClick>
+						</Checkbox>
+						<Checkbox name='DisableUI'>
+							<X>1%</X>
+							<Y>58%</Y>
+							<Width>48%</Width> 
+							<Height>6%</Height> 
+							<Text>Disable User Interface</Text>
+							<OnLoad>
+								if ${Script[Tehbot].VariableScope.Config.Common.DisableUI}
+								{
+									This:SetChecked
+								}
+								This:SetZOrder[movetop]
+							</OnLoad>
+							<OnLeftClick>
+								Script[Tehbot].VariableScope.Config.Common:SetDisableUI[${This.Checked}]
+								This:SetZOrder[movetop]
+							</OnLeftClick>
+						</Checkbox>
+						<Checkbox name='DisableTexture'>
+							<X>1%</X>
+							<Y>66%</Y>
+							<Width>48%</Width> 
+							<Height>6%</Height> 
+							<Text>Disable Texture Loading</Text>
+							<OnLoad>
+								if ${Script[Tehbot].VariableScope.Config.Common.DisableTexture}
+								{
+									This:SetChecked
+								}
+								This:SetZOrder[movetop]
+							</OnLoad>
+							<OnLeftClick>
+								Script[Tehbot].VariableScope.Config.Common:SetDisableTexture[${This.Checked}]
+								This:SetZOrder[movetop]
+							</OnLeftClick>
+						</Checkbox>
+					</Tab>					
+					
+					<Tab Name='MiniMode'>
+						<frame name='MiniModeFillerFrame'>
+							<BackgroundColor>FF000000</BackgroundColor>
+							<Border>1</Border>
+							<BorderColor>FFFFFFFF</BorderColor>
+							<X>0</X>
+							<Y>0</Y>
+							<Height>100%</Height>
+							<Width>100%</Width>
+							<OnLoad>
+								This:SetLeftClickThru[TRUE]
+							</OnLoad>
+						</frame>	
+						
+						<Text name='MiniMode_Inactive_Title'>
+							<X>1%</X>
+							<Y>2%</Y>
+							<Width>39%</Width>
+							<Height>5%</Height>
+							<Alignment>Center</Alignment>
+							<Text>Disabled MiniModes</Text>
+						</Text>
+						<Listbox name="MiniMode_Inactive">
+							<X>1%</X>
+							<Y>6%</Y>
+							<Width>39%</Width>
+							<Height>93%</Height>
+							<OnSelect>
+								if ${UIElement[MiniMode_Active@MiniMode@TehbotTab@Tehbot].SelectedItems}
+								{
+									UIElement[MiniMode_Active@MiniMode@TehbotTab@Tehbot].SelectedItem:Deselect
+								}
+							</OnSelect>
+						</Listbox>
+						
+						<Text name='MiniMode_Active_Title'>
+							<X>60%</X>
+							<Y>2%</Y>
+							<Width>39%</Width>
+							<Height>5%</Height>
+							<Alignment>Center</Alignment>
+							<Text>Enabled MiniModes</Text>
+						</Text>
+						<Listbox name="MiniMode_Active">
+							<X>60%</X>
+							<Y>6%</Y>
+							<Width>39%</Width>
+							<Height>93%</Height>
+							<OnSelect>
+								if ${UIElement[MiniMode_Inactive@MiniMode@TehbotTab@Tehbot].SelectedItems}
+								{
+									UIElement[MiniMode_Inactive@MiniMode@TehbotTab@Tehbot].SelectedItem:Deselect
+								}
+							</OnSelect>
+						</Listbox>
+						
+						<Button name="MiniMode_Activate">
+							<Font template='Button.Font' />
+							<BackgroundColor>FF000000</BackgroundColor>
+							<X>40%</X>
+							<Y>40%</Y>
+							<Width>20%</Width>
+							<Height>10%</Height>
+							<Text>Enable/Disable</Text>
+							<OnLeftClick>
+								variable string ItemText
+								if ${UIElement[MiniMode_Inactive@MiniMode@TehbotTab@Tehbot].SelectedItems}
+								{
+									ItemText:Set[${UIElement[MiniMode_Inactive@MiniMode@TehbotTab@Tehbot].SelectedItem.Text}]
+									Script[Tehbot].VariableScope.Dynamic:ActivateMiniMode[${UIElement[MiniMode_Inactive@MiniMode@TehbotTab@Tehbot].SelectedItem.Value}]
+									UIElement[MiniMode_Active@MiniMode@TehbotTab@Tehbot]:AddItem[${UIElement[MiniMode_Inactive@MiniMode@TehbotTab@Tehbot].SelectedItem.Text}, ${UIElement[MiniMode_Inactive@MiniMode@TehbotTab@Tehbot].SelectedItem.Value}]
+									UIElement[MiniMode_Inactive@MiniMode@TehbotTab@Tehbot].SelectedItem:Remove
+									UIElement[MiniMode_Active@MiniMode@TehbotTab@Tehbot].ItemByText[${ItemText}]:Select
+								}
+								elseif ${UIElement[MiniMode_Active@MiniMode@TehbotTab@Tehbot].SelectedItems}
+								{
+									ItemText:Set[${UIElement[MiniMode_Active@MiniMode@TehbotTab@Tehbot].SelectedItem.Text}]
+									Script[Tehbot].VariableScope.Dynamic:DeactivateMiniMode[${UIElement[MiniMode_Active@MiniMode@TehbotTab@Tehbot].SelectedItem.Value}]
+									UIElement[MiniMode_Inactive@MiniMode@TehbotTab@Tehbot]:AddItem[${UIElement[MiniMode_Active@MiniMode@TehbotTab@Tehbot].SelectedItem.Text}, ${UIElement[MiniMode_Active@MiniMode@TehbotTab@Tehbot].SelectedItem.Value}]
+									UIElement[MiniMode_Active@MiniMode@TehbotTab@Tehbot].SelectedItem:Remove
+									UIElement[MiniMode_Inactive@MiniMode@TehbotTab@Tehbot].ItemByText[${ItemText}]:Select
+								}
+								echo Active ${UIElement[MiniMode_Active@MiniMode@TehbotTab@Tehbot].SelectedItems} Inactive ${UIElement[MiniMode_Inactive@MiniMode@TehbotTab@Tehbot].SelectedItems}
+							</OnLeftClick>
+						</Button>
+						
+					
+						<Button name="MiniMode_Configure">
+							<Font template='Button.Font' />
+							<BackgroundColor>FF000000</BackgroundColor>
+							<X>40%</X>
+							<Y>50%</Y>
+							<Width>20%</Width>
+							<Height>10%</Height>
+							<Text>Config</Text>
+							<OnLeftClick>
+								if ${UIElement[MiniMode_Inactive@MiniMode@TehbotTab@Tehbot].SelectedItems}
+								{
+									timedcommand 0 "ui -load \"${Script[Tehbot].VariableScope.Dynamic.MiniModes[${UIElement[MiniMode_Inactive@MiniMode@TehbotTab@Tehbot].SelectedItem.Value}].ConfigPath}${UIElement[MiniMode_Inactive@MiniMode@TehbotTab@Tehbot].SelectedItem.Value}.xml\""
+								}
+								elseif ${UIElement[MiniMode_Active@MiniMode@TehbotTab@Tehbot].SelectedItems}
+								{
+									timedcommand 0 "ui -load \"${Script[Tehbot].VariableScope.Dynamic.MiniModes[${UIElement[MiniMode_Active@MiniMode@TehbotTab@Tehbot].SelectedItem.Value}].ConfigPath}${UIElement[MiniMode_Active@MiniMode@TehbotTab@Tehbot].SelectedItem.Value}.xml\""
+								}
+							</OnLeftClick>
+						</Button>
+					</Tab>	
+					<Tab Name='Donate'>
+						<frame name='DonateFillerFrame'>
+							<BackgroundColor>FF000000</BackgroundColor>
+							<Border>1</Border>
+							<BorderColor>FFFFFFFF</BorderColor>
+							<X>0</X>
+							<Y>0</Y>
+							<Height>100%</Height>
+							<Width>100%</Width>
+							<OnLoad>
+								This:SetLeftClickThru[TRUE]
+							</OnLoad>
+						</frame>	
+						
+						<Text name='DonateTitle'>
+							<X>0%</X>
+							<Y>2%</Y>
+							<Width>100%</Width>
+							<Height>10%</Height>
+							<Font>
+								<Size>20</Size>
+							</Font>
+							<Alignment>Center</Alignment>
+							<Text>Consider Donating!</Text>
+						</Text>
+
+						<Text name='DonateText'>
+							<X>2%</X>
+							<Y>15%</Y>
+							<Width>96%</Width>
+							<Height>50%</Height>
+							<Font>
+								<Color>AAAA4400 </Color>
+								<Bold />
+							</Font>
+							<Alignment>Left</Alignment>
+							<Wrap />
+							<Text>I've put a lot of work into this bot (and its predecessor) over the years.  I'm not looking for big donations, and I won't be doing any kind of subscription service.  If you can kick a few bucks my way I'd appreciate it and I promise I'll buy only the best bottom shelf booze with it.  To keep things secure and anonymous I'm only taking donations via bitcoin.  If you want to donate, you can click the button below for a direct link, or use the address directly: 31vArgW2AwpKUkMkKMTj5UFmjCYLp6F1Ck</Text>
+						</Text>
+
+						<Button name="Bitcoin_Activate">
+							<Font template='Button.Font' />
+							<BackgroundColor>FF000000</BackgroundColor>
+							<X>25%</X>
+							<Y>62%</Y>
+							<Width>50%</Width>
+							<Height>30%</Height>
+							<Text>Open Bitcoin Address Link</Text>
+							<OnLeftClick>
+								timedcommand 0 "OSExecute bitcoin:31vArgW2AwpKUkMkKMTj5UFmjCYLp6F1Ck?label=Tehbot%20Donations"
+							</OnLeftClick>
+						</Button>
+					</Tab>							
+				</Tabs>
+				<OnSelect>
+					Script[Tehbot].VariableScope.Config.Common:SetActiveTab[${This.SelectedTab.Name}]
+				</OnSelect>
+			</TabControl>
+		</Children>
+	</window>
+</ISUI>
+
+

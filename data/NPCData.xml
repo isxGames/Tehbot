@@ -1,0 +1,202 @@
+<?xml version="1.0"?>
+<InnerSpaceSettings>
+  <Set Name="NPCTypes">
+    <Set Name="Frigate">
+      <Setting Name="520" Desc="Storyline Frigate" />
+      <Setting Name="527" Desc="Storyline Mission Frigate" />
+      <Setting Name="550" Desc="Asteroid Angel Cartel Frigate" />
+      <Setting Name="557" Desc="Asteroid Blood Raiders Frigate" />
+      <Setting Name="562" Desc="Asteroid Guristas Frigate" />
+      <Setting Name="567" Desc="Asteroid Sansha's Nation Frigate" />
+      <Setting Name="572" Desc="Asteroid Serpentis Frigate" />
+      <Setting Name="597" Desc="Deadspace Angel Cartel Frigate" />
+      <Setting Name="606" Desc="Deadspace Blood Raiders Frigate" />
+      <Setting Name="615" Desc="Deadspace Guristas Frigate" />
+      <Setting Name="624" Desc="Deadspace Sansha's Nation Frigate" />
+      <Setting Name="633" Desc="Deadspace Serpentis Frigate" />
+      <Setting Name="665" Desc="Mission Amarr Empire Frigate" />
+      <Setting Name="671" Desc="Mission Caldari State Frigate" />
+      <Setting Name="677" Desc="Mission Gallente Federation Frigate" />
+      <Setting Name="683" Desc="Mission Minmatar Republic Frigate" />
+      <Setting Name="687" Desc="Mission Khanid Frigate" />
+      <Setting Name="699" Desc="Mission Mordu Frigate" />
+      <Setting Name="759" Desc="Asteroid Rogue Drone Frigate" />
+      <Setting Name="789" Desc="Asteroid Angel Cartel Commander Frigate" />
+      <Setting Name="792" Desc="Asteroid Blood Raiders Commander Frigate" />
+      <Setting Name="800" Desc="Asteroid Guristas Commander Frigate" />
+      <Setting Name="805" Desc="Deadspace Rogue Drone Frigate" />
+      <Setting Name="810" Desc="Asteroid Sansha's Nation Commander Frigate" />
+      <Setting Name="814" Desc="Asteroid Serpentis Commander Frigate" />
+      <Setting Name="818" Desc="Mission Generic Frigates" />
+      <Setting Name="819" Desc="Deadspace Overseer Frigate" />
+      <Setting Name="826" Desc="Mission Thukker Frigate" />
+      <Setting Name="847" Desc="Asteroid Rogue Drone Commander Frigate" />
+      <Setting Name="1007" Desc="Mission Faction Frigate" />
+      <Setting Name="1053" Desc="Incursion Sansha's Nation Frigate" />
+    </Set>
+    <Set Name="Destroyer">
+      <Setting Name="575" Desc="Asteroid Angel Cartel Destroyer" />
+      <Setting Name="577" Desc="Asteroid Blood Raiders Destroyer" />
+      <Setting Name="579" Desc="Asteroid Guristas Destroyer" />
+      <Setting Name="581" Desc="Asteroid Sansha's Nation Destroyer" />
+      <Setting Name="583" Desc="Asteroid Serpentis Destroyer" />
+      <Setting Name="596" Desc="Deadspace Angel Cartel Destroyer" />
+      <Setting Name="605" Desc="Deadspace Blood Raiders Destroyer" />
+      <Setting Name="614" Desc="Deadspace Guristas Destroyer" />
+      <Setting Name="623" Desc="Deadspace Sansha's Nation Destroyer" />
+      <Setting Name="632" Desc="Deadspace Serpentis Destroyer" />
+      <Setting Name="669" Desc="Mission Amarr Empire Destroyer" />
+      <Setting Name="676" Desc="Mission Caldari State Destroyer" />
+      <Setting Name="679" Desc="Mission Gallente Federation Destroyer" />
+      <Setting Name="684" Desc="Mission Minmatar Republic Destroyer" />
+      <Setting Name="688" Desc="Mission Khanid Destroyer" />
+      <Setting Name="700" Desc="Mission Mordu Destroyer" />
+      <Setting Name="758" Desc="Asteroid Rogue Drone Destroyer" />
+      <Setting Name="794" Desc="Asteroid Angel Cartel Commander Destroyer" />
+      <Setting Name="796" Desc="Asteroid Blood Raiders Commander Destroyer" />
+      <Setting Name="799" Desc="Asteroid Guristas Commander Destroyer" />
+      <Setting Name="804" Desc="Deadspace Rogue Drone Destroyer" />
+      <Setting Name="809" Desc="Asteroid Sansha's Nation Commander Destroyer" />
+      <Setting Name="813" Desc="Asteroid Serpentis Commander Destroyer" />
+      <Setting Name="825" Desc="Mission Thukker Destroyer" />
+      <Setting Name="829" Desc="Mission Generic Destroyers" />
+      <Setting Name="846" Desc="Asteroid Rogue Drone Commander Destroyer" />
+    </Set>
+    <Set Name="Cruiser">
+      <Setting Name="522" Desc="Storyline Cruiser" />
+      <Setting Name="533" Desc="Storyline Mission Cruiser" />
+      <Setting Name="551" Desc="Asteroid Angel Cartel Cruiser" />
+      <Setting Name="555" Desc="Asteroid Blood Raiders Cruiser" />
+      <Setting Name="561" Desc="Asteroid Guristas Cruiser" />
+      <Setting Name="566" Desc="Asteroid Sansha's Nation Cruiser" />
+      <Setting Name="571" Desc="Asteroid Serpentis Cruiser" />
+      <Setting Name="576" Desc="Asteroid Angel Cartel BattleCruiser" />
+      <Setting Name="578" Desc="Asteroid Blood Raiders BattleCruiser" />
+      <Setting Name="580" Desc="Asteroid Guristas BattleCruiser" />
+      <Setting Name="582" Desc="Asteroid Sansha's Nation BattleCruiser" />
+      <Setting Name="584" Desc="Asteroid Serpentis BattleCruiser" />
+      <Setting Name="593" Desc="Deadspace Angel Cartel BattleCruiser" />
+      <Setting Name="595" Desc="Deadspace Angel Cartel Cruiser" />
+      <Setting Name="602" Desc="Deadspace Blood Raiders BattleCruiser" />
+      <Setting Name="604" Desc="Deadspace Blood Raiders Cruiser" />
+      <Setting Name="611" Desc="Deadspace Guristas BattleCruiser" />
+      <Setting Name="613" Desc="Deadspace Guristas Cruiser" />
+      <Setting Name="620" Desc="Deadspace Sansha's Nation BattleCruiser" />
+      <Setting Name="622" Desc="Deadspace Sansha's Nation Cruiser" />
+      <Setting Name="629" Desc="Deadspace Serpentis BattleCruiser" />
+      <Setting Name="631" Desc="Deadspace Serpentis Cruiser" />
+      <Setting Name="668" Desc="Mission Amarr Empire Cruiser" />
+      <Setting Name="673" Desc="Mission Caldari State Cruiser" />
+      <Setting Name="678" Desc="Mission Gallente Federation Cruiser" />
+      <Setting Name="689" Desc="Mission Khanid Cruiser" />
+      <Setting Name="701" Desc="Mission Mordu Cruiser" />
+      <Setting Name="705" Desc="Mission Minmatar Republic Cruiser" />
+      <Setting Name="755" Desc="Asteroid Rogue Drone BattleCruiser" />
+      <Setting Name="757" Desc="Asteroid Rogue Drone Cruiser" />
+      <Setting Name="790" Desc="Asteroid Angel Cartel Commander Cruiser" />
+      <Setting Name="791" Desc="Asteroid Blood Raiders Commander Cruiser" />
+      <Setting Name="793" Desc="Asteroid Angel Cartel Commander BattleCruiser" />
+      <Setting Name="795" Desc="Asteroid Blood Raiders Commander BattleCruiser" />
+      <Setting Name="797" Desc="Asteroid Guristas Commander BattleCruiser" />
+      <Setting Name="798" Desc="Asteroid Guristas Commander Cruiser" />
+      <Setting Name="801" Desc="Deadspace Rogue Drone BattleCruiser" />
+      <Setting Name="803" Desc="Deadspace Rogue Drone Cruiser" />
+      <Setting Name="807" Desc="Asteroid Sansha's Nation Commander BattleCruiser" />
+      <Setting Name="808" Desc="Asteroid Sansha's Nation Commander Cruiser" />
+      <Setting Name="811" Desc="Asteroid Serpentis Commander BattleCruiser" />
+      <Setting Name="812" Desc="Asteroid Serpentis Commander Cruiser" />
+      <Setting Name="817" Desc="Mission Generic Cruisers" />
+      <Setting Name="820" Desc="Deadspace Overseer Cruiser" />
+      <Setting Name="824" Desc="Mission Thukker Cruiser" />
+      <Setting Name="828" Desc="Mission Generic Battle Cruisers" />
+      <Setting Name="843" Desc="Asteroid Rogue Drone Commander BattleCruiser" />
+      <Setting Name="845" Desc="Asteroid Rogue Drone Commander Cruiser" />
+      <Setting Name="1006" Desc="Mission Faction Cruiser" />
+      <Setting Name="1054" Desc="Incursion Sansha's Nation Cruiser" />
+    </Set>
+    <Set Name="BattleCruiser">
+      <Setting Name="576" Desc="Asteroid Angel Cartel BattleCruiser" />
+      <Setting Name="578" Desc="Asteroid Blood Raiders BattleCruiser" />
+      <Setting Name="580" Desc="Asteroid Guristas BattleCruiser" />
+      <Setting Name="582" Desc="Asteroid Sansha's Nation BattleCruiser" />
+      <Setting Name="584" Desc="Asteroid Serpentis BattleCruiser" />
+      <Setting Name="593" Desc="Deadspace Angel Cartel BattleCruiser" />
+      <Setting Name="602" Desc="Deadspace Blood Raiders BattleCruiser" />
+      <Setting Name="611" Desc="Deadspace Guristas BattleCruiser" />
+      <Setting Name="620" Desc="Deadspace Sansha's Nation BattleCruiser" />
+      <Setting Name="629" Desc="Deadspace Serpentis BattleCruiser" />
+      <Setting Name="755" Desc="Asteroid Rogue Drone BattleCruiser" />
+      <Setting Name="793" Desc="Asteroid Angel Cartel Commander BattleCruiser" />
+      <Setting Name="795" Desc="Asteroid Blood Raiders Commander BattleCruiser" />
+      <Setting Name="797" Desc="Asteroid Guristas Commander BattleCruiser" />
+      <Setting Name="801" Desc="Deadspace Rogue Drone BattleCruiser" />
+      <Setting Name="807" Desc="Asteroid Sansha's Nation Commander BattleCruiser" />
+      <Setting Name="811" Desc="Asteroid Serpentis Commander BattleCruiser" />
+      <Setting Name="843" Desc="Asteroid Rogue Drone Commander BattleCruiser" />
+    </Set>
+    <Set Name="Battleship">
+      <Setting Name="523" Desc="Storyline Battleship" />
+      <Setting Name="534" Desc="Storyline Mission Battleship" />
+      <Setting Name="552" Desc="Asteroid Angel Cartel Battleship" />
+      <Setting Name="556" Desc="Asteroid Blood Raiders Battleship" />
+      <Setting Name="560" Desc="Asteroid Guristas Battleship" />
+      <Setting Name="565" Desc="Asteroid Sansha's Nation Battleship" />
+      <Setting Name="570" Desc="Asteroid Serpentis Battleship" />
+      <Setting Name="594" Desc="Deadspace Angel Cartel Battleship" />
+      <Setting Name="603" Desc="Deadspace Blood Raiders Battleship" />
+      <Setting Name="612" Desc="Deadspace Guristas Battleship" />
+      <Setting Name="621" Desc="Deadspace Sansha's Nation Battleship" />
+      <Setting Name="630" Desc="Deadspace Serpentis Battleship" />
+      <Setting Name="667" Desc="Mission Amarr Empire Battleship" />
+      <Setting Name="674" Desc="Mission Caldari State Battleship" />
+      <Setting Name="680" Desc="Mission Gallente Federation Battleship" />
+      <Setting Name="691" Desc="Mission Khanid Battleship" />
+      <Setting Name="703" Desc="Mission Mordu Battleship" />
+      <Setting Name="706" Desc="Mission Minmatar Republic Battleship" />
+      <Setting Name="756" Desc="Asteroid Rogue Drone Battleship" />
+      <Setting Name="802" Desc="Deadspace Rogue Drone Battleship" />
+      <Setting Name="816" Desc="Mission Generic Battleships" />
+      <Setting Name="821" Desc="Deadspace Overseer Battleship" />
+      <Setting Name="823" Desc="Mission Thukker Battleship" />
+      <Setting Name="844" Desc="Asteroid Rogue Drone Commander Battleship" />
+      <Setting Name="848" Desc="Asteroid Angel Cartel Commander Battleship" />
+      <Setting Name="849" Desc="Asteroid Blood Raiders Commander Battleship" />
+      <Setting Name="850" Desc="Asteroid Guristas Commander Battleship" />
+      <Setting Name="851" Desc="Asteroid Sansha's Nation Commander Battleship" />
+      <Setting Name="852" Desc="Asteroid Serpentis Commander Battleship" />
+      <Setting Name="924" Desc="Mission Faction Battleship" />
+      <Setting Name="1056" Desc="Incursion Sansha's Nation Battleship" />
+    </Set>
+    <Set Name="Officer">
+      <Setting Name="553" Desc="Asteroid Angel Cartel Officer" />
+      <Setting Name="559" Desc="Asteroid Blood Raiders Officer" />
+      <Setting Name="564" Desc="Asteroid Guristas Officer" />
+      <Setting Name="569" Desc="Asteroid Sansha's Nation Officer" />
+      <Setting Name="574" Desc="Asteroid Serpentis Officer" />
+    </Set>
+    <Set Name="Hauler">
+      <Setting Name="554" Desc="Asteroid Angel Cartel Hauler" />
+      <Setting Name="558" Desc="Asteroid Blood Raiders Hauler" />
+      <Setting Name="563" Desc="Asteroid Guristas Hauler" />
+      <Setting Name="568" Desc="Asteroid Sansha's Nation Hauler" />
+      <Setting Name="573" Desc="Asteroid Serpentis Hauler" />
+      <Setting Name="760" Desc="Asteroid Rogue Drone Hauler" />
+    </Set>
+    <Set Name="Other">
+      <Setting Name="670" Desc="Mission Amarr Empire Other" />
+      <Setting Name="675" Desc="Mission Caldari State Other" />
+      <Setting Name="682" Desc="Mission Gallente Federation Other" />
+      <Setting Name="686" Desc="Mission Minmatar Republic Other" />
+      <Setting Name="692" Desc="Mission Khanid Other" />
+      <Setting Name="704" Desc="Mission Mordu Other" />
+      <Setting Name="827" Desc="Mission Thukker Other" />
+    </Set>
+    <Set Name="Swarm">
+      <Setting Name="761" Desc="Asteroid Rogue Drone Swarm" />
+      <Setting Name="806" Desc="Deadspace Rogue Drone Swarm" />
+    </Set>
+	<Set Name="Sentry">
+	  <Setting Name="383" Desc="Destructible Sentry Gun" />
+	</Set>
+  </Set>
+</InnerSpaceSettings>

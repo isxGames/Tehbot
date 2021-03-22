@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ISUI>
+	<template name='Information.Font'>	
+		<Name>Terminal</Name>
+		<Size>8</Size>
+		<Color>FFFFFFFF</Color>
+	</template>	
+
+	<window name='Tehbot_InstaWarp'>
+		<Visible>1</Visible>
+		<BackGroundColor></BackGroundColor>
+		<Border>0</Border>
+		<X>200</X>
+		<Y>300</Y>
+		<Width>800</Width>
+		<Height>600</Height>
+		<TitleBar>
+			<Width>100%</Width>
+			<Height>20</Height>
+			<Border>0</Border>
+			<BackgroundColor>FF000000</BackgroundColor>
+			<Children>
+				<Text name='Tehbot_InstaWarp_TitleBar_Title'>
+					<X>0</X>
+					<Y>3</Y>
+					<Width>100%</Width>
+					<Height>20</Height>
+					<Alignment>Center</Alignment>
+					<Text>InstaWarp Configuration</Text>
+				</Text>
+				<button	Name='Close'>
+					<X>r40</X>
+					<Y>0</Y>
+					<Width>40</Width>
+					<Height>20</Height>
+					<Text>Close</Text>
+					<OnLeftClick>
+						ui -unload "&filepath;/InstaWarp"
+					</OnLeftClick>
+				</button>
+			</Children>
+		</TitleBar>
+		<Children name="Tehbot_InstaWarp_Children">
+			<Frame name="Tehbot_InstaWarp_Frame">
+				<X>0</X>
+				<Y>5</Y>
+				<Width>100%</Width>
+				<Height>100%</Height>
+				<BackgroundColor>FF000000</BackgroundColor>
+				<Border>1</Border>
+				<BorderColor>FFFFFFFF</BorderColor>
+				<Children name="Tehbot_InstaWarp_Frame_Children">
+					<Text name='obj_GridWatcherInformation'> 
+						<Font template='Information.Font' />
+						<X>1%</X> 
+						<Y>1%</Y> 
+						<Width>98%</Width> 
+						<Height>18%</Height> 
+						<Wrap />
+						<Text>InstaWarp is a MiniMode to perform single pulses of propulsion modules, allowing ships to 'slingshot' into warp automatically.</Text>
+					</Text>
+				</Children>
+			</Frame>
+		</Children>
+	</window>
+	
+</ISUI>

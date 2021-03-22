@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ISUI>
+	<template name='Information.Font'>	
+		<Name>Terminal</Name>
+		<Size>8</Size>
+		<Color>FFFFFFFF</Color>
+	</template>	
+
+	<window name='Tehbot_AutoThrust'>
+		<Visible>1</Visible>
+		<BackGroundColor></BackGroundColor>
+		<Border>0</Border>
+		<X>200</X>
+		<Y>300</Y>
+		<Width>800</Width>
+		<Height>600</Height>
+		<TitleBar>
+			<Width>100%</Width>
+			<Height>20</Height>
+			<Border>0</Border>
+			<BackgroundColor>FF000000</BackgroundColor>
+			<Children>
+				<Text name='Tehbot_AutoThrust_TitleBar_Title'>
+					<X>0</X>
+					<Y>3</Y>
+					<Width>100%</Width>
+					<Height>20</Height>
+					<Alignment>Center</Alignment>
+					<Text>AutoThrust Configuration</Text>
+				</Text>
+				<button	Name='Close'>
+					<X>r40</X>
+					<Y>0</Y>
+					<Width>40</Width>
+					<Height>20</Height>
+					<Text>Close</Text>
+					<OnLeftClick>
+						ui -unload "&filepath;/AutoThrust"
+					</OnLeftClick>
+				</button>
+			</Children>
+		</TitleBar>
+		<Children name="Tehbot_AutoThrust_Children">
+			<Frame name="Tehbot_AutoThrust_Frame">
+				<X>0</X>
+				<Y>5</Y>
+				<Width>100%</Width>
+				<Height>100%</Height>
+				<BackgroundColor>FF000000</BackgroundColor>
+				<Border>1</Border>
+				<BorderColor>FFFFFFFF</BorderColor>
+				<Children name="Tehbot_AutoThrust_Frame_Children">
+					<Text name='obj_GridWatcherInformation'> 
+						<Font template='Information.Font' />
+						<X>1%</X> 
+						<Y>1%</Y> 
+						<Width>98%</Width> 
+						<Height>18%</Height> 
+						<Wrap />
+						<Text>AutoThrust is a MiniMode to manage propulsion modules.  The first available propulsion module will be activated whenever one of the conditions below is met.</Text>
+					</Text>
+					<Checkbox name='NeverDeactivate'>
+						<X>1%</X>
+						<Y>15%</Y>
+						<Width>30%</Width> 
+						<Height>3%</Height> 
+						<Text>Never deactivate after mods are activated</Text>
+						<OnLoad>
+							if ${Script[Tehbot].VariableScope.AutoThrust.Config.NeverDeactivate}
+							{
+								This:SetChecked
+							}
+						</OnLoad>
+						<OnLeftClick>
+							Script[Tehbot].VariableScope.AutoThrust.Config:SetNeverDeactivate[${This.Checked}]
+						</OnLeftClick>
+					</Checkbox>
+					<Checkbox name='Approach'>
+						<X>1%</X>
+						<Y>20%</Y>
+						<Width>30%</Width> 
+						<Height>3%</Height> 
+						<Text>Approaching an object unless capacitor drops below ${Script[Tehbot].VariableScope.AutoThrust.Config.Approach_Threshold}%</Text>
+						<OnLoad>
+							if ${Script[Tehbot].VariableScope.AutoThrust.Config.Approach}
+							{
+								This:SetChecked
+							}
+						</OnLoad>
+						<OnLeftClick>
+							Script[Tehbot].VariableScope.AutoThrust.Config:SetApproach[${This.Checked}]
+						</OnLeftClick>
+					</Checkbox>
+					<Slider name='Approach_Threshold'> 
+						<X>70%</X>
+						<Y>20%</Y>
+						<Width>20%</Width> 
+						<Height>3%</Height> 
+						<Border>1</Border>
+						<OnLoad>
+							This:SetValue[${Script[Tehbot].VariableScope.AutoThrust.Config.Approach_Threshold}]
+						</OnLoad>
+						<OnChange>
+							Script[Tehbot].VariableScope.AutoThrust.Config:SetApproach_Threshold[${This.Value}]
+						</OnChange>
+					</Slider>							
+					<Checkbox name='Orbit'>
+						<X>1%</X>
+						<Y>25%</Y>
+						<Width>30%</Width> 
+						<Height>3%</Height> 
+						<Text>Orbiting an object unless capacitor drops below ${Script[Tehbot].VariableScope.AutoThrust.Config.Orbit_Threshold}%</Text>
+						<OnLoad>
+							if ${Script[Tehbot].VariableScope.AutoThrust.Config.Orbit}
+							{
+								This:SetChecked
+							}
+						</OnLoad>
+						<OnLeftClick>
+							Script[Tehbot].VariableScope.AutoThrust.Config:SetOrbit[${This.Checked}]
+						</OnLeftClick>
+					</Checkbox>
+					<Slider name='Orbit_Threshold'> 
+						<X>70%</X>
+						<Y>25%</Y>
+						<Width>20%</Width> 
+						<Height>3%</Height> 
+						<Border>1</Border>
+						<OnLoad>
+							This:SetValue[${Script[Tehbot].VariableScope.AutoThrust.Config.Orbit_Threshold}]
+						</OnLoad>
+						<OnChange>
+							Script[Tehbot].VariableScope.AutoThrust.Config:SetOrbit_Threshold[${This.Value}]
+						</OnChange>
+					</Slider>							
+					<Checkbox name='KeepAtRange'>
+						<X>1%</X>
+						<Y>30%</Y>
+						<Width>30%</Width> 
+						<Height>3%</Height> 
+						<Text>Keeping an object at range unless capacitor drops below ${Script[Tehbot].VariableScope.AutoThrust.Config.KeepAtRange_Threshold}%</Text>
+						<OnLoad>
+							if ${Script[Tehbot].VariableScope.AutoThrust.Config.KeepAtRange}
+							{
+								This:SetChecked
+							}
+						</OnLoad>
+						<OnLeftClick>
+							Script[Tehbot].VariableScope.AutoThrust.Config:SetKeepAtRange[${This.Checked}]
+						</OnLeftClick>
+					</Checkbox>
+					<Slider name='KeepAtRange_Threshold'> 
+						<X>70%</X>
+						<Y>30%</Y>
+						<Width>20%</Width> 
+						<Height>3%</Height> 
+						<Border>1</Border>
+						<OnLoad>
+							This:SetValue[${Script[Tehbot].VariableScope.AutoThrust.Config.KeepAtRange_Threshold}]
+						</OnLoad>
+						<OnChange>
+							Script[Tehbot].VariableScope.AutoThrust.Config:SetKeepAtRange_Threshold[${This.Value}]
+						</OnChange>
+					</Slider>							
+					<Checkbox name='Velocity'>
+						<X>1%</X>
+						<Y>40%</Y>
+						<Width>30%</Width> 
+						<Height>3%</Height> 
+						<Text>When velocity is over ${Script[Tehbot].VariableScope.AutoThrust.Config.Velocity_Trigger}% unless capacitor drops below ${Script[Tehbot].VariableScope.AutoThrust.Config.Velocity_Threshold}%</Text>
+						<OnLoad>
+							if ${Script[Tehbot].VariableScope.AutoThrust.Config.Velocity}
+							{
+								This:SetChecked
+							}
+						</OnLoad>
+						<OnLeftClick>
+							Script[Tehbot].VariableScope.AutoThrust.Config:SetVelocity[${This.Checked}]
+						</OnLeftClick>
+					</Checkbox>
+					<Slider name='Velocity_Trigger'> 
+						<X>50%</X>
+						<Y>40%</Y>
+						<Width>20%</Width> 
+						<Height>3%</Height> 
+						<Border>1</Border>
+						<OnLoad>
+							This:SetValue[${Script[Tehbot].VariableScope.AutoThrust.Config.Velocity_Trigger}]
+						</OnLoad>
+						<OnChange>
+							Script[Tehbot].VariableScope.AutoThrust.Config:SetVelocity_Trigger[${This.Value}]
+						</OnChange>
+					</Slider>							
+					<Slider name='Velocity_Threshold'> 
+						<X>70%</X>
+						<Y>40%</Y>
+						<Width>20%</Width> 
+						<Height>3%</Height> 
+						<Border>1</Border>
+						<OnLoad>
+							This:SetValue[${Script[Tehbot].VariableScope.AutoThrust.Config.Velocity_Threshold}]
+						</OnLoad>
+						<OnChange>
+							Script[Tehbot].VariableScope.AutoThrust.Config:SetVelocity_Threshold[${This.Value}]
+						</OnChange>
+					</Slider>
+
+				</Children>
+			</Frame>
+		</Children>
+	</window>
+	
+</ISUI>

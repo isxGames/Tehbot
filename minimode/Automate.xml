@@ -1,0 +1,673 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ISUI>
+	<template name='Information.Font'>	
+		<Name>Terminal</Name>
+		<Size>8</Size>
+		<Color>FFFFFFFF</Color>
+	</template>	
+
+	<window name='Tehbot_Automate'>
+		<Visible>1</Visible>
+		<BackGroundColor></BackGroundColor>
+		<Border>0</Border>
+		<X>200</X>
+		<Y>300</Y>
+		<Width>800</Width>
+		<Height>600</Height>
+		<TitleBar>
+			<Width>100%</Width>
+			<Height>20</Height>
+			<Border>0</Border>
+			<BackgroundColor>FF000000</BackgroundColor>
+			<Children>
+				<Text name='Tehbot_Automate_TitleBar_Title'>
+					<X>0</X>
+					<Y>3</Y>
+					<Width>100%</Width>
+					<Height>20</Height>
+					<Alignment>Center</Alignment>
+					<Text>Automate Configuration</Text>
+				</Text>
+				<button	Name='Close'>
+					<X>r40</X>
+					<Y>0</Y>
+					<Width>40</Width>
+					<Height>20</Height>
+					<Text>Close</Text>
+					<OnLeftClick>
+						Script[Tehbot].VariableScope.Automate.LocalUI:Stop
+						ui -unload "&filepath;/Automate"
+					</OnLeftClick>
+				</button>
+			</Children>
+		</TitleBar>
+		<Children name="Tehbot_Automate_Children">
+			<Frame name="Tehbot_Automate_Frame">
+				<X>0</X>
+				<Y>5</Y>
+				<Width>100%</Width>
+				<Height>100%</Height>
+				<BackgroundColor>FF000000</BackgroundColor>
+				<Border>1</Border>
+				<BorderColor>FFFFFFFF</BorderColor>
+				<Children name="Tehbot_Automate_Frame_Children">
+				
+
+
+					<Text name='AutoStartFrameTitle'> 
+						<X>1%</X> 
+						<Y>1%</Y> 
+						<Width>32%</Width> 
+						<Height>3%</Height> 
+						<Text>AutoStart Configuration</Text>
+						<OnLoad>
+							This.Font:SetColor[FFFFFF00]
+						</OnLoad>
+					</Text>
+					<Frame name="AutoStartFrame">
+						<X>0%</X>
+						<Y>3%</Y>
+						<Width>100%</Width>
+						<Height>15%</Height>
+						<BackgroundColor>FF000000</BackgroundColor>
+						<Border>1</Border>
+						<BorderColor>FFFFFFFF</BorderColor>
+						<Children>
+							<Checkbox name='DelayLogin'>
+								<X>1%</X>
+								<Y>10%</Y>
+								<Width>30%</Width> 
+								<Height>20%</Height> 
+								<Text>Delay login until start time plus delta</Text>
+								<OnLoad>
+									if ${Script[Tehbot].VariableScope.Automate.Config.DelayLogin}
+									{
+										This:SetChecked
+									}
+									if ${Script[Tehbot].VariableScope.Automate.Config.DelayLoginDelta}
+									{
+										This:Hide
+									}
+								</OnLoad>
+								<OnLeftClick>
+									Script[Tehbot].VariableScope.Automate.Config:SetDelayLogin[${This.Checked}]
+									if ${This.Checked}
+									{
+										UIElement[DelayLoginDelta@AutoStartFrame@Tehbot_Automate_Frame@Tehbot_Automate]:Hide
+									}
+									else
+									{
+										UIElement[DelayLoginDelta@AutoStartFrame@Tehbot_Automate_Frame@Tehbot_Automate]:Show
+									}
+								</OnLeftClick>
+							</Checkbox>
+							<Checkbox name='DelayLoginDelta'>
+								<X>30%</X>
+								<Y>10%</Y>
+								<Width>30%</Width> 
+								<Height>20%</Height> 
+								<Text>Only delay login by delta</Text>
+								<OnLoad>
+									if ${Script[Tehbot].VariableScope.Automate.Config.DelayLoginDelta}
+									{
+										This:SetChecked
+									}
+									if ${Script[Tehbot].VariableScope.Automate.Config.DelayLogin}
+									{
+										This:Hide
+									}
+								</OnLoad>
+								<OnLeftClick>
+									Script[Tehbot].VariableScope.Automate.Config:SetDelayLoginDelta[${This.Checked}]
+									if ${This.Checked}
+									{
+										UIElement[DelayLogin@AutoStartFrame@Tehbot_Automate_Frame@Tehbot_Automate]:Hide
+										UIElement[obj_Automate_Hour_Label@AutoStartFrame@Tehbot_Automate_Frame@Tehbot_Automate]:Hide
+										UIElement[obj_Automate_Hour@AutoStartFrame@Tehbot_Automate_Frame@Tehbot_Automate]:Hide
+										UIElement[obj_Automate_Minute_Label@AutoStartFrame@Tehbot_Automate_Frame@Tehbot_Automate]:Hide
+										UIElement[obj_Automate_Minute@AutoStartFrame@Tehbot_Automate_Frame@Tehbot_Automate]:Hide
+									}
+									else
+									{
+										UIElement[DelayLogin@AutoStartFrame@Tehbot_Automate_Frame@Tehbot_Automate]:Show
+										UIElement[obj_Automate_Hour_Label@AutoStartFrame@Tehbot_Automate_Frame@Tehbot_Automate]:Show
+										UIElement[obj_Automate_Hour@AutoStartFrame@Tehbot_Automate_Frame@Tehbot_Automate]:Show
+										UIElement[obj_Automate_Minute_Label@AutoStartFrame@Tehbot_Automate_Frame@Tehbot_Automate]:Show
+										UIElement[obj_Automate_Minute@AutoStartFrame@Tehbot_Automate_Frame@Tehbot_Automate]:Show
+									}
+								</OnLeftClick>
+							</Checkbox>
+				
+							<Text name='obj_Automate_Hour_Label'> 
+								<X>1%</X> 
+								<Y>40%</Y> 
+								<Width>15%</Width> 
+								<Height>10%</Height> 
+								<Alignment>Center</Alignment>
+								<Text>Start Hour</Text>
+								<OnLoad>
+									if ${Script[Tehbot].VariableScope.Automate.Config.DelayLoginDelta}
+									{
+										This:Hide
+									}
+								</OnLoad>
+							</Text>
+							<Textentry name='obj_Automate_Hour'> 
+								<X>1%</X> 
+								<Y>55%</Y> 
+								<Width>15%</Width> 
+								<Height>25%</Height> 
+								<OnLoad>
+									This:SetText[${Script[Tehbot].VariableScope.Automate.Config.StartHour}]
+									if ${Script[Tehbot].VariableScope.Automate.Config.DelayLoginDelta}
+									{
+										This:Hide
+									}
+								</OnLoad>
+								<OnChange>
+									Script[Tehbot].VariableScope.Automate.Config:SetStartHour[${This.Text}]
+								</OnChange>
+								<OnMouseEnter>
+									UIElement[Information@InformationFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText["This field needs to contain the hour which you would like to turn Tehbot on."]
+								</OnMouseEnter>
+								<OnMouseExit>
+									UIElement[Information@InformationFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText[""]
+								</OnMouseExit>
+							</Textentry>
+							<Text name='obj_Automate_Minute_Label'> 
+								<X>17%</X> 
+								<Y>40%</Y> 
+								<Width>15%</Width> 
+								<Height>10%</Height> 
+								<Alignment>Center</Alignment>
+								<Text>Start Minute</Text>
+								<OnLoad>
+									if ${Script[Tehbot].VariableScope.Automate.Config.DelayLoginDelta}
+									{
+										This:Hide
+									}
+								</OnLoad>
+							</Text>
+							<Textentry name='obj_Automate_Minute'> 
+								<X>17%</X> 
+								<Y>55%</Y> 
+								<Width>15%</Width> 
+								<Height>25%</Height> 
+								<OnLoad>
+									This:SetText[${Script[Tehbot].VariableScope.Automate.Config.StartMinute}]
+									if ${Script[Tehbot].VariableScope.Automate.Config.DelayLoginDelta}
+									{
+										This:Hide
+									}
+								</OnLoad>
+								<OnChange>
+									Script[Tehbot].VariableScope.Automate.Config:SetStartMinute[${This.Text}]
+								</OnChange>
+								<OnMouseEnter>
+									UIElement[Information@InformationFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText["This field needs to contain the minute which you would like to turn Tehbot on."]
+								</OnMouseEnter>
+								<OnMouseExit>
+									UIElement[Information@InformationFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText[""]
+								</OnMouseExit>
+							</Textentry>
+							<Text name='obj_Automate_Delta_Label'> 
+								<X>33%</X> 
+								<Y>40%</Y> 
+								<Width>15%</Width> 
+								<Height>10%</Height> 
+								<Alignment>Center</Alignment>
+								<Text>Delta Minute</Text>
+							</Text>
+							<Textentry name='obj_Automate_Delta'> 
+								<X>33%</X> 
+								<Y>55%</Y> 
+								<Width>15%</Width> 
+								<Height>25%</Height> 
+								<OnLoad>
+									This:SetText[${Script[Tehbot].VariableScope.Automate.Config.StartDelta}]
+								</OnLoad>
+								<OnChange>
+									Script[Tehbot].VariableScope.Automate.Config:SetStartDelta[${This.Text}]
+								</OnChange>
+								<OnMouseEnter>
+									UIElement[Information@InformationFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText["This field needs to contain the random delta you want added to the start time, in minutes."]
+								</OnMouseEnter>
+								<OnMouseExit>
+									UIElement[Information@InformationFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText[""]
+								</OnMouseExit>
+							</Textentry>
+
+						</Children>
+					</Frame>
+					
+					<Text name='LauncherFrameTitle'> 
+						<X>1%</X> 
+						<Y>19%</Y> 
+						<Width>32%</Width> 
+						<Height>3%</Height> 
+						<Text>Launcher Configuration</Text>
+						<OnLoad>
+							This.Font:SetColor[FFFFFF00]
+						</OnLoad>
+					</Text>
+					<Frame name="LauncherFrame">
+						<X>0%</X>
+						<Y>21%</Y>
+						<Width>100%</Width>
+						<Height>15%</Height>
+						<BackgroundColor>FF000000</BackgroundColor>
+						<Border>1</Border>
+						<BorderColor>FFFFFFFF</BorderColor>
+						<Children>
+							<Checkbox name='Launch'>
+								<X>1%</X>
+								<Y>10%</Y>
+								<Width>30%</Width> 
+								<Height>20%</Height> 
+								<Text>Run the command below after login</Text>
+								<OnLoad>
+									if ${Script[Tehbot].VariableScope.Automate.Config.Launch}
+									{
+										This:SetChecked
+									}
+								</OnLoad>
+								<OnLeftClick>
+									Script[Tehbot].VariableScope.Automate.Config:SetLaunch[${This.Checked}]
+									if ${This.Checked}
+									{
+										UIElement[obj_Automate_Launch_Label@LauncherFrame@Tehbot_Automate_Frame@Tehbot_Automate]:Show
+										UIElement[obj_Automate_Launch@LauncherFrame@Tehbot_Automate_Frame@Tehbot_Automate]:Show
+									}
+									else
+									{
+										UIElement[obj_Automate_Launch_Label@LauncherFrame@Tehbot_Automate_Frame@Tehbot_Automate]:Hide
+										UIElement[obj_Automate_Launch@LauncherFrame@Tehbot_Automate_Frame@Tehbot_Automate]:Hide
+									}
+								</OnLeftClick>
+							</Checkbox>
+				
+							<Text name='obj_Automate_Launch_Label'> 
+								<X>1%</X> 
+								<Y>40%</Y> 
+								<Width>47%</Width> 
+								<Height>10%</Height> 
+								<Alignment>Center</Alignment>
+								<Text>Command</Text>
+								<OnLoad>
+									if !${Script[Tehbot].VariableScope.Automate.Config.Launch}
+									{
+										This:Hide
+									}
+								</OnLoad>
+							</Text>
+							<Textentry name='obj_Automate_Launch'> 
+								<X>1%</X> 
+								<Y>55%</Y> 
+								<Width>47%</Width> 
+								<Height>25%</Height> 
+								<OnLoad>
+									This:SetText[${Script[Tehbot].VariableScope.Automate.Config.LaunchCommand}]
+									if !${Script[Tehbot].VariableScope.Automate.Config.Launch}
+									{
+										This:Hide
+									}
+								</OnLoad>
+								<OnChange>
+									Script[Tehbot].VariableScope.Automate.Config:SetLaunchCommand[${This.Text}]
+								</OnChange>
+								<OnMouseEnter>
+									UIElement[Information@InformationFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText["This field needs to contain the command you want to be launched after starting."]
+								</OnMouseEnter>
+								<OnMouseExit>
+									UIElement[Information@InformationFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText[""]
+								</OnMouseExit>
+							</Textentry>
+
+						</Children>
+					</Frame>
+					
+					<Text name='AutoLogoutFrameTitle'> 
+						<X>1%</X> 
+						<Y>37%</Y> 
+						<Width>32%</Width> 
+						<Height>4%</Height> 
+						<Text>AutoLogout Configuration</Text>
+						<OnLoad>
+							This.Font:SetColor[FFFFFF00]
+						</OnLoad>
+					</Text>
+					<Frame name="AutoLogoutFrame">
+						<X>0%</X>
+						<Y>39%</Y>
+						<Width>100%</Width>
+						<Height>30%</Height>
+						<BackgroundColor>FF000000</BackgroundColor>
+						<Border>1</Border>
+						<BorderColor>FFFFFFFF</BorderColor>
+						<Children>
+							<Checkbox name='ScheduleLogout'>
+								<X>1%</X>
+								<Y>3%</Y>
+								<Width>30%</Width> 
+								<Height>10%</Height> 
+								<Text>Scheduled logout</Text>
+								<OnLoad>
+									if ${Script[Tehbot].VariableScope.Automate.Config.ScheduleLogout}
+									{
+										This:SetChecked
+									}
+									if ${Script[Tehbot].VariableScope.Automate.Config.TimedLogout}
+									{
+										This:Hide
+									}
+								</OnLoad>
+								<OnLeftClick>
+									Script[Tehbot].VariableScope.Automate.Config:SetScheduleLogout[${This.Checked}]
+									if ${This.Checked}
+									{
+										UIElement[TimedLogout@AutoLogoutFrame@Tehbot_Automate_Frame@Tehbot_Automate]:Hide
+									}
+									else
+									{
+										UIElement[TimedLogout@AutoLogoutFrame@Tehbot_Automate_Frame@Tehbot_Automate]:Show
+									}
+								</OnLeftClick>
+							</Checkbox>
+							<Checkbox name='TimedLogout'>
+								<X>1%</X>
+								<Y>15%</Y>
+								<Width>30%</Width> 
+								<Height>10%</Height> 
+								<Text>Timed logout</Text>
+								<OnLoad>
+									if ${Script[Tehbot].VariableScope.Automate.Config.TimedLogout}
+									{
+										This:SetChecked
+									}
+									if ${Script[Tehbot].VariableScope.Automate.Config.ScheduleLogout}
+									{
+										This:Hide
+									}
+								</OnLoad>
+								<OnLeftClick>
+									Script[Tehbot].VariableScope.Automate.Config:SetTimedLogout[${This.Checked}]
+									if ${This.Checked}
+									{
+										UIElement[ScheduleLogout@AutoLogoutFrame@Tehbot_Automate_Frame@Tehbot_Automate]:Hide
+										UIElement[obj_Automate_Minute_Label@AutoLogoutFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText["Runtime Minute"]
+										UIElement[obj_Automate_Hour_Label@AutoLogoutFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText["Runtime Hour"]
+									}
+									else
+									{
+										UIElement[ScheduleLogout@AutoLogoutFrame@Tehbot_Automate_Frame@Tehbot_Automate]:Show
+										UIElement[obj_Automate_Minute_Label@AutoLogoutFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText["Logout Minute"]
+										UIElement[obj_Automate_Hour_Label@AutoLogoutFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText["Logout Hour"]
+									}
+								</OnLeftClick>
+							</Checkbox>
+							<Checkbox name='Questor'>
+								<X>1%</X>
+								<Y>30%</Y>
+								<Width>30%</Width> 
+								<Height>10%</Height> 
+								<Text>Tell Questor to complete the logout</Text>
+								<OnLoad>
+									if ${Script[Tehbot].VariableScope.Automate.Config.Questor}
+									{
+										This:SetChecked
+									}
+								</OnLoad>
+								<OnLeftClick>
+									Script[Tehbot].VariableScope.Automate.Config:SetQuestor[${This.Checked}]
+									if ${This.Checked}
+									{
+										UIElement[BookmarkTitle@AutoLogoutFrame@Tehbot_Automate_Frame@Tehbot_Automate]:Hide
+										UIElement[Bookmark@AutoLogoutFrame@Tehbot_Automate_Frame@Tehbot_Automate]:Hide
+									}
+									else
+									{
+										UIElement[BookmarkTitle@AutoLogoutFrame@Tehbot_Automate_Frame@Tehbot_Automate]:Show
+										UIElement[Bookmark@AutoLogoutFrame@Tehbot_Automate_Frame@Tehbot_Automate]:Show
+									}
+								</OnLeftClick>
+							</Checkbox>
+				
+							<Checkbox name='Downtime'>
+								<X>1%</X>
+								<Y>50%</Y>
+								<Width>30%</Width> 
+								<Height>10%</Height> 
+								<Text>Logout when downtime message is seen</Text>
+								<OnLoad>
+									if ${Script[Tehbot].VariableScope.Automate.Config.Downtime}
+									{
+										This:SetChecked
+									}
+								</OnLoad>
+								<OnLeftClick>
+									Script[Tehbot].VariableScope.Automate.Config:SetDowntime[${This.Checked}]
+								</OnLeftClick>
+							</Checkbox>
+
+							<Text name='BookmarkTitle'> 
+								<X>40%</X> 
+								<Y>3%</Y> 
+								<Width>32%</Width> 
+								<Height>10%</Height> 
+								<Alignment>Center</Alignment>
+								<Text>Logout Bookmark</Text>
+								<OnLoad>
+									if ${Script[Tehbot].VariableScope.Automate.Config.Questor}
+									{
+										This:Hide
+									}
+								</OnLoad>
+							</Text>						 
+							<Textentry Name="Bookmark">
+								<X>40%</X> 
+								<Y>10%</Y> 
+								<Width>32%</Width> 
+								<Height>15%</Height> 
+								<OnLoad>
+									This:SetText[${Script[Tehbot].VariableScope.Automate.Config.Bookmark}]
+									if ${Script[Tehbot].VariableScope.Automate.Config.Questor}
+									{
+										This:Hide
+									}
+								</OnLoad>
+								<OnChange>
+									if ${This.Text.Length}
+									{
+										Script[Tehbot].VariableScope.Automate.Config:SetBookmark[${This.Text}]
+									}
+									else
+									{
+										Script[Tehbot].VariableScope.Automate.Config:SetBookmark[\"\"]
+									}
+									UIElement[BookmarkList@AutoLogoutFrame@Tehbot_Automate_Frame@Tehbot_Automate]:Show
+									Script[Tehbot].VariableScope.Automate.LocalUI:Start
+								</OnChange>
+								<OnMouseEnter>
+									UIElement[Information@InformationFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText["This field needs to contain the exact name of the bookmark you would like the module to fly you to before logging out."]
+								</OnMouseEnter>
+								<OnMouseExit>
+									UIElement[Information@InformationFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText[""]
+								</OnMouseExit>
+							</Textentry>
+							<listbox Name="BookmarkList">
+								<BackgroundColor>FF000000</BackgroundColor>
+								<Border>1</Border>
+								<BorderColor>FFFFFFFF</BorderColor>
+								<X>40%</X>
+								<Y>25%</Y>
+								<Width>32%</Width>
+								<Height>70%</Height>
+								<OnLoad>
+									This:SetZOrder[alwaysontop]
+									This:Hide
+								</OnLoad>
+								<OnSelect>
+									UIElement[Bookmark@AutoLogoutFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText[${This.SelectedItem.Text}]
+									Script[Tehbot].VariableScope.Automate.Config:SetBookmark[${This.SelectedItem.Text}]
+									Script[Tehbot].VariableScope.Automate.LocalUI:Stop
+									This:Hide
+								</OnSelect>
+								<OnMouseEnter>
+									UIElement[Information@InformationFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText["This field needs to contain the exact name of the bookmark you would like the module to fly you to before logging out."]
+								</OnMouseEnter>
+								<OnMouseExit>
+									UIElement[Information@InformationFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText[""]
+								</OnMouseExit>
+							</listbox>					
+						
+							<Text name='obj_Automate_Hour_Label'> 
+								<X>40%</X> 
+								<Y>33%</Y> 
+								<Width>9%</Width> 
+								<Height>10%</Height> 
+								<Alignment>Center</Alignment>
+								<Text>Logout Hour</Text>
+								<OnLoad>
+									if ${Script[Tehbot].VariableScope.Automate.Config.TimedLogout}
+									{
+										This:SetText["Runtime Hour"]
+									}
+								</OnLoad>
+							</Text>
+							<Textentry name='obj_Automate_Hour'> 
+								<X>40%</X> 
+								<Y>40%</Y> 
+								<Width>9%</Width> 
+								<Height>15%</Height> 
+								<OnLoad>
+									This:SetText[${Script[Tehbot].VariableScope.Automate.Config.Hour}]
+								</OnLoad>
+								<OnChange>
+									Script[Tehbot].VariableScope.Automate.Config:SetHour[${This.Text}]
+								</OnChange>
+								<OnMouseEnter>
+									UIElement[Information@InformationFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText["This field needs to contain the hour which you would like to perform the log out operation."]
+								</OnMouseEnter>
+								<OnMouseExit>
+									UIElement[Information@InformationFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText[""]
+								</OnMouseExit>
+							</Textentry>
+							<Text name='obj_Automate_Minute_Label'> 
+								<X>51%</X> 
+								<Y>33%</Y> 
+								<Width>10%</Width> 
+								<Height>10%</Height> 
+								<Alignment>Center</Alignment>
+								<Text>Logout Minute</Text>
+								<OnLoad>
+									if ${Script[Tehbot].VariableScope.Automate.Config.TimedLogout}
+									{
+										This:SetText["Runtime Minute"]
+									}
+								</OnLoad>
+							</Text>
+							<Textentry name='obj_Automate_Minute'> 
+								<X>51%</X> 
+								<Y>40%</Y> 
+								<Width>10%</Width> 
+								<Height>15%</Height> 
+								<OnLoad>
+									This:SetText[${Script[Tehbot].VariableScope.Automate.Config.Minute}]
+								</OnLoad>
+								<OnChange>
+									Script[Tehbot].VariableScope.Automate.Config:SetMinute[${This.Text}]
+								</OnChange>
+								<OnMouseEnter>
+									UIElement[Information@InformationFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText["This field needs to contain the minute which you would like to perform the log out operation."]
+								</OnMouseEnter>
+								<OnMouseExit>
+									UIElement[Information@InformationFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText[""]
+								</OnMouseExit>
+							</Textentry>
+							
+							<Text name='obj_Automate_Delta_Label'> 
+								<X>63%</X> 
+								<Y>33%</Y> 
+								<Width>9%</Width> 
+								<Height>10%</Height> 
+								<Alignment>Center</Alignment>
+								<Text>Logout Delta</Text>
+							</Text>
+							<Textentry name='obj_Automate_Delta'> 
+								<X>63%</X> 
+								<Y>40%</Y> 
+								<Width>9%</Width> 
+								<Height>15%</Height> 
+								<OnLoad>
+									This:SetText[${Script[Tehbot].VariableScope.Automate.Config.LogoutDelta}]
+								</OnLoad>
+								<OnChange>
+									Script[Tehbot].VariableScope.Automate.Config:SetLogoutDelta[${This.Text}]
+								</OnChange>
+								<OnMouseEnter>
+									UIElement[Information@InformationFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText["This field needs to contain the random delta you want added to the logout time, in minutes."]
+								</OnMouseEnter>
+								<OnMouseExit>
+									UIElement[Information@InformationFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText[""]
+								</OnMouseExit>
+							</Textentry>
+
+							<Button	Name='LogoutNow'>
+								<BackgroundColor>FF000000</BackgroundColor>
+								<X>40%</X>
+								<Y>60%</Y>
+								<Width>32%</Width>
+								<Height>15%</Height>
+								<Text>Perform Now</Text>
+								<OnLeftClick>
+									Script[Tehbot].VariableScope.Automate:LogoutNow
+								</OnLeftClick>
+								<OnMouseEnter>
+									UIElement[Information@InformationFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText["Use this button to perform the log out operation now."]
+								</OnMouseEnter>
+								<OnMouseExit>
+									UIElement[Information@InformationFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText[""]
+								</OnMouseExit>
+							</Button>						
+				
+						</Children>
+					</Frame>					
+					
+					<Text name='InformationFrameTitle'> 
+						<X>1%</X> 
+						<Y>80%</Y> 
+						<Width>32%</Width> 
+						<Height>4%</Height> 
+						<Text>Information</Text>
+						<OnLoad>
+							This.Font:SetColor[FFFFFF00]
+						</OnLoad>
+					</Text>
+					<Frame name="InformationFrame">
+						<X>0%</X>
+						<Y>82%</Y>
+						<Width>100%</Width>
+						<Height>18%</Height>
+						<BackgroundColor>FF000000</BackgroundColor>
+						<Border>1</Border>
+						<BorderColor>FFFFFFFF</BorderColor>
+						<Children>
+							<Text name='Information'> 
+								<X>5%</X> 
+								<Y>5%</Y> 
+								<Width>90%</Width> 
+								<Height>90%</Height> 
+								<Wrap />
+								<VerticalAlignment>Center</VerticalAlignment>
+							</Text>
+						</Children>
+					</Frame>
+				
+				
+					
+				</Children>
+			</Frame>
+		</Children>
+	</window>
+	
+</ISUI>

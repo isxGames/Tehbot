@@ -1,0 +1,168 @@
+<?xml version="1.0"?>
+<InnerSpaceSettings>
+  <Set Name="DroneTypes">
+    <Set Name="Heavy Attack Drones">
+      <Setting Name="1201" Type="Wasp I" Volume="25" Race="1" />
+      <Setting Name="2193" Type="Praetor I" Volume="25" Race="4" />
+      <Setting Name="2195" Type="Praetor II" Volume="25" Race="4" />
+      <Setting Name="2436" Type="Wasp II" Volume="25" Race="1" />
+      <Setting Name="2444" Type="Ogre I" Volume="25" Race="8" />
+      <Setting Name="2446" Type="Ogre II" Volume="25" Race="8" />
+      <Setting Name="2476" Type="Berserker I" Volume="25" Race="2" />
+      <Setting Name="2478" Type="Berserker II" Volume="25" Race="2" />
+    </Set>
+    <Set Name="Medium Scout Drones">
+      <Setting Name="2173" Type="Infiltrator I" Volume="10" Race="4" />
+      <Setting Name="2175" Type="Infiltrator II" Volume="10" Race="4" />
+      <Setting Name="2183" Type="Hammerhead I" Volume="10" Race="8" />
+      <Setting Name="2185" Type="Hammerhead II" Volume="10" Race="8" />
+      <Setting Name="15508" Type="Vespa I" Volume="10" Race="1" />
+      <Setting Name="15510" Type="Valkyrie I" Volume="10" Race="2" />
+      <Setting Name="21638" Type="Vespa II" Volume="10" Race="1" />
+      <Setting Name="21640" Type="Valkyrie II" Volume="10" Race="2" />
+      <Setting Name="31874" Type="Caldari Navy Vespa" Volume="10" Race="1" />
+    </Set>
+    <Set Name="Light Scout Drones">
+      <Setting Name="2203" Type="Acolyte I" Volume="5" Race="4" />
+      <Setting Name="2205" Type="Acolyte II" Volume="5" Race="4" />
+      <Setting Name="2454" Type="Hobgoblin I" Volume="5" Race="8" />
+      <Setting Name="2456" Type="Hobgoblin II" Volume="5" Race="8" />
+      <Setting Name="2464" Type="Hornet I" Volume="5" Race="1" />
+      <Setting Name="2466" Type="Hornet II" Volume="5" Race="1" />
+      <Setting Name="2486" Type="Warrior I" Volume="5" Race="2" />
+      <Setting Name="2488" Type="Warrior II" Volume="5" Race="2" />
+    </Set>
+    <Set Name="Combat Drone">
+      <Setting Name="3549" Type="Tutorial Attack Drone" Volume="5" Race="" />
+      <Setting Name="16206" Type="Hellhound I" Volume="25" Race="8" />
+      <Setting Name="28262" Type="'Integrated' Acolyte" Volume="5" Race="4" />
+      <Setting Name="28264" Type="'Augmented' Acolyte" Volume="5" Race="4" />
+      <Setting Name="28266" Type="'Integrated' Berserker" Volume="25" Race="2" />
+      <Setting Name="28268" Type="'Augmented' Berserker" Volume="25" Race="2" />
+      <Setting Name="28270" Type="'Integrated' Hammerhead" Volume="10" Race="8" />
+      <Setting Name="28272" Type="'Augmented' Hammerhead" Volume="10" Race="8" />
+      <Setting Name="28274" Type="'Integrated' Hobgoblin" Volume="5" Race="8" />
+      <Setting Name="28276" Type="'Augmented' Hobgoblin" Volume="5" Race="8" />
+      <Setting Name="28278" Type="'Integrated' Hornet" Volume="5" Race="1" />
+      <Setting Name="28280" Type="'Augmented' Hornet" Volume="5" Race="1" />
+      <Setting Name="28282" Type="'Integrated' Infiltrator" Volume="10" Race="4" />
+      <Setting Name="28284" Type="'Augmented' Infiltrator" Volume="10" Race="4" />
+      <Setting Name="28286" Type="'Integrated' Ogre" Volume="25" Race="8" />
+      <Setting Name="28288" Type="'Augmented' Ogre" Volume="25" Race="8" />
+      <Setting Name="28290" Type="'Integrated' Praetor" Volume="25" Race="4" />
+      <Setting Name="28292" Type="'Augmented' Praetor" Volume="25" Race="4" />
+      <Setting Name="28294" Type="'Integrated' Valkyrie" Volume="10" Race="2" />
+      <Setting Name="28296" Type="'Augmented' Valkyrie" Volume="10" Race="2" />
+      <Setting Name="28298" Type="'Integrated' Vespa" Volume="10" Race="1" />
+      <Setting Name="28300" Type="'Augmented' Vespa" Volume="10" Race="1" />
+      <Setting Name="28302" Type="'Integrated' Warrior" Volume="5" Race="2" />
+      <Setting Name="28304" Type="'Augmented' Warrior" Volume="5" Race="2" />
+      <Setting Name="28306" Type="'Integrated' Wasp" Volume="25" Race="1" />
+      <Setting Name="28308" Type="'Augmented' Wasp" Volume="25" Race="1" />
+      <Setting Name="31864" Type="Imperial Navy Acolyte" Volume="5" Race="4" />
+      <Setting Name="31866" Type="Imperial Navy Infiltrator" Volume="10" Race="4" />
+      <Setting Name="31870" Type="Imperial Navy Praetor" Volume="25" Race="4" />
+      <Setting Name="31872" Type="Caldari Navy Hornet" Volume="5" Race="1" />
+      <Setting Name="31876" Type="Caldari Navy Wasp" Volume="25" Race="1" />
+      <Setting Name="31880" Type="Federation Navy Hobgoblin" Volume="5" Race="8" />
+      <Setting Name="31882" Type="Federation Navy Hammerhead" Volume="10" Race="8" />
+      <Setting Name="31884" Type="Federation Navy Ogre" Volume="25" Race="8" />
+      <Setting Name="31888" Type="Republic Fleet Warrior" Volume="5" Race="2" />
+      <Setting Name="31890" Type="Republic Fleet Valkyrie" Volume="10" Race="2" />
+      <Setting Name="31892" Type="Republic Fleet Berserker" Volume="25" Race="2" />
+      <Setting Name="32465" Type="Civilian Hobgoblin" Volume="5" Race="8" />
+    </Set>
+    <Set Name="Sentry Drones">
+      <Setting Name="31868" Type="Imperial Navy Curator" Volume="25" Race="4" />
+      <Setting Name="31878" Type="Caldari Navy Warden" Volume="25" Race="1" />
+      <Setting Name="31886" Type="Federation Navy Garde" Volume="25" Race="8" />
+      <Setting Name="31894" Type="Republic Fleet Bouncer" Volume="25" Race="2" />
+      <Setting Name="23525" Type="Curator I" Volume="25" Race="4" />
+      <Setting Name="23559" Type="Warden I" Volume="25" Race="1" />
+      <Setting Name="23561" Type="Garde I" Volume="25" Race="8" />
+      <Setting Name="23563" Type="Bouncer I" Volume="25" Race="2" />
+      <Setting Name="28209" Type="Warden II" Volume="25" Race="1" />
+      <Setting Name="28211" Type="Garde II" Volume="25" Race="8" />
+      <Setting Name="28213" Type="Curator II" Volume="25" Race="4" />
+      <Setting Name="28215" Type="Bouncer II" Volume="25" Race="2" />
+    </Set>
+    <Set Name="Mining Drones">
+      <Setting Name="1202" Type="Civilian Mining Drone" Volume="5" Race="" />
+      <Setting Name="3218" Type="Harvester Mining Drone" Volume="10" Race="" />
+      <Setting Name="10246" Type="Mining Drone I" Volume="5" Race="" />
+      <Setting Name="10250" Type="Mining Drone II" Volume="5" Race="" />
+    </Set>
+    <Set Name="Mining Drone">
+      <Setting Name="10248" Type="Mining Drone - Improved" Volume="5" Race="" />
+      <Setting Name="10252" Type="Mining Drone - Elite" Volume="5" Race="" />
+    </Set>
+    <Set Name="Repair Drone">
+      <Setting Name="9871" Type="Repair Drone" Volume="50" Race="" />
+    </Set>
+    <Set Name="Unanchoring Drone">
+      <Setting Name="17565" Type="Unanchoring Drone" Volume="500" Race="" />
+    </Set>
+    <Set Name="Combat Utility Drones">
+      <Setting Name="22572" Type="Praetor EV-900" Volume="25" Race="4" />
+      <Setting Name="23659" Type="Acolyte EV-300" Volume="5" Race="4" />
+      <Setting Name="23702" Type="Infiltrator EV-600" Volume="10" Race="4" />
+      <Setting Name="23536" Type="Berserker SW-900" Volume="25" Race="2" />
+      <Setting Name="23729" Type="Valkyrie SW-600" Volume="10" Race="2" />
+      <Setting Name="23731" Type="Warrior SW-300" Volume="5" Race="2" />
+    </Set>
+    <Set Name="Warp Scrambling Drone">
+      <Setting Name="22574" Type="Warp Scrambling Drone" Volume="5" Race="" />
+      <Setting Name="22713" Type="10mn webscramblifying Drone" Volume="5" Race="" />
+    </Set>
+    <Set Name="Fighter Drone">
+      <Setting Name="22780" Type="Fighter Uno" Volume="5000" Race="" />
+      <Setting Name="23759" Type="FA-14 Templar" Volume="5000" Race="4" />
+    </Set>
+    <Set Name="Fighters">
+      <Setting Name="23055" Type="Templar" Volume="5000" Race="4" />
+      <Setting Name="23057" Type="Dragonfly" Volume="5000" Race="1" />
+      <Setting Name="23059" Type="Firbolg" Volume="5000" Race="8" />
+      <Setting Name="23061" Type="Einherji" Volume="5000" Race="2" />
+    </Set>
+    <Set Name="Electronic Warfare Drones">
+      <Setting Name="23473" Type="Wasp EC-900" Volume="25" Race="1" />
+      <Setting Name="23506" Type="Ogre SD-900" Volume="25" Race="8" />
+      <Setting Name="23510" Type="Praetor TD-900" Volume="25" Race="4" />
+      <Setting Name="23512" Type="Berserker TP-900" Volume="25" Race="2" />
+      <Setting Name="23705" Type="Vespa EC-600" Volume="10" Race="1" />
+      <Setting Name="23707" Type="Hornet EC-300" Volume="5" Race="1" />
+      <Setting Name="23713" Type="Hammerhead SD-600" Volume="10" Race="8" />
+      <Setting Name="23715" Type="Hobgoblin SD-300" Volume="5" Race="8" />
+      <Setting Name="23721" Type="Valkyrie TP-600" Volume="10" Race="2" />
+      <Setting Name="23723" Type="Warrior TP-300" Volume="5" Race="2" />
+      <Setting Name="23725" Type="Infiltrator TD-600" Volume="10" Race="4" />
+      <Setting Name="23727" Type="Acolyte TD-300" Volume="5" Race="4" />
+    </Set>
+    <Set Name="Logistic Drones">
+      <Setting Name="22765" Type="Heavy Shield Maintenance Bot I" Volume="25" Race="" />
+      <Setting Name="23523" Type="Heavy Armor Maintenance Bot I" Volume="25" Race="" />
+      <Setting Name="23709" Type="Medium Armor Maintenance Bot I" Volume="10" Race="" />
+      <Setting Name="23711" Type="Light Armor Maintenance Bot I" Volume="5" Race="" />
+      <Setting Name="23717" Type="Medium Shield Maintenance Bot I" Volume="10" Race="" />
+      <Setting Name="23719" Type="Light Shield Maintenance Bot I" Volume="5" Race="" />
+      <Setting Name="28197" Type="Heavy Armor Maintenance Bot II" Volume="25" Race="" />
+      <Setting Name="28199" Type="Heavy Shield Maintenance Bot II" Volume="25" Race="" />
+      <Setting Name="28201" Type="Light Armor Maintenance Bot II" Volume="5" Race="" />
+      <Setting Name="28203" Type="Light Shield Maintenance Bot II" Volume="5" Race="" />
+      <Setting Name="28205" Type="Medium Armor Maintenance Bot II" Volume="10" Race="" />
+      <Setting Name="28207" Type="Medium Shield Maintenance Bot II" Volume="10" Race="" />
+    </Set>
+    <Set Name="Fighter Bomber">
+      <Setting Name="2948" Type="Shadow" Volume="5000" Race="1" />
+    </Set>
+    <Set Name="Fighter Bombers">
+      <Setting Name="32325" Type="Cyclops" Volume="5000" Race="8" />
+      <Setting Name="32340" Type="Malleus" Volume="5000" Race="4" />
+      <Setting Name="32342" Type="Tyrfing" Volume="5000" Race="2" />
+      <Setting Name="32344" Type="Mantis" Volume="5000" Race="1" />
+    </Set>
+    <Set Name="Salvage Drone">
+      <Setting Name="32787" Type="Salvage Drone I" Volume="10" Race="" />
+    </Set>
+  </Set>
+</InnerSpaceSettings>
