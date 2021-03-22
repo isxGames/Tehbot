@@ -33,4 +33,8 @@ Visit the isxGames discord channel for support.  I'm usually there.
 
 ## Donations
 
-bitcoin:31vArgW2AwpKUkMkKMTj5UFmjCYLp6F1Ck?label=Tehbot%20Donations
+Use my bitcoin address:  31vArgW2AwpKUkMkKMTj5UFmjCYLp6F1Ck
+
+Or
+
+[![Bitcoin Donate Button](https://i.stack.imgur.com/MnQ6V.png)](https://isxgames.github.io/Tehbot/bitcoin-redirect)
