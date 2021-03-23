@@ -122,15 +122,15 @@ objectdef obj_DroneControl inherits obj_State
 						}
 						while ${groupIterator:Next(exists)}
 					}
-					DroneTargets:AddQueryString["Distance < 20000 && IsNPC && !IsMoribund && (${groups}) && (Group =- \"Frigate\" || Group =- \"Destroyer\")"]
+					DroneTargets:AddQueryString["Distance < 20000 && IsNPC && !IsMoribund && (${groups}) && (Group =- \"Frigate\" || Group =- \"Destroyer\" || GroupID = 806)"]
 				}
 				while ${classIterator:Next(exists)}
 			}
-			DroneTargets:AddQueryString["Distance < 20000 && IsTargetingMe && IsNPC && !IsMoribund && (Group =- \"Frigate\" || Group =- \"Destroyer\")"]
+			DroneTargets:AddQueryString["Distance < 20000 && IsTargetingMe && IsNPC && !IsMoribund && (Group =- \"Frigate\" || Group =- \"Destroyer\" || GroupID = 806)"]
 		}
 		else
 		{
-			DroneTargets:AddQueryString["Distance < 20000 && IsTargetingMe && IsNPC && !IsMoribund && (Group =- \"Frigate\" || Group =- \"Destroyer\")"]
+			DroneTargets:AddQueryString["Distance < 20000 && IsTargetingMe && IsNPC && !IsMoribund && (Group =- \"Frigate\" || Group =- \"Destroyer\" || GroupID = 806)"]
 		}
 		CurAggressive:Set[${Config.Aggressive}]
 		
