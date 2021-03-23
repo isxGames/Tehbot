@@ -167,19 +167,16 @@ objectdef obj_ModuleBase inherits obj_State
 			
 		}
 
-        if ${Entity[${newTarget}].CategoryID} == CATEGORYID_ENTITY && ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_ENERGYWEAPON && ${MyShip.Module[${ModuleID}].ToItem.TypeID} != 3033
+        if ${Entity[${newTarget}].CategoryID} == CATEGORYID_ENTITY && ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_ENERGYWEAPON
         {
-			
-			if ${Entity[${newTarget}].Distance} > 49000 
+			if ${MyShip.Cargo[Scorch L].Quantity} > 0 && ${Entity[${newTarget}].Distance} > 49000 
 			{
 				This:QueueState["LoadOptimalAmmo", 50, Scorch L]
-			}
-			
-			if ${Entity[${newTarget}].Distance} < 49000
+			}		
+			if ${MyShip.Cargo[Conflagration L].Quantity} > 0 && ${Entity[${newTarget}].Distance} < 49000 
 			{
 				This:QueueState["LoadOptimalAmmo", 50, Conflagration L]
-			}
-			
+			}		
         }
         if ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_PRECURSORWEAPON && ${Entity[${newTarget}].Distance} > ${Ship.CurrentOptimal}
         {

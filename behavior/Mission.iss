@@ -1342,7 +1342,7 @@ objectdef obj_Mission inherits obj_State
 			EVE:MoveItemsTo[loadAmmo, MyShip, CargoHold]
 			return FALSE
 		}
-		if !${Config.Threshold}
+		if ${Config.Threshold} <= 0
 			return TRUE
 		if ${c:First(exists)}
 			do
