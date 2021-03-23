@@ -1093,7 +1093,7 @@ objectdef obj_Mission inherits obj_State
 		EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo]:StackAll
 		return TRUE
 	}
-	member:bool StackCorpHangars()
+	member:bool StackHangars()
 	{
 		if ${Config.DropoffType.Equal[Corporation Hangar]}
 		{
@@ -1111,7 +1111,6 @@ objectdef obj_Mission inherits obj_State
 				return FALSE
 			}
 			EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}]:StackAll
-			return TRUE
 		}
 		else
 		{
@@ -1123,8 +1122,7 @@ objectdef obj_Mission inherits obj_State
 			}
 			EVEWindow[Inventory].ChildWindow[${Me.Station.ID},StationItems]:StackAll
 		}
-	
-
+		return TRUE
 	}
 
 	member:bool OpenCorpHangars()
@@ -1246,7 +1244,7 @@ objectdef obj_Mission inherits obj_State
 				}
 			}
 			while ${c:Next(exists)}	
-		This:InsertState["StackCorpHangars"]
+		This:InsertState["StackHangars"]
 		return TRUE
 	}
 	
