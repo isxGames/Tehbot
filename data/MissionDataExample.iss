@@ -24,15 +24,16 @@ function main()
 	Script[Tehbot].VariableScope.Mission.AttackTarget:Set["The Right Hand Of Zazzmatazz", "Name = \"Outpost Headquarters\""]
 
 	;
-	; Some missions further require that you loot an item.  To configure these, use the ItemsRequired collection.
-	; This collection requires the mission name and the name of the item.  The bot will loot cargo containers looking for the item.
+	; Some missions further require that you receive an item.  To configure these, use the ItemsRequired collection.
+	; This collection requires the mission name and the name of the item.  Note that this will not loot the item from a container - it's for missions that deposit an item in your cargo hold
+	; when you kill a target.  For looting a needed item, see the next section.
 	;
 	Script[Tehbot].VariableScope.Mission.ValidMissions:Set["The Damsel In Distress", "Kinetic"]
 	Script[Tehbot].VariableScope.Mission.AttackTarget:Set["The Damsel In Distress", "Name = \"Kruul's Pleasure Gardens\""]				
 	Script[Tehbot].VariableScope.Mission.ItemsRequired:Set["The Damsel In Distress", "The Damsel"]
 
 	;
-	; For some missions, the item you need to loot is not in a cargo container, but are often in a specifically named wreck.  To configure these, use the LootContainers collection.
+	; For some missions, you must loot an item.  To configure these, use the LootContainers AND the ItemsRequired collections.
 	; This collection requires the mission name and a search string.  Most of these use the Name member, but also empty wrecks need to be excluded.  Note the single equal and the \ escaped quotes!
 	;
 	Script[Tehbot].VariableScope.Mission.ValidMissions:Set["Unauthorized Military Presence", "EM"]
