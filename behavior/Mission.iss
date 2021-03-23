@@ -29,6 +29,7 @@ objectdef obj_Configuration_Mission
 	Setting(bool, Halt, SetHalt)
 	Setting(bool, Secondary, SetSecondary)
 	Setting(bool, Drones, SetDrones)
+	Setting(bool, RangeLimit, SetRangeLimit)
 	Setting(string, SalvagePrefix, SetSalvagePrefix)
 	Setting(string, DropoffType, SetDropoffType)
 	Setting(string, DropoffSubType, SetDropoffSubType)
@@ -766,7 +767,8 @@ objectdef obj_Mission inherits obj_State
 		if ${activetarget} != 0 && !${Entity[${activetarget}].IsMoribund} && ${Entity[${activetarget}]}
 		{
 			Ship.ModuleList_Siege:Activate
-			Ship.ModuleList_Weapon:Activate[${activetarget}]
+			if ${Ship.ModuleList_Weapon.MaxRange} < ${Entity[${activetarget}].Distance} || !${Config.RangeLimit}
+				Ship.ModuleList_Weapon:Activate[${activetarget}]
 			Ship.ModuleList_TargetPainter:Activate[${activetarget}]
 			Ship.ModuleList_Weapon:DeactivateNotOn[${activetarget}]
 			Ship.ModuleList_TargetPainter:DeactivateNotOn[${activetarget}]

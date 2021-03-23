@@ -939,9 +939,32 @@
 						</OnMouseExit>
 					</button>
 					
+					<Checkbox name='RangeLimit'>
+						<X>1%</X>
+						<Y>45%</Y>
+						<Width>30%</Width> 
+						<Height>5%</Height> 
+						<Text>Range Limit</Text>
+						<OnLoad>
+							if ${Script[Tehbot].VariableScope.Mission.Config.RangeLimit}
+							{
+								This:SetChecked
+							}
+						</OnLoad>
+						<OnLeftClick>
+							Script[Tehbot].VariableScope.Mission.Config:SetRangeLimit[${This.Checked}]
+						</OnLeftClick>
+						<OnMouseEnter>
+							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText["If this is checked, only shoot things if they are in range of your weapons.  Uncheck it if you want the bot to shoot things even outside range to agro them and get them moving towards you."]
+						</OnMouseEnter>
+						<OnMouseExit>
+							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
+						</OnMouseExit>
+					</Checkbox>	
+					
 					<Checkbox name='UseDrones'>
 						<X>1%</X>
-						<Y>44%</Y>
+						<Y>50%</Y>
 						<Width>30%</Width> 
 						<Height>5%</Height> 
 						<Text>Use Drones</Text>
@@ -973,7 +996,7 @@
 					<combobox Name="DroneType">
 						<BackgroundColor>FF000000</BackgroundColor>
 						<X>1%</X>
-						<Y>49%</Y>
+						<Y>55%</Y>
 						<Width>30%</Width>
 						<Height>5%</Height>
 						<OnLoad>
@@ -1027,7 +1050,7 @@
 
 
 					<Text name='DropoffTypeTitle'> 
-						<X>1%</X> 
+						<X>36%</X> 
 						<Y>56%</Y> 
 						<Width>30%</Width> 
 						<Height>5%</Height> 
@@ -1038,7 +1061,7 @@
 						<BackgroundColor>FF000000</BackgroundColor>
 						<Border>1</Border>
 						<BorderColor>FFFFFFFF</BorderColor>
-						<X>1%</X>
+						<X>36%</X>
 						<Y>58%</Y>
 						<Width>30%</Width>
 						<Height>5%</Height>
@@ -1071,7 +1094,7 @@
 					</listbox>
 					
 					<Text name='DropoffSubTypeTitle'> 
-						<X>34%</X> 
+						<X>67%</X> 
 						<Y>56%</Y> 
 						<Width>32%</Width> 
 						<Height>5%</Height> 
@@ -1093,7 +1116,7 @@
 						<BackgroundColor>FF000000</BackgroundColor>
 						<Border>1</Border>
 						<BorderColor>FFFFFFFF</BorderColor>
-						<X>34%</X>
+						<X>67%</X>
 						<Y>58%</Y>
 						<Width>32%</Width>
 						<Height>10%</Height>
@@ -1130,20 +1153,20 @@
 					</listbox>					
 					
 					<Text name='SalvagePrefixTitle'> 
-						<X>67%</X> 
-						<Y>56%</Y> 
-						<Width>32%</Width> 
+						<X>1%</X> 
+						<Y>64%</Y> 
+						<Width>34%</Width> 
 						<Height>5%</Height> 
 						<Alignment>Center</Alignment>
 						<Text>Salvage Prefix</Text>
 					</Text>						 
-					<Textentry Name="Dropoff">
+					<Textentry Name="SalvagePrefix">
 						<BackgroundColor>FF000000</BackgroundColor>
 						<Border>1</Border>
 						<BorderColor>FFFFFFFF</BorderColor>
-						<X>67%</X>
-						<Y>58%</Y>
-						<Width>32%</Width>
+						<X>1%</X>
+						<Y>66%</Y>
+						<Width>34%</Width>
 						<Height>5%</Height>
 						<OnLoad>
 							This:SetText[${Script[Tehbot].VariableScope.Mission.Config.SalvagePrefix}]
