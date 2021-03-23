@@ -672,6 +672,7 @@ objectdef obj_Mission inherits obj_State
 					}
 					else
 					{
+						echo Not looting: Target on grid: ${NPC.TargetList.Get[1].Name} - ${NPC.TargetList.Get[1].Type} - ${NPC.TargetList.Get[1].Group}
 						notdone:Set[TRUE]
 					}
 				}
