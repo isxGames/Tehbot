@@ -767,7 +767,7 @@ objectdef obj_Mission inherits obj_State
 		if ${activetarget} != 0 && !${Entity[${activetarget}].IsMoribund} && ${Entity[${activetarget}]}
 		{
 			Ship.ModuleList_Siege:Activate
-			if ${Ship.ModuleList_Weapon.MaxRange} < ${Entity[${activetarget}].Distance} || !${Config.RangeLimit}
+			if ${Ship.ModuleList_Weapon.MaxRange} > ${Entity[${activetarget}].Distance} || !${Config.RangeLimit}
 				Ship.ModuleList_Weapon:Activate[${activetarget}]
 			Ship.ModuleList_TargetPainter:Activate[${activetarget}]
 			Ship.ModuleList_Weapon:DeactivateNotOn[${activetarget}]
