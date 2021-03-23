@@ -371,6 +371,8 @@ objectdef obj_ModuleBase inherits obj_State
 		}
 		if ${MyShip.Module[${ModuleID}].OptimalRange(exists)}
 		{
+			if ${MyShip.Module[${ModuleID}].AccuracyFalloff(exists)}
+				return ${Math.Calc[${MyShip.Module[${ModuleID}].OptimalRange}+${MyShip.Module[${ModuleID}].AccuracyFalloff}]}
 			return ${MyShip.Module[${ModuleID}].OptimalRange}
 		}
 		else
