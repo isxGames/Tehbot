@@ -368,7 +368,7 @@ objectdef obj_Mission inherits obj_State
 						reload:Set[FALSE]
 						This:InsertState["CheckForWork"]
 						This:InsertState["LoadAmmo"]
-						This:InsertState["OpenCorpHangars"]
+						This:InsertState["PrepHangars"]
 						return TRUE
 					}
 					
@@ -1125,7 +1125,7 @@ objectdef obj_Mission inherits obj_State
 		return TRUE
 	}
 
-	member:bool OpenCorpHangars()
+	member:bool PrepHangars()
 	{
 		variable index:eveinvchildwindow InvWindowChildren
 		variable iterator Iter
@@ -1342,6 +1342,8 @@ objectdef obj_Mission inherits obj_State
 			EVE:MoveItemsTo[loadAmmo, MyShip, CargoHold]
 			return FALSE
 		}
+		if !${Config.Threshold}
+			return TRUE
 		if ${c:First(exists)}
 			do
 			{
