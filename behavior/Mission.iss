@@ -1234,14 +1234,14 @@ objectdef obj_Mission inherits obj_State
 				else
 				{
 					if ${c.Value.Name.Equal[Militants]}
-						c.Value:MoveTo[${Me.StationID},MyStationHangar,${c.Value.Quantity}]
+						c.Value:MoveTo[MyStationHangar,Hangar,${c.Value.Quantity}]
 					if ${c.Value.Name.Equal[${Config.KineticAmmo}]} || ${c.Value.Name.Equal[${Config.ThermalAmmo}]} || ${c.Value.Name.Equal[${Config.EMAmmo}]} || ${c.Value.Name.Equal[${Config.ExplosiveAmmo}]}
 					{
-						c.Value:MoveTo[${Me.StationID},MyStationHangar,${c.Value.Quantity}]
+						c.Value:MoveTo[MyStationHangar,Hangar,${c.Value.Quantity}]
 					}
 					if ${Config.Secondary} && (${c.Value.Name.Equal[${Config.KineticAmmoSecondary}]} || ${c.Value.Name.Equal[${Config.ThermalAmmoSecondary}]} || ${c.Value.Name.Equal[${Config.EMAmmoSecondary}]} || ${c.Value.Name.Equal[${Config.ExplosiveAmmoSecondary}]})
 					{
-						c.Value:MoveTo[${Me.StationID},MyStationHangar,${c.Value.Quantity}]
+						c.Value:MoveTo[MyStationHangar,Hangar,${c.Value.Quantity}]
 					}
 				}
 			}
