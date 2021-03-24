@@ -1252,7 +1252,8 @@ objectdef obj_Mission inherits obj_State
 			EVE:Execute[OpenInventory]
 			return FALSE
 		}
-		
+		echo .inventory open
+
 		variable index:item cargo
 		variable iterator c
 		variable int Scorch = ${Config.Threshold}
@@ -1262,6 +1263,8 @@ objectdef obj_Mission inherits obj_State
 			EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo]:MakeActive
 			return FALSE
 		}
+		echo ..shipcargo open
+
 		cargo:GetIterator[c]
 		if ${c:First(exists)}
 			do
@@ -1276,7 +1279,7 @@ objectdef obj_Mission inherits obj_State
 				}				
 			}
 			while ${c:Next(exists)}			
-
+		echo ...loaded ammo counted
 
 		if ${Config.Drones}
 		{
@@ -1288,6 +1291,7 @@ objectdef obj_Mission inherits obj_State
 
 			variable float64 dronespace = ${Math.Calc[${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipDroneBay].Capacity} - ${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipDroneBay].UsedCapacity}]}
 		}
+		echo ....passed drone hold prep
 		
 		if ${Config.DropoffType.Equal[Corporation Hangar]}
 		{
@@ -1313,7 +1317,9 @@ objectdef obj_Mission inherits obj_State
 				return FALSE
 			}
 		}
-
+		echo .....source hold opened
+		
+		
 		variable index:int64 loadAmmo
 		cargo:GetIterator[c]
 		if ${c:First(exists)}
@@ -1339,11 +1345,15 @@ objectdef obj_Mission inherits obj_State
 				}
 			}
 			while ${c:Next(exists)}	
+		echo ......ammo index populated (${loadAmmo.Used})
+			
 		if ${loadAmmo.Used}
 		{
 			EVE:MoveItemsTo[loadAmmo, MyShip, CargoHold]
 			return FALSE
 		}
+		echo .......ammo index moved
+		
 		if ${Config.Threshold} <= 0
 			return TRUE
 		if ${c:First(exists)}
