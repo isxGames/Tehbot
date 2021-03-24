@@ -856,31 +856,9 @@ objectdef obj_Mission inherits obj_State
 			return TRUE
 		}
 		
-		if ${Config.SalvagePrefix.NotNULLOrEmpty}
+		if ${Entity[Type = "Acceleration Gate"]} && !${EVEWindow[byName, modal].Text.Find[This gate is locked!]}
 		{
-			echo Wrecks ${Wrecks.TargetList.Used}
-		
-			if ${Entity[Type = "Acceleration Gate"]} && !${EVEWindow[byName, modal].Text.Find[This gate is locked!]}
-			{
-				if ${Wrecks.TargetList.Used}
-				{
-					EVE:GetBookmarks[BookmarkIndex]
-					BookmarkIndex:RemoveByQuery[${LavishScript.CreateQuery[SolarSystemID == ${Me.SolarSystemID}]}, FALSE]
-					BookmarkIndex:RemoveByQuery[${LavishScript.CreateQuery[Distance < 200000]}, FALSE]
-					BookmarkIndex:Collapse
-					
-					if !${BookmarkIndex.Used}
-						Wrecks.TargetList.Get[1]:CreateBookmark["${Config.SalvagePrefix} ${Config.Agent} ${Me.Name} ${EVETime.Time.Left[5]}", "", "Corporation Locations", 1]
-				}
-				activetarget:Set[0]
-				Move:Gate[${Entity[Type = "Acceleration Gate"]}]
-				This:InsertState["PerformMission"]
-				This:InsertState["Traveling"]
-				This:InsertState["ReloadWeapons"]
-				return TRUE
-			}
-			
-			if ${Wrecks.TargetList.Used}
+			if ${Wrecks.TargetList.Used} && ${Config.SalvagePrefix.NotNULLOrEmpty}
 			{
 				EVE:GetBookmarks[BookmarkIndex]
 				BookmarkIndex:RemoveByQuery[${LavishScript.CreateQuery[SolarSystemID == ${Me.SolarSystemID}]}, FALSE]
@@ -888,9 +866,27 @@ objectdef obj_Mission inherits obj_State
 				BookmarkIndex:Collapse
 				
 				if !${BookmarkIndex.Used}
-					Wrecks.TargetList.Get[1]:CreateBookmark["${Config.SalvagePrefix} ${Config.Agent} ${EVETime.Time.Left[5]}", "", "Corporation Locations", 1]
+					Wrecks.TargetList.Get[1]:CreateBookmark["${Config.SalvagePrefix} ${Config.Agent} ${Me.Name} ${EVETime.Time.Left[5]}", "", "Corporation Locations", 1]
 			}
+			activetarget:Set[0]
+			Move:Gate[${Entity[Type = "Acceleration Gate"]}]
+			This:InsertState["PerformMission"]
+			This:InsertState["Traveling"]
+			This:InsertState["ReloadWeapons"]
+			return TRUE
 		}
+		
+		if ${Wrecks.TargetList.Used} && ${Config.SalvagePrefix.NotNULLOrEmpty}
+		{
+			EVE:GetBookmarks[BookmarkIndex]
+			BookmarkIndex:RemoveByQuery[${LavishScript.CreateQuery[SolarSystemID == ${Me.SolarSystemID}]}, FALSE]
+			BookmarkIndex:RemoveByQuery[${LavishScript.CreateQuery[Distance < 200000]}, FALSE]
+			BookmarkIndex:Collapse
+			
+			if !${BookmarkIndex.Used}
+				Wrecks.TargetList.Get[1]:CreateBookmark["${Config.SalvagePrefix} ${Config.Agent} ${EVETime.Time.Left[5]}", "", "Corporation Locations", 1]
+		}
+
 		activetarget:Set[0]
 		This:InsertState["CheckForWork"]
 		This:InsertState["ReloadWeapons"]
