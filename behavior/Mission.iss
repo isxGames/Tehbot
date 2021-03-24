@@ -1278,15 +1278,17 @@ objectdef obj_Mission inherits obj_State
 			while ${c:Next(exists)}			
 
 
-			
-		if !${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipDroneBay]:GetItems[cargo](exists)} || ${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipDroneBay].Capacity} < 0
+		if ${Config.Drones}
 		{
-			EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipDroneBay]:MakeActive
-			return FALSE
-		}
+			if !${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipDroneBay]:GetItems[cargo](exists)} || ${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipDroneBay].Capacity} < 0
+			{
+				EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipDroneBay]:MakeActive
+				return FALSE
+			}
 
-		variable float64 dronespace = ${Math.Calc[${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipDroneBay].Capacity} - ${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipDroneBay].UsedCapacity}]}
-			
+			variable float64 dronespace = ${Math.Calc[${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipDroneBay].Capacity} - ${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipDroneBay].UsedCapacity}]}
+		}
+		
 		if ${Config.DropoffType.Equal[Corporation Hangar]}
 		{
 			if !${EVEWindow[Inventory].ChildWindow[StationCorpHangar](exists)}
@@ -1317,11 +1319,14 @@ objectdef obj_Mission inherits obj_State
 		if ${c:First(exists)}
 			do
 			{
-				if ${c.Value.Name.Equal[${Config.DroneType}]} && ${dronespace} >= ${c.Value.Volume}
+				if ${Config.Drones}
 				{
-					c.Value:MoveTo[${MyShip.ID},DroneBay,${Math.Calc[${dronespace}\\${c.Value.Volume}]}]
-					return FALSE
-				}	
+					if ${c.Value.Name.Equal[${Config.DroneType}]} && ${dronespace} >= ${c.Value.Volume}
+					{
+						c.Value:MoveTo[${MyShip.ID},DroneBay,${Math.Calc[${dronespace}\\${c.Value.Volume}]}]
+						return FALSE
+					}	
+				}
 				if ${c.Value.Name.Equal[${secondaryammo}]} && ${c.Value.Quantity} == 1 && ${Conflagration} > 0
 				{
 					loadAmmo:Insert[${c.Value.ID}]
