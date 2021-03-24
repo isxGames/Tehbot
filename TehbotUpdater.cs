@@ -19,6 +19,8 @@ namespace TehbotUpdater
 					"README.md",
 					"Tehbot.iss",
 					"Tehbot.xml",
+					"TehbotUpdater.cs",
+					"TehbotUpdater.xml",
 					"behavior/MiniMode.iss",
 					"behavior/MiniMode.xml",
 					"behavior/Mission.iss",
@@ -63,7 +65,7 @@ namespace TehbotUpdater
 					"minimode/UndockWarp.iss",
 					"minimode/UndockWarp.xml"
 				};
-				string InstallPath = InnerSpace.Path + "/Scripts/Tehbot/";
+				string InstallPath = InnerSpace.Path + "/Scripts/test/";
 				System.IO.Directory.CreateDirectory(InstallPath + "/behavior");
 				System.IO.Directory.CreateDirectory(InstallPath + "/core");
 				System.IO.Directory.CreateDirectory(InstallPath + "/data");
