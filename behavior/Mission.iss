@@ -560,8 +560,10 @@ objectdef obj_Mission inherits obj_State
 			return TRUE
 		}
 
+		echo Start of loot area---------------
 		variable index:entity lootcontainers
 		EVE:QueryEntities[lootcontainers, ${lootcontainer}]
+		echo ${lootcontainers.Used} containers before blacklist removal
 		variable iterator b
 		blacklistedcontainers:GetIterator[b]
 		if ${b:First(exists)}
@@ -571,14 +573,16 @@ objectdef obj_Mission inherits obj_State
 			}
 			while ${b:Next(exists)}
 		lootcontainers:Collapse
+		echo ${lootcontainers.Used} containers after blacklist removal
 		if ${lootcontainers.Used}
 		{
 			lootcontainers:GetIterator[c]
 		}
-		if !${lootcontainer.Equal[""]} && ${lootcontainers.Used}
+		if ${lootcontainer.NotNULLOrEmpty} && ${lootcontainers.Used}
 		{
 			if !${currentLootContainer}
 			{
+				echo Setting current loot container:  ${lootcontainers.Get[1].Name}
 				currentLootContainer:Set[${lootcontainers.Get[1].ID}]
 			}
 			else
@@ -586,6 +590,7 @@ objectdef obj_Mission inherits obj_State
 			
 				if !${Entity[${currentLootContainer}](exists)} || ${Entity[${currentLootContainer}].IsWreckEmpty} || ${Entity[${currentLootContainer}].IsMoribund}
 				{
+					echo Unsetting current loot container:  ${Entity[${currentLootContainer}](exists)} || ${Entity[${currentLootContainer}].IsWreckEmpty} || ${Entity[${currentLootContainer}].IsMoribund}
 					currentLootContainer:Set[0]
 				}
 				else
