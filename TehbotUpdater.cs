@@ -64,6 +64,7 @@ namespace TehbotUpdater
 					"minimode/UndockWarp.xml"
 				};
 				string InstallPath = InnerSpace.Path + "/Scripts/Tehbot/";
+				InnerSpace.Echo("Building Folder Structure");
 				System.IO.Directory.CreateDirectory(InstallPath + "/behavior");
 				System.IO.Directory.CreateDirectory(InstallPath + "/core");
 				System.IO.Directory.CreateDirectory(InstallPath + "/data");
@@ -75,6 +76,7 @@ namespace TehbotUpdater
 					wc.Headers["User-Agent"] = "Mozilla/4.0 (Compatible; Windows NT 5.1; MSIE 6.0) (compatible; MSIE 6.0; Windows NT 5.1; .NET CLR 1.1.4322; .NET CLR 2.0.50727)";
 					foreach (string file in files)
 					{
+						InnerSpace.Echo("Downloading: " + file);
 						wc.DownloadFile("https://raw.githubusercontent.com/isxGames/Tehbot/main/" + file, InstallPath + file);
 					}
 				}		
