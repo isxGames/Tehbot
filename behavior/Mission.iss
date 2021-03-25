@@ -234,8 +234,6 @@ objectdef obj_Mission inherits obj_State
 						}
 						while ${ValidMissions.NextKey(exists)}
 					
-					echo ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML}
-
 					if ${InvalidMissions.FirstKey(exists)}
 						do
 						{
