@@ -176,7 +176,7 @@ objectdef obj_Salvager inherits obj_State
 				while ${reservedbookmark:Next(exists)}
 			if ${br}
 				continue
-			if ${BookmarkIterator.Value.Label.Find[${Config.Prefix}]} && ${BookmarkIterator.Value.JumpsTo} <= 0 && ${Config.SafeBookmarks.FindSetting[${BookmarkIterator.Value.ID}]}
+			if ${BookmarkIterator.Value.Label.Find[${Config.Prefix}]} && ${BookmarkIterator.Value.JumpsTo} <= 0 && ${Config.SafeBookmarksRef.FindSetting[${BookmarkIterator.Value.ID}]}
 			{
 				InHoldOff:Set[FALSE]
 				if ${HoldOffIterator:First(exists)}
@@ -226,7 +226,7 @@ objectdef obj_Salvager inherits obj_State
 				while ${reservedbookmark:Next(exists)}
 			if ${br}
 				continue
-			if ${BookmarkIterator.Value.Label.Find[${Config.Prefix}]} && ${Config.SafeBookmarks.FindSetting[${BookmarkIterator.Value.ID}]}
+			if ${BookmarkIterator.Value.Label.Find[${Config.Prefix}]} && ${Config.SafeBookmarksRef.FindSetting[${BookmarkIterator.Value.ID}]}
 			{
 				InHoldOff:Set[FALSE]
 				if ${HoldOffIterator:First(exists)}
@@ -315,7 +315,7 @@ objectdef obj_Salvager inherits obj_State
 					while ${reservedbookmark:Next(exists)}
 				if ${br}
 					continue
-				if ${BookmarkIterator.Value.Label.Find[${Config.Prefix}]} && ${Config.SafeBookmarks.FindSetting[${BookmarkIterator.Value.ID}]}
+				if ${BookmarkIterator.Value.Label.Find[${Config.Prefix}]} && ${Config.SafeBookmarksRef.FindSetting[${BookmarkIterator.Value.ID}]}
 				{
 					InHoldOff:Set[FALSE]
 					if ${HoldOffIterator:First(exists)}
