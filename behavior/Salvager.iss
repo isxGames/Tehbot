@@ -517,6 +517,7 @@ objectdef obj_Salvager inherits obj_State
 						{
 							UI:Update["obj_Salvage", "Finished Salvaging ${BookmarkIterator.Value.Label} - Deleting", "g"]
 							This:InsertState["DeleteBookmark", 1000, "${BookmarkCreator},${BookmarkIterator.Value.ID}"]
+							Config.SafeBookmarksRef.FindSetting[${BookmarkIterator.Value.ID}]:Remove
 							BookmarkIterator.Value:Remove
 							return TRUE
 						}
