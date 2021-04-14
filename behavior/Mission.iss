@@ -560,7 +560,7 @@ objectdef obj_Mission inherits obj_State
 			return TRUE
 		}
 
-		echo Start of loot area---------------
+		echo Start of loot area--------------- looking for ${lootcontainer}
 		variable index:entity lootcontainers
 		EVE:QueryEntities[lootcontainers, ${lootcontainer}]
 		echo ${lootcontainers.Used} containers before blacklist removal

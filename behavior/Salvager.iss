@@ -16,10 +16,20 @@ objectdef obj_Configuration_Salvager
 	{
 		return ${BaseConfig.BaseRef.FindSet[${This.SetName}]}
 	}
+	
+	member:settingsetref SafeBookmarksRef()
+	{
+		if !${BaseConfig.BaseRef.FindSet[${This.SetName}].FindSet[SafeBookmarks](exists)}
+		{
+			This.CommonRef:AddSet[SafeBookmarks]
+		}
+		return ${BaseConfig.BaseRef.FindSet[${This.SetName}].FindSet[SafeBookmarks]}
+	}	
 
 	method Set_Default_Values()
 	{
 		BaseConfig.BaseRef:AddSet[${This.SetName}]
+		This.CommonRef:AddSet[SafeBookmarks]		
 
 		This.CommonRef:AddSetting[Dropoff_Type,Personal Hangar]
 		This.CommonRef:AddSetting[Prefix,Salvage:]
@@ -46,7 +56,6 @@ objectdef obj_Salvager inherits obj_State
 	variable queue:entity BeltPatrol
 	variable set UsedBookmarks
 	
-	variable set SafeBookmarks
 	variable collection:int64 ReservedBookmarks
 	
 	variable obj_TargetList NPCs
@@ -101,10 +110,11 @@ objectdef obj_Salvager inherits obj_State
 			{
 				if ${b.Value.Label.Find[${Config.Prefix}]} && ${b.Value.CreatorID} == ${ID}
 				{
-					SafeBookmarks:Add[${b.Value.ID}]
+					Config.SafeBookmarksRef:AddSetting[${b.Value.ID},${b.Value.Created.AsInt64}]
 				}
 			}
 			while ${b:Next(exists)}		
+		Config:Save
 	}
 	
 
@@ -166,7 +176,7 @@ objectdef obj_Salvager inherits obj_State
 				while ${reservedbookmark:Next(exists)}
 			if ${br}
 				continue
-			if ${BookmarkIterator.Value.Label.Find[${Config.Prefix}]} && ${BookmarkIterator.Value.JumpsTo} <= 0 && ${SafeBookmarks.Contains[${BookmarkIterator.Value.ID}]}
+			if ${BookmarkIterator.Value.Label.Find[${Config.Prefix}]} && ${BookmarkIterator.Value.JumpsTo} <= 0 && ${Config.SafeBookmarks.FindSetting[${BookmarkIterator.Value.ID}]}
 			{
 				InHoldOff:Set[FALSE]
 				if ${HoldOffIterator:First(exists)}
@@ -216,7 +226,7 @@ objectdef obj_Salvager inherits obj_State
 				while ${reservedbookmark:Next(exists)}
 			if ${br}
 				continue
-			if ${BookmarkIterator.Value.Label.Find[${Config.Prefix}]} && ${SafeBookmarks.Contains[${BookmarkIterator.Value.ID}]}
+			if ${BookmarkIterator.Value.Label.Find[${Config.Prefix}]} && ${Config.SafeBookmarks.FindSetting[${BookmarkIterator.Value.ID}]}
 			{
 				InHoldOff:Set[FALSE]
 				if ${HoldOffIterator:First(exists)}
@@ -305,7 +315,7 @@ objectdef obj_Salvager inherits obj_State
 					while ${reservedbookmark:Next(exists)}
 				if ${br}
 					continue
-				if ${BookmarkIterator.Value.Label.Find[${Config.Prefix}]} && ${SafeBookmarks.Contains[${BookmarkIterator.Value.ID}]}
+				if ${BookmarkIterator.Value.Label.Find[${Config.Prefix}]} && ${Config.SafeBookmarks.FindSetting[${BookmarkIterator.Value.ID}]}
 				{
 					InHoldOff:Set[FALSE]
 					if ${HoldOffIterator:First(exists)}
