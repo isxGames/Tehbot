@@ -560,10 +560,9 @@ objectdef obj_Mission inherits obj_State
 			return TRUE
 		}
 
-		echo Start of loot area--------------- looking for ${lootcontainer}
 		variable index:entity lootcontainers
 		EVE:QueryEntities[lootcontainers, ${lootcontainer}]
-		echo ${lootcontainers.Used} containers before blacklist removal
+		
 		variable iterator b
 		blacklistedcontainers:GetIterator[b]
 		if ${b:First(exists)}
@@ -573,7 +572,7 @@ objectdef obj_Mission inherits obj_State
 			}
 			while ${b:Next(exists)}
 		lootcontainers:Collapse
-		echo ${lootcontainers.Used} containers after blacklist removal
+		
 		if ${lootcontainers.Used}
 		{
 			lootcontainers:GetIterator[c]
@@ -582,7 +581,6 @@ objectdef obj_Mission inherits obj_State
 		{
 			if !${currentLootContainer}
 			{
-				echo Setting current loot container:  ${lootcontainers.Get[1].Name}
 				currentLootContainer:Set[${lootcontainers.Get[1].ID}]
 			}
 			else
@@ -590,7 +588,6 @@ objectdef obj_Mission inherits obj_State
 			
 				if !${Entity[${currentLootContainer}](exists)} || ${Entity[${currentLootContainer}].IsWreckEmpty} || ${Entity[${currentLootContainer}].IsMoribund}
 				{
-					echo Unsetting current loot container:  ${Entity[${currentLootContainer}](exists)} || ${Entity[${currentLootContainer}].IsWreckEmpty} || ${Entity[${currentLootContainer}].IsMoribund}
 					currentLootContainer:Set[0]
 				}
 				else
@@ -676,7 +673,6 @@ objectdef obj_Mission inherits obj_State
 					}
 					else
 					{
-						echo Not looting: Target on grid: ${NPC.TargetList.Get[1].Name} - ${NPC.TargetList.Get[1].Type} - ${NPC.TargetList.Get[1].Group}
 						notdone:Set[TRUE]
 					}
 				}
@@ -918,9 +914,9 @@ objectdef obj_Mission inherits obj_State
 			EVEWindow[AgentBrowser]:Close
 			return FALSE
 		}
-		if ${EVEWindow[byCaption, Agent Conversation](exists)}
+		if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}](exists)}
 		{
-			EVEWindow[byCaption, Agent Conversation]:Close
+			EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}]:Close
 			return FALSE
 		}
 		if ${EVEWindow[ByCaption, Mission journal](exists)}
@@ -1009,7 +1005,6 @@ objectdef obj_Mission inherits obj_State
 	variable bool CloseAgentInteraction=FALSE
 	member:bool InteractAgent(string Action)
 	{
-
 		if ${Me.StationID} != ${EVE.Agent[${agentIndex}].StationID}
 		{
 			Move:Bookmark[${EVE.Agent[${agentIndex}].StationID}]
@@ -1024,7 +1019,6 @@ objectdef obj_Mission inherits obj_State
 			return FALSE
 		}
 		
-
 		if ${CloseAgentInteraction}
 		{
 			if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}](exists)}
@@ -1218,7 +1212,7 @@ objectdef obj_Mission inherits obj_State
 							folder:Set[Corporation Folder 7]
 							break
 					}
-					echo Corporate folder: ${folder}
+
 					if ${c.Value.Name.Equal[Militants]}
 						c.Value:MoveTo[MyStationCorporateHangar,StationCorporateHangar,${c.Value.Quantity},${folder}]
 					if ${c.Value.Name.Equal[${Config.KineticAmmo}]} || ${c.Value.Name.Equal[${Config.ThermalAmmo}]} || ${c.Value.Name.Equal[${Config.EMAmmo}]} || ${c.Value.Name.Equal[${Config.ExplosiveAmmo}]}
@@ -1256,7 +1250,6 @@ objectdef obj_Mission inherits obj_State
 			EVE:Execute[OpenInventory]
 			return FALSE
 		}
-		echo .inventory open
 
 		variable index:item cargo
 		variable iterator c
@@ -1267,7 +1260,6 @@ objectdef obj_Mission inherits obj_State
 			EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo]:MakeActive
 			return FALSE
 		}
-		echo ..shipcargo open
 
 		cargo:GetIterator[c]
 		if ${c:First(exists)}
@@ -1283,7 +1275,6 @@ objectdef obj_Mission inherits obj_State
 				}				
 			}
 			while ${c:Next(exists)}			
-		echo ...loaded ammo counted
 
 		if ${Config.Drones}
 		{
@@ -1295,7 +1286,6 @@ objectdef obj_Mission inherits obj_State
 
 			variable float64 dronespace = ${Math.Calc[${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipDroneBay].Capacity} - ${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipDroneBay].UsedCapacity}]}
 		}
-		echo ....passed drone hold prep
 		
 		if ${Config.DropoffType.Equal[Corporation Hangar]}
 		{
@@ -1321,7 +1311,6 @@ objectdef obj_Mission inherits obj_State
 				return FALSE
 			}
 		}
-		echo .....source hold opened
 		
 		
 		variable index:int64 loadAmmo
@@ -1349,14 +1338,12 @@ objectdef obj_Mission inherits obj_State
 				}
 			}
 			while ${c:Next(exists)}	
-		echo ......ammo index populated (${loadAmmo.Used})
 			
 		if ${loadAmmo.Used}
 		{
 			EVE:MoveItemsTo[loadAmmo, MyShip, CargoHold]
 			return FALSE
 		}
-		echo .......ammo index moved
 		
 		if ${Config.Threshold} <= 0
 			return TRUE
