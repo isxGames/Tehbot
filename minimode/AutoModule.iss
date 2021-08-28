@@ -49,6 +49,7 @@ objectdef obj_Configuration_AutoModule
 		This.CommonRef:AddSetting[Cloak, TRUE]
 		This.CommonRef:AddSetting[GangLink, TRUE]
 		This.CommonRef:AddSetting[SensorBoosters, TRUE]
+		This.CommonRef:AddSetting[AutoTarget, TRUE]
 		This.CommonRef:AddSetting[TrackingComputers, TRUE]
 		This.CommonRef:AddSetting[ECCM, TRUE]
 		This.CommonRef:AddSetting[DroneControlUnit, TRUE]
@@ -64,6 +65,7 @@ objectdef obj_Configuration_AutoModule
 	Setting(bool, Cloak, SetCloak)
 	Setting(bool, GangLink, SetGangLink)
 	Setting(bool, SensorBoosters, SetSensorBoosters)
+	Setting(bool, AutoTarget, SetAutoTarget)
 	Setting(bool, TrackingComputers, SetTrackingComputers)
 	Setting(bool, ECCM, SetECCM)
 	Setting(bool, DroneControlUnit, SetDroneControlUnit)
@@ -199,7 +201,12 @@ objectdef obj_AutoModule inherits obj_State
 		{
 			Ship.ModuleList_SensorBoost:ActivateCount[${Math.Calc[${Ship.ModuleList_SensorBoost.Count} - ${Ship.ModuleList_SensorBoost.ActiveCount}]}]
 		}
-		
+
+		if ${Ship.ModuleList_AutoTarget.ActiveCount} < ${Ship.ModuleList_AutoTarget.Count} && ${Config.AutoTarget}
+		{
+			Ship.ModuleList_AutoTarget:ActivateCount[${Math.Calc[${Ship.ModuleList_AutoTarget.Count} - ${Ship.ModuleList_AutoTarget.ActiveCount}]}]
+		}
+
 		if ${Ship.ModuleList_TrackingComputer.ActiveCount} < ${Ship.ModuleList_TrackingComputer.Count} && ${Config.TrackingComputers}
 		{
 			Ship.ModuleList_TrackingComputer:ActivateCount[${Math.Calc[${Ship.ModuleList_TrackingComputer.Count} - ${Ship.ModuleList_TrackingComputer.ActiveCount}]}]
