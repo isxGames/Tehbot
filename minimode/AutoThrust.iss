@@ -78,6 +78,11 @@ objectdef obj_AutoThrust inherits obj_State
 		
 		if !${Config.NeverDeactivate} && !${Override}
 		{
+			if ${Me.ToEntity.MaxVelocity} == 0
+			{
+				Ship.ModuleList_AB_MWD:Deactivate
+				return FALSE
+			}
 			if 	${Config.Approach}
 			{
 				if 	${Ship.ModuleList_AB_MWD.ActiveCount} &&\
@@ -178,6 +183,7 @@ objectdef obj_AutoThrust inherits obj_State
 		if 	${Config.Velocity} &&\
 			!${Ship.ModuleList_AB_MWD.ActiveCount} &&\
 			${MyShip.CapacitorPct} > ${Config.Velocity_Threshold} &&\
+			${Me.ToEntity.MaxVelocity} > 0 &&\
 			${Math.Calc[${Me.ToEntity.Velocity} / ${Me.ToEntity.MaxVelocity}]} >= ${Math.Calc[${Config.Velocity_Trigger} * .01]}
 		{
 				Ship.ModuleList_AB_MWD:Activate
