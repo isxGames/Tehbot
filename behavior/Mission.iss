@@ -971,7 +971,7 @@ objectdef obj_Mission inherits obj_State
 			if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"](exists)}
 			{
 				EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"]:Press
-				This:InsertState[CompleteMission, 1500]
+				This:InsertState["CompleteMission", 1500]
 				return TRUE
 			}
 			
@@ -997,10 +997,10 @@ objectdef obj_Mission inherits obj_State
 
 		if !${Config.Halt} && !${halt}
 		{
-			This:InsertState[CheckForWork]
-			This:InsertState[InteractAgent, 1500, "OFFER"]
-			This:InsertState[SalvageCheck]
-			This:InsertState[RefreshBookmarks]
+			This:InsertState["CheckForWork"]
+			This:InsertState["InteractAgent", 1500, "OFFER"]
+			This:InsertState["SalvageCheck"]
+			This:InsertState["RefreshBookmarks"]
 		}
 		else
 		{
@@ -1443,7 +1443,7 @@ objectdef obj_Mission inherits obj_State
 		if ${totalBookmarks} > 15
 		{
 			UI:Update["obj_Mission", "Salvage running behind, waiting 5 minutes", "g"]
-			This:InsertState[RefreshBookmarks, 300000]
+			This:InsertState["RefreshBookmarks", 300000]
 		}
 		
 		return TRUE
