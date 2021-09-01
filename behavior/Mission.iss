@@ -1453,48 +1453,70 @@ objectdef obj_Mission inherits obj_State
 	{
 		if ${Cargo.Processing} || ${Move.Traveling} || ${Me.ToEntity.Mode} == 3
 		{
-			if ${Me.InSpace} && ${ammo.Length}
+			if ${Me.InSpace} 
 			{
-				variable index:module modules
-				variable iterator m
-				MyShip:GetModules[modules]
-				modules:GetIterator[m]
-				if ${m:First(exists)}
-					do
-					{
-						if !${m.Value.IsActivatable} || ${m.Value.Charge.Type.Equals[${ammo}]} || ${m.Value.IsReloading}
-							continue
-						if ${m.Value.Charge.Type.Equals[${Config.KineticAmmo}]} || ${m.Value.Charge.Type.Equals[${Config.ThermalAmmo}]} || ${m.Value.Charge.Type.Equals[${Config.EMAmmo}]} || ${m.Value.Charge.Type.Equals[${Config.ExplosiveAmmo}]}
+				if ${Ship.ModuleList_Regen_Shield.InactiveCount} && ((${MyShip.ShieldPct} < 100 && ${MyShip.CapacitorPct} > ${Config.ActiveShieldCap}) || ${Config.ShieldBoost})
+				{
+					UI:Update["Mission", "Repair shield while travelling", "g"]
+					Ship.ModuleList_Regen_Shield:ActivateCount[${Ship.ModuleList_Regen_Shield.InactiveCount}]
+				}
+				if ${Ship.ModuleList_Regen_Shield.ActiveCount} && (${MyShip.ShieldPct} == 100 || ${MyShip.CapacitorPct} < ${Config.ActiveShieldCap}) && !${Config.ShieldBoost}
+				{
+					Ship.ModuleList_Regen_Shield:DeactivateCount[${Ship.ModuleList_Regen_Shield.ActiveCount}]
+				}
+				if ${Ship.ModuleList_Repair_Armor.InactiveCount} && ((${MyShip.ArmorPct} < 100 && ${MyShip.CapacitorPct} > ${Config.ActiveArmorCap}) || ${Config.ArmorRepair}) && ${LavishScript.RunningTime} > ${lastArmorRepActivate}
+				{
+					UI:Update["Mission", "Repair armor while travelling", "g"]
+					Ship.ModuleList_Repair_Armor:ActivateCount[1]
+					lastArmorRepActivate:Set[${Math.Calc[${LavishScript.RunningTime} + 3000]}]
+				}
+				if ${Ship.ModuleList_Repair_Armor.ActiveCount} && (${MyShip.ArmorPct} == 100 || ${MyShip.CapacitorPct} < ${Config.ActiveArmorCap}) && !${Config.ArmorRepair}
+				{
+					Ship.ModuleList_Repair_Armor:DeactivateCount[${Ship.ModuleList_Repair_Armor.ActiveCount}]
+				}
+
+				if ${ammo.Length}
+				{
+					variable index:module modules
+					variable iterator m
+					MyShip:GetModules[modules]
+					modules:GetIterator[m]
+					if ${m:First(exists)}
+						do
 						{
-							if (!${EVEWindow[Inventory](exists)})
+							if !${m.Value.IsActivatable} || ${m.Value.Charge.Type.Equals[${ammo}]} || ${m.Value.IsReloading}
+								continue
+							if ${m.Value.Charge.Type.Equals[${Config.KineticAmmo}]} || ${m.Value.Charge.Type.Equals[${Config.ThermalAmmo}]} || ${m.Value.Charge.Type.Equals[${Config.EMAmmo}]} || ${m.Value.Charge.Type.Equals[${Config.ExplosiveAmmo}]}
 							{
-								EVE:Execute[OpenInventory]
-								return FALSE
-							}
-							
-							variable index:item cargo
-							variable iterator c
-							if !${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo]:GetItems[cargo](exists)} || ${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo].Capacity} < -1
-							{
-								EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo]:MakeActive
-								return FALSE
-							}
-								
-							cargo:GetIterator[c]
-							if ${c:First(exists)}
-								do
+								if (!${EVEWindow[Inventory](exists)})
 								{
-									if ${c.Value.Type.Equal[${ammo}]} 
-									{
-										m.Value:ChangeAmmo[${c.Value.ID}]
-										return FALSE
-									}
+									EVE:Execute[OpenInventory]
+									return FALSE
 								}
-								while ${c:Next(exists)}
+								
+								variable index:item cargo
+								variable iterator c
+								if !${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo]:GetItems[cargo](exists)} || ${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo].Capacity} < -1
+								{
+									EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo]:MakeActive
+									return FALSE
+								}
+									
+								cargo:GetIterator[c]
+								if ${c:First(exists)}
+									do
+									{
+										if ${c.Value.Type.Equal[${ammo}]} 
+										{
+											m.Value:ChangeAmmo[${c.Value.ID}]
+											return FALSE
+										}
+									}
+									while ${c:Next(exists)}
+							}
 						}
-					}
-					while ${m:Next(exists)}
-				
+						while ${m:Next(exists)}
+				}
 			}
 			
 			if ${EVEWindow[byCaption, Agent Conversation](exists)}
