@@ -742,13 +742,13 @@ objectdef obj_Mission inherits obj_State
 			{
 				activetarget:Set[${ActiveNPC.LockedTargetList.Get[1]}]
 				if (${activetarget} == ${DroneControl.CurrentTarget} || \
-					(${Entity[${activetarget}].Group.Find[Frigate]} && ${Entity[${activetarget}].Distance} > 15000) || \
-					(${Entity[${activetarget}].Group.Find[Destroyer]} && ${Entity[${activetarget}].Distance} > 15000)) && \
+					(${Entity[${activetarget}].Group.Find[Frigate]} && ${Entity[${activetarget}].Distance} < 15000) || \
+					(${Entity[${activetarget}].Group.Find[Destroyer]} && ${Entity[${activetarget}].Distance} < 15000)) && \
 					${ActiveNPC.LockedTargetList.Get[2](exists)}
 					activetarget:Set[${ActiveNPC.LockedTargetList.Get[2]}]
 				if (${activetarget} == ${DroneControl.CurrentTarget} || \
-					(${Entity[${activetarget}].Group.Find[Frigate]} > 0 && ${Entity[${activetarget}].Distance} > 15000) || \
-					(${Entity[${activetarget}].Group.Find[Destroyer]} && ${Entity[${activetarget}].Distance} > 15000)) && \
+					(${Entity[${activetarget}].Group.Find[Frigate]} > 0 && ${Entity[${activetarget}].Distance} < 15000) || \
+					(${Entity[${activetarget}].Group.Find[Destroyer]} && ${Entity[${activetarget}].Distance} < 15000)) && \
 					${ActiveNPC.LockedTargetList.Get[3](exists)}
 					activetarget:Set[${ActiveNPC.LockedTargetList.Get[3]}]
 				UI:Update["Mission", "Primary target: \ar${Entity[${activetarget}].Name}", "g"]				
