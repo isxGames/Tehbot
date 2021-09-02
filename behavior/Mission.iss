@@ -573,6 +573,7 @@ objectdef obj_Mission inherits obj_State
 			while ${b:Next(exists)}
 		lootcontainers:Collapse
 		
+		; Determine movement and perform loot
 		if ${lootcontainer.NotNULLOrEmpty} && ${lootcontainers.Used}
 		{
 			if !${currentLootContainer}
@@ -712,6 +713,7 @@ objectdef obj_Mission inherits obj_State
 			return FALSE
 		}
 		
+		; Being jammed but the jammer is not the current target
 		if ${This.WebbingMe.Used} && ${activetarget} != 0 && !${This.WebbingMe.Contains[${activetarget}]}
 		{
 			variable iterator web
@@ -729,9 +731,11 @@ objectdef obj_Mission inherits obj_State
 		ActiveNPC.MinLockCount:Set[${MaxTarget}]
 		ActiveNPC.AutoLock:Set[TRUE]
 		
+		; Picked target not locked, probably it's killed.
 		if ${activetarget} != 0 && !${Entity[${activetarget}].IsLockedTarget} && !${Entity[${activetarget}].BeingTargeted}
 			activetarget:Set[0]
 		
+		; Need to pick from locked target
 		if ${activetarget} == 0 || !${Entity[${activetarget}]} || ${Entity[${activetarget}].IsMoribund}
 		{
 			if ${ActiveNPC.LockedTargetList.Used}
@@ -765,6 +769,7 @@ objectdef obj_Mission inherits obj_State
 				activetarget:Set[0]
 		}
 		
+		; Nothing locked
 		if (${activetarget} == 0 || ${activetarget} == ${ActiveNPC.TargetList.Get[1].ID}) && ${ActiveNPC.TargetList.Get[1].Distance} > 90000 && ${MyShip.ToEntity.Mode} != 1
 		{
 			UI:Update["Mission", "Deactivate siege module due to no target", "g"]
