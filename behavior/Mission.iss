@@ -573,10 +573,6 @@ objectdef obj_Mission inherits obj_State
 			while ${b:Next(exists)}
 		lootcontainers:Collapse
 		
-		if ${lootcontainers.Used}
-		{
-			lootcontainers:GetIterator[c]
-		}
 		if ${lootcontainer.NotNULLOrEmpty} && ${lootcontainers.Used}
 		{
 			if !${currentLootContainer}
@@ -819,19 +815,6 @@ objectdef obj_Mission inherits obj_State
 
 		DroneControl:Recall
 
-		if ${Entity[Name = "Drone Structure II"](exists)}
-		{
-			if !${Entity[Name = "Drone Structure II"].IsLockedTarget} && !${Entity[Name = "Drone Structure II"].BeingTargeted}
-			{
-				UI:Update["Mission", "Locking Mission Target", "g"]
-				UI:Update["Mission", " ${Entity[Name = \"Drone Structure II\"].Name}", "o"]
-				Entity[Name = "Drone Structure II"]:LockTarget
-			}
-			Ship.ModuleList_Weapon:ActivateAll[${Entity[Name = "Drone Structure II"].ID}]
-			This:InsertState["PerformMission"]
-			return TRUE
-		}
-		
 		if ${Entity[${missiontarget}]}
 		{
 			if ${Entity[${missiontarget}].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.MaxRange} * .95]} && ${MyShip.ToEntity.Mode} != 1
