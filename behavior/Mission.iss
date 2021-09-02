@@ -1440,7 +1440,6 @@ objectdef obj_Mission inherits obj_State
 			{
 				if ${Ship.ModuleList_Regen_Shield.InactiveCount} && ((${MyShip.ShieldPct} < 100 && ${MyShip.CapacitorPct} > ${Config.ActiveShieldCap}) || ${Config.ShieldBoost})
 				{
-					UI:Update["Mission", "Repair shield while travelling", "g"]
 					Ship.ModuleList_Regen_Shield:ActivateCount[${Ship.ModuleList_Regen_Shield.InactiveCount}]
 				}
 				if ${Ship.ModuleList_Regen_Shield.ActiveCount} && (${MyShip.ShieldPct} == 100 || ${MyShip.CapacitorPct} < ${Config.ActiveShieldCap}) && !${Config.ShieldBoost}
@@ -1449,7 +1448,6 @@ objectdef obj_Mission inherits obj_State
 				}
 				if ${Ship.ModuleList_Repair_Armor.InactiveCount} && ((${MyShip.ArmorPct} < 100 && ${MyShip.CapacitorPct} > ${Config.ActiveArmorCap}) || ${Config.ArmorRepair}) && ${LavishScript.RunningTime} > ${lastArmorRepActivate}
 				{
-					UI:Update["Mission", "Repair armor while travelling", "g"]
 					Ship.ModuleList_Repair_Armor:ActivateCount[1]
 					lastArmorRepActivate:Set[${Math.Calc[${LavishScript.RunningTime} + 3000]}]
 				}
