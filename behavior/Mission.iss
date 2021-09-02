@@ -732,22 +732,34 @@ objectdef obj_Mission inherits obj_State
 		if ${activetarget} != 0 && !${Entity[${activetarget}].IsLockedTarget} && !${Entity[${activetarget}].BeingTargeted}
 			activetarget:Set[0]
 		
-		if ${activetarget} == 0 || ${Entity[${activetarget}].IsMoribund} || !${Entity[${activetarget}]}
+		if ${activetarget} == 0 || !${Entity[${activetarget}]} || ${Entity[${activetarget}].IsMoribund}
 		{
 			if ${ActiveNPC.LockedTargetList.Used}
 			{
-				activetarget:Set[${ActiveNPC.LockedTargetList.Get[1]}]
-				if (${activetarget} == ${DroneControl.CurrentTarget} || \
+				variable iterator lockedTargetIterator
+				ActiveNPC.LockedTargetList:GetIterator[lockedTargetIterator]
+				variable bool wantToSkipTarget=FALSE
+				if ${lockedTargetIterator:First(exists)}
+				do
+				{
+					; From revious loop
+					if ${activetarget} && ${wantToSkipTarget} 
+					{
+						UI:Update["Mission", "Skiping target ${Entity[${activetarget}].Name}"]	
+					}
+
+					wantToSkipTarget:Set[FALSE]
+					activetarget:Set[${lockedTargetIterator.Value}]	
+
+					if (${activetarget} == ${DroneControl.CurrentTarget} || \
 					(${Entity[${activetarget}].Group.Find[Frigate]} && ${Entity[${activetarget}].Distance} < 15000) || \
-					(${Entity[${activetarget}].Group.Find[Destroyer]} && ${Entity[${activetarget}].Distance} < 15000)) && \
-					${ActiveNPC.LockedTargetList.Get[2](exists)}
-					activetarget:Set[${ActiveNPC.LockedTargetList.Get[2]}]
-				if (${activetarget} == ${DroneControl.CurrentTarget} || \
-					(${Entity[${activetarget}].Group.Find[Frigate]} > 0 && ${Entity[${activetarget}].Distance} < 15000) || \
-					(${Entity[${activetarget}].Group.Find[Destroyer]} && ${Entity[${activetarget}].Distance} < 15000)) && \
-					${ActiveNPC.LockedTargetList.Get[3](exists)}
-					activetarget:Set[${ActiveNPC.LockedTargetList.Get[3]}]
-				UI:Update["Mission", "Primary target: \ar${Entity[${activetarget}].Name}", "g"]				
+					(${Entity[${activetarget}].Group.Find[Destroyer]} && ${Entity[${activetarget}].Distance} < 10000))
+					{
+						wantToSkipTarget:Set[TRUE]
+					}
+				}
+				while ${wantToSkipTarget} && ${lockedTargetIterator:Next(exists)}
+				UI:Update["Mission", "Primary target: \ar${Entity[${activetarget}].Name}", "g"]			
 			}
 			else
 				activetarget:Set[0]
@@ -763,7 +775,7 @@ objectdef obj_Mission inherits obj_State
 			return TRUE
 		}
 		
-		if ${activetarget} != 0 && !${Entity[${activetarget}].IsMoribund} && ${Entity[${activetarget}]}
+		if ${activetarget} != 0 && ${Entity[${activetarget}]} && !${Entity[${activetarget}].IsMoribund}
 		{
 			Ship.ModuleList_Siege:Activate
 			if ${Ship.ModuleList_Weapon.Range} > ${Entity[${activetarget}].Distance} || !${Config.RangeLimit}
