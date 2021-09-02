@@ -772,8 +772,11 @@ objectdef obj_Mission inherits obj_State
 		; Nothing locked
 		if (${activetarget} == 0 || ${activetarget} == ${ActiveNPC.TargetList.Get[1].ID}) && ${ActiveNPC.TargetList.Get[1].Distance} > 90000 && ${MyShip.ToEntity.Mode} != 1
 		{
-			UI:Update["Mission", "Deactivate siege module due to no target", "g"]
-			Ship.ModuleList_Siege:Deactivate
+			if ${Ship.ModuleList_Siege.ActiveCount}
+			{
+				UI:Update["Mission", "Deactivate siege module due to no target"]
+				Ship.ModuleList_Siege:Deactivate
+			}
 			UI:Update["Mission", "Approaching far target: \ar${ActiveNPC.TargetList.Get[1].Name}", "g"]				
 			ActiveNPC.TargetList.Get[1]:Approach
 			This:InsertState["PerformMission"]
@@ -860,8 +863,11 @@ objectdef obj_Mission inherits obj_State
 		
 		if ${Entity[Type = "Acceleration Gate"]} && !${EVEWindow[byName, modal].Text.Find[This gate is locked!]}
 		{
-			UI:Update["Mission", "Deactivate siege module due to approaching", "g"]
-			Ship.ModuleList_Siege:Deactivate
+			if ${Ship.ModuleList_Siege.ActiveCount}
+			{
+				UI:Update["Mission", "Deactivate siege module due to approaching"]
+				Ship.ModuleList_Siege:Deactivate
+			}
 			if ${Wrecks.TargetList.Used} && ${Config.SalvagePrefix.NotNULLOrEmpty}
 			{
 				EVE:GetBookmarks[BookmarkIndex]
@@ -937,9 +943,9 @@ objectdef obj_Mission inherits obj_State
 	
 	member:bool CompleteMission()
 	{
-		if ${Me.InSpace}  
+		if ${Me.InSpace} && ${Ship.ModuleList_Siege.ActiveCount}
 		{
-			UI:Update["Mission", "Deactivate siege module due to mission complete", "g"]
+			UI:Update["Mission", "Deactivate siege module due to mission complete"]
 			Ship.ModuleList_Siege:Deactivate
 		}
 
