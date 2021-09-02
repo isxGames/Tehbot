@@ -593,6 +593,11 @@ objectdef obj_Mission inherits obj_State
 					{
 						if ${MyShip.ToEntity.Mode} != 1 || ${LavishScript.RunningTime} > ${approachTimer}
 						{
+							if ${Ship.ModuleList_Siege.ActiveCount}
+							{
+								UI:Update["Mission", "Deactivate siege module due to approaching"]
+								Ship.ModuleList_Siege:Deactivate
+							}
 							Entity[${currentLootContainer}]:Approach[1000]
 							This:InsertState["PerformMission"]
 							approachTimer:Set[${Math.Calc[${LavishScript.RunningTime} + 10000]}]
