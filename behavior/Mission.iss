@@ -200,7 +200,7 @@ objectdef obj_Mission inherits obj_State
 		return ${EVE.Agent[${ID}].Name}
 	}
 
-	member:bool CheckForWork()
+member:bool CheckForWork()
 	{
 		if ${agentIndex} == 0
 		{
@@ -249,117 +249,120 @@ objectdef obj_Mission inherits obj_State
 						}
 						while ${InvalidMissions.NextKey(exists)}
 
-					This:InsertState["Cleanup"}
+					This:InsertState["Cleanup"]
 					return TRUE
 				}
 
 				if ${m.Value.State} == 2
 				{
 					if ${ValidMissions.FirstKey(exists)}
-					do
 					{
-						if ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Find[${ValidMissions.CurrentKey} Objectives Complete]}
+						do
 						{
-							UI:Update["Mission", "Mission Complete", "g"]
-							UI:Update["Mission", " ${m.Value.Name}", "o"]
-							This:InsertState["CompleteMission"]
-							This:InsertState["Cleanup"]
-							return TRUE
-						}
-						if ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Find[${ValidMissions.CurrentKey} Objectives]}
-						{
-							UI:Update["Mission", "Active mission identified", "g"]
-							UI:Update["Mission", " ${m.Value.Name}", "o"]
-
-
-							if ${AttackTarget.Element[${ValidMissions.CurrentKey}](exists)}
-								missiontarget:Set[${AttackTarget.Element[${ValidMissions.CurrentKey}]}]
-							else
-								missiontarget:Set[""]
-
-							switch ${ValidMissions.CurrentValue.Lower}
+							if ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Find[${ValidMissions.CurrentKey} Objectives Complete]}
 							{
-								case kinetic
-									ammo:Set[${Config.KineticAmmo}]
-									if ${Config.Secondary}
-										secondaryammo:Set[${Config.KineticAmmoSecondary}]
-									else
-										secondaryammo:Set[""]
-									break
-								case em
-									ammo:Set[${Config.EMAmmo}]
-									if ${Config.Secondary}
-										secondaryammo:Set[${Config.EMAmmoSecondary}]
-									else
-										secondaryammo:Set[""]
-									break
-								case thermal
-									ammo:Set[${Config.ThermalAmmo}]
-									if ${Config.Secondary}
-										secondaryammo:Set[${Config.ThermalAmmoSecondary}]
-									else
-										secondaryammo:Set[""]
-									break
-								case explosive
-									ammo:Set[${Config.ExplosiveAmmo}]
-									if ${Config.Secondary}
-										secondaryammo:Set[${Config.ExplosiveAmmoSecondary}]
-									else
-										secondaryammo:Set[""]
-									break
-								default
-									ammo:Set[${Config.KineticAmmo}]
-									if ${Config.Secondary}
-										secondaryammo:Set[${Config.KineticAmmoSecondary}]
-									else
-										secondaryammo:Set[""]
-									break
-							}
-
-							if ${LootContainers.Element[${ValidMissions.CurrentKey}](exists)}
-								lootcontainer:Set[${LootContainers.Element[${ValidMissions.CurrentKey}]}]
-							else
-								lootcontainer:Set[""]
-							if ${ItemsRequired.Element[${ValidMissions.CurrentKey}](exists)}
-							{
-								itemneeded:Set[${ItemsRequired.Element[${ValidMissions.CurrentKey}]}]
-								variable index:item cargo
-								variable iterator c
-								if (!${EVEWindow[Inventory](exists)})
-								{
-									EVE:Execute[OpenInventory]
-									return FALSE
-								}
-								if !${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo]:GetItems[cargo](exists)}
-								{
-									EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo]:MakeActive
-									return FALSE
-								}
-								cargo:GetIterator[c]
-								if ${c:First(exists)}
-									do
-									{
-										if ${c.Value.Name.Equal[${ItemsRequired.Element[${ValidMissions.CurrentKey}]}]}
-										{
-											UI:Update["Mission", "Mission Complete", "g"]
-											UI:Update["Mission", " ${m.Value.Name}", "o"]
-											This:InsertState["CompleteMission"]
-											This:InsertState["Cleanup"]
-											return TRUE
-										}
-									}
-									while ${c:Next(exists)}
-							}
-
-							if ${Client.InSpace} && (${Entity[Type = "Beacon"]} || ${Entity[Type = "Acceleration Gate"]})
-							{
-								This:InsertState["PerformMission"]
+								UI:Update["Mission", "Mission Complete", "g"]
+								UI:Update["Mission", " ${m.Value.Name}", "o"]
+								This:InsertState["CompleteMission"]
 								This:InsertState["Cleanup"]
 								return TRUE
 							}
+
+							if ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Find[${ValidMissions.CurrentKey} Objectives]}
+							{
+								UI:Update["Mission", "Active mission identified", "g"]
+								UI:Update["Mission", " ${m.Value.Name}", "o"]
+
+
+								if ${AttackTarget.Element[${ValidMissions.CurrentKey}](exists)}
+									missiontarget:Set[${AttackTarget.Element[${ValidMissions.CurrentKey}]}]
+								else
+									missiontarget:Set[""]
+
+								switch ${ValidMissions.CurrentValue.Lower}
+								{
+									case kinetic
+										ammo:Set[${Config.KineticAmmo}]
+										if ${Config.Secondary}
+											secondaryammo:Set[${Config.KineticAmmoSecondary}]
+										else
+											secondaryammo:Set[""]
+										break
+									case em
+										ammo:Set[${Config.EMAmmo}]
+										if ${Config.Secondary}
+											secondaryammo:Set[${Config.EMAmmoSecondary}]
+										else
+											secondaryammo:Set[""]
+										break
+									case thermal
+										ammo:Set[${Config.ThermalAmmo}]
+										if ${Config.Secondary}
+											secondaryammo:Set[${Config.ThermalAmmoSecondary}]
+										else
+											secondaryammo:Set[""]
+										break
+									case explosive
+										ammo:Set[${Config.ExplosiveAmmo}]
+										if ${Config.Secondary}
+											secondaryammo:Set[${Config.ExplosiveAmmoSecondary}]
+										else
+											secondaryammo:Set[""]
+										break
+									default
+										ammo:Set[${Config.KineticAmmo}]
+										if ${Config.Secondary}
+											secondaryammo:Set[${Config.KineticAmmoSecondary}]
+										else
+											secondaryammo:Set[""]
+										break
+								}
+
+								if ${LootContainers.Element[${ValidMissions.CurrentKey}](exists)}
+									lootcontainer:Set[${LootContainers.Element[${ValidMissions.CurrentKey}]}]
+								else
+									lootcontainer:Set[""]
+								if ${ItemsRequired.Element[${ValidMissions.CurrentKey}](exists)}
+								{
+									itemneeded:Set[${ItemsRequired.Element[${ValidMissions.CurrentKey}]}]
+									variable index:item cargo
+									variable iterator c
+									if (!${EVEWindow[Inventory](exists)})
+									{
+										EVE:Execute[OpenInventory]
+										return FALSE
+									}
+									if !${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo]:GetItems[cargo](exists)}
+									{
+										EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo]:MakeActive
+										return FALSE
+									}
+									cargo:GetIterator[c]
+									if ${c:First(exists)}
+										do
+										{
+											if ${c.Value.Name.Equal[${ItemsRequired.Element[${ValidMissions.CurrentKey}]}]}
+											{
+												UI:Update["Mission", "Mission Complete", "g"]
+												UI:Update["Mission", " ${m.Value.Name}", "o"]
+												This:InsertState["CompleteMission"]
+												This:InsertState["Cleanup"]
+												return TRUE
+											}
+										}
+										while ${c:Next(exists)}
+								}
+
+								if ${Client.InSpace} && (${Entity[Type = "Beacon"]} || ${Entity[Type = "Acceleration Gate"]})
+								{
+									This:InsertState["PerformMission"]
+									This:InsertState["Cleanup"]
+									return TRUE
+								}
+							}
 						}
+						while ${ValidMissions.NextKey(exists)}
 					}
-					while ${ValidMissions.NextKey(exists)}
 
 					if ${Me.InStation} && ${reload}
 					{
@@ -379,6 +382,7 @@ objectdef obj_Mission inherits obj_State
 					m.Value:GetBookmarks[missionBookmarks]
 					missionBookmarks:GetIterator[b]
 					if ${b:First(exists)}
+					{
 						do
 						{
 							if ${b.Value.LocationType.Equal[dungeon]}
@@ -392,7 +396,7 @@ objectdef obj_Mission inherits obj_State
 							}
 						}
 						while ${b:Next(exists)}
-
+					}
 				}
 			}
 			while ${m:Next(exists)}
@@ -652,13 +656,13 @@ objectdef obj_Mission inherits obj_State
 		ActiveNPC:AddTargetingMe
 	}
 
-	variable bool looted=FALSE
+	variable bool looted = FALSE
 	variable int64 activetarget = 0
 	variable set blacklistedcontainers
-	variable int WCgateUsed=0
+	variable int WCgateUsed = 0
 	variable int64 currentLootContainer
 	variable int64 approachTimer
-	variable bool notdone=FALSE
+	variable bool notdone = FALSE
 	member:bool PerformMission(int nextwaitcomplete = 0)
 	{
 		variable iterator c
@@ -874,8 +878,7 @@ objectdef obj_Mission inherits obj_State
 		{
 			variable iterator lockedTargetIterator
 			ActiveNPC.LockedTargetList:GetIterator[lockedTargetIterator]
-			variable bool wantToSkipTarget=FALSE
-
+			variable bool wantToSkipTarget = FALSE
 			do
 			{
 				; From revious iteration
@@ -1147,13 +1150,13 @@ objectdef obj_Mission inherits obj_State
 		return TRUE
 	}
 
-	variable bool CloseAgentInteraction=FALSE
+	variable bool CloseAgentInteraction = FALSE
 	member:bool InteractAgent(string Action)
 	{
 		if ${Me.StationID} != ${EVE.Agent[${agentIndex}].StationID}
 		{
 			Move:Bookmark[${EVE.Agent[${agentIndex}].StationID}]
-			This:InsertState["InteractAgent", 1500, "${agentIndex}, ${Action}]
+			This:InsertState["InteractAgent", 1500, ${agentIndex}, ${Action}]
 			This:InsertState["Traveling"]
 			return TRUE
 		}
@@ -1215,7 +1218,7 @@ objectdef obj_Mission inherits obj_State
 					if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Decline"](exists)}
 					{
 						EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Decline"]:Press
-						variable time NextTime=${Time.Timestamp}
+						variable time NextTime = ${Time.Timestamp}
 						NextTime.Hour:Inc[4]
 						NextTime:Update
 						Config:Save
@@ -1556,11 +1559,11 @@ objectdef obj_Mission inherits obj_State
 		return TRUE
 	}
 
-	member:bool SalvageCheck(bool refreshdone=FALSE)
+	member:bool SalvageCheck(bool refreshdone = FALSE)
 	{
 		variable index:bookmark Bookmarks
 		variable iterator BookmarkIterator
-		variable int totalBookmarks=0
+		variable int totalBookmarks = 0
 
 		EVE:GetBookmarks[Bookmarks]
 		Bookmarks:GetIterator[BookmarkIterator]
