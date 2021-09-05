@@ -1099,25 +1099,17 @@ member:bool CheckForWork()
 			return FALSE
 		}
 
-		if ${CloseAgentInteraction}
+		if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"](exists)}
 		{
-			if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}](exists)}
-				EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}]:Close
+			EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"]:Press
+			This:InsertState["CompleteMission", 1500]
+			return TRUE
 		}
-		else
-		{
-			if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"](exists)}
-			{
-				EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"]:Press
-				This:InsertState["CompleteMission", 1500]
-				return TRUE
-			}
 
-			if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Complete Mission"](exists)}
-			{
-				EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Complete Mission"]:Press
-				relay "all" -event Tehbot_SalvageBookmark ${Me.ID}
-			}
+		if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Complete Mission"](exists)}
+		{
+			EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Complete Mission"]:Press
+			relay "all" -event Tehbot_SalvageBookmark ${Me.ID}
 		}
 
 		variable index:agentmission Missions
@@ -1146,11 +1138,9 @@ member:bool CheckForWork()
 		}
 		halt:Set[FALSE]
 		This:InsertState["UnloadAmmo"]
-		CloseAgentInteraction:Set[FALSE]
 		return TRUE
 	}
 
-	variable bool CloseAgentInteraction = FALSE
 	member:bool InteractAgent(string Action)
 	{
 		if ${Me.StationID} != ${EVE.Agent[${agentIndex}].StationID}
@@ -1167,66 +1157,58 @@ member:bool CheckForWork()
 			return FALSE
 		}
 
-		if ${CloseAgentInteraction}
+		switch ${Action}
 		{
-			if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}](exists)}
-				EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}]:Close
-		}
-		else
-		{
-			switch ${Action}
-			{
-				case OFFER
-					if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"](exists)}
-					{
-						EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"]:Press
-						return FALSE
-					}
-					if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Request Mission"](exists)}
-					{
-						EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Request Mission"]:Press
-					}
+			case OFFER
+				if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"](exists)}
+				{
+					EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"]:Press
+					return FALSE
+				}
+				if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Request Mission"](exists)}
+				{
+					EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Request Mission"]:Press
+				}
 
-					break
-				case ACCEPT
-					if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Request Mission"](exists)}
-					{
-						EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Request Mission"]:Press
-						return FALSE
-					}
-					if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"](exists)}
-					{
-						EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"]:Press
-						return FALSE
-					}
-					if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Accept"](exists)}
-					{
-						EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Accept"]:Press
-						return FALSE
-					}
-					if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Close"](exists)}
-					{
-						EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Close"]:Press
-					}
-					break
-				case DECLINE
-					if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"](exists)}
-					{
-						EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"]:Press
-						return FALSE
-					}
-					if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Decline"](exists)}
-					{
-						EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Decline"]:Press
-						variable time NextTime = ${Time.Timestamp}
-						NextTime.Hour:Inc[4]
-						NextTime:Update
-						Config:Save
-					}
-					break
-			}
+				break
+			case ACCEPT
+				if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Request Mission"](exists)}
+				{
+					EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Request Mission"]:Press
+					return FALSE
+				}
+				if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"](exists)}
+				{
+					EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"]:Press
+					return FALSE
+				}
+				if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Accept"](exists)}
+				{
+					EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Accept"]:Press
+					return FALSE
+				}
+				if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Close"](exists)}
+				{
+					EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Close"]:Press
+				}
+				break
+			case DECLINE
+				if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"](exists)}
+				{
+					EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"]:Press
+					return FALSE
+				}
+				if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Decline"](exists)}
+				{
+					EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Decline"]:Press
+					variable time NextTime = ${Time.Timestamp}
+					NextTime.Hour:Inc[4]
+					NextTime:Update
+					Config:Save
+				}
+				break
 		}
-		CloseAgentInteraction:Set[FALSE]
+
 		return TRUE
 	}
 
