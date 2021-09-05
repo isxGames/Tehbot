@@ -200,7 +200,7 @@ objectdef obj_Mission inherits obj_State
 		return ${EVE.Agent[${ID}].Name}
 	}
 
-member:bool CheckForWork()
+	member:bool CheckForWork()
 	{
 		if ${agentIndex} == 0
 		{
@@ -890,9 +890,7 @@ member:bool CheckForWork()
 				wantToSkipTarget:Set[FALSE]
 				activetarget:Set[${lockedTargetIterator.Value}]
 
-				if (${activetarget} == ${DroneControl.CurrentTarget} || \
-				(${Entity[${activetarget}].Group.Find[Frigate]} && ${Entity[${activetarget}].Distance} < 15000) || \
-				(${Entity[${activetarget}].Group.Find[Destroyer]} && ${Entity[${activetarget}].Distance} < 10000))
+				if ${This.IsTargetNearbyFrigate[${activetarget}]}
 				{
 					wantToSkipTarget:Set[TRUE]
 				}
@@ -909,7 +907,7 @@ member:bool CheckForWork()
 				UI:Update["Mission", "Deactivate siege module due to no target"]
 				Ship.ModuleList_Siege:Deactivate
 			}
-			UI:Update["Mission", "Approaching far target: \ar${ActiveNPC.TargetList.Get[1].Name}", "g"]
+			UI:Update["Mission", "Approaching distanced target: \ar${ActiveNPC.TargetList.Get[1].Name}", "g"]
 			ActiveNPC.TargetList.Get[1]:Approach
 			This:InsertState["PerformMission"]
 			return TRUE
@@ -1207,7 +1205,6 @@ member:bool CheckForWork()
 				}
 				break
 		}
-
 		return TRUE
 	}
 
@@ -1663,6 +1660,19 @@ member:bool CheckForWork()
 				${To}:Insert[${i.Value}]
 			}
 			while ${i:Next(exists)}
+		}
+	}
+
+	member:bool IsTargetNearbyFrigate(int64 targetID)
+	{
+		if (${Entity[${targetID}].Group.Find[Frigate]} && ${Entity[${targetID}].Distance} < 15000) || \
+		   (${Entity[${targetID}].Group.Find[Destroyer]} && ${Entity[${targetID}].Distance} < 10000)
+		{
+			return TRUE
+		}
+		else
+		{
+			return FALSE
 		}
 	}
 }
