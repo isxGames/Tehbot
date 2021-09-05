@@ -1148,9 +1148,10 @@ objectdef obj_Mission inherits obj_State
 			return TRUE
 		}
 
-		if !${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}](exists)}
+		while !${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}](exists)}
 		{
 			EVE.Agent[${agentIndex}]:StartConversation
+			Client:Wait[3000]
 			return FALSE
 		}
 
