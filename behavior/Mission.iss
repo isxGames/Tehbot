@@ -837,6 +837,14 @@ member:bool CheckForWork()
 			return FALSE
 		}
 
+		variable int MaxTarget = ${MyShip.MaxLockedTargets}
+		if ${Me.MaxLockedTargets} < ${MyShip.MaxLockedTargets}
+			MaxTarget:Set[${Me.MaxLockedTargets}]
+		MaxTarget:Dec[2]
+
+		ActiveNPC.MinLockCount:Set[${MaxTarget}]
+		ActiveNPC.AutoLock:Set[TRUE]
+
 		This:BuildActivateJammerList
 		; Being jammed but the jammer is not the current target
 		if ${activetarget} != 0 && ${ActivateJammerSet.Used} && !${ActivateJammerSet.Contains[${activetarget}]}
@@ -858,14 +866,6 @@ member:bool CheckForWork()
 				while ${activateJammerIterator:Next(exists)}
 			}
 		}
-
-		variable int MaxTarget = ${MyShip.MaxLockedTargets}
-		if ${Me.MaxLockedTargets} < ${MyShip.MaxLockedTargets}
-			MaxTarget:Set[${Me.MaxLockedTargets}]
-		MaxTarget:Dec[2]
-
-		ActiveNPC.MinLockCount:Set[${MaxTarget}]
-		ActiveNPC.AutoLock:Set[TRUE]
 
 		; Picked target not locked.
 		if !${Entity[${activetarget}]} || ${Entity[${activetarget}].IsMoribund} || !(${Entity[${activetarget}].IsLockedTarget} || ${Entity[${activetarget}].BeingTargeted})
@@ -1090,7 +1090,6 @@ member:bool CheckForWork()
 			This:InsertState["Traveling"]
 			return TRUE
 		}
-
 
 		if !${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}](exists)}
 		{
