@@ -947,6 +947,11 @@ objectdef obj_Mission inherits obj_State
 		{
 			if ${NPC.TargetList.Get[1].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.MaxRange} * .95]} && ${MyShip.ToEntity.Mode} != 1
 			{
+				if ${Ship.ModuleList_Siege.ActiveCount}
+				{
+					UI:Update["Mission", "Deactivate siege module due to approaching"]
+					Ship.ModuleList_Siege:Deactivate
+				}
 				NPC.TargetList.Get[1]:Approach
 			}
 
@@ -967,6 +972,11 @@ objectdef obj_Mission inherits obj_State
 		{
 			if ${Entity[${missiontarget}].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.MaxRange} * .95]} && ${MyShip.ToEntity.Mode} != 1
 			{
+				if ${Ship.ModuleList_Siege.ActiveCount}
+				{
+					UI:Update["Mission", "Deactivate siege module due to approaching"]
+					Ship.ModuleList_Siege:Deactivate
+				}
 				Entity[${missiontarget}]:Approach
 			}
 			if !${Entity[${missiontarget}].IsLockedTarget} && !${Entity[${missiontarget}].BeingTargeted}
