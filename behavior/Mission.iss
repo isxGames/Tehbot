@@ -17,8 +17,6 @@ objectdef obj_Configuration_Mission
 		return ${BaseConfig.BaseRef.FindSet[${This.SetName}]}
 	}
 
-
-
 	method Set_Default_Values()
 	{
 		BaseConfig.BaseRef:AddSet[${This.SetName}]
@@ -46,7 +44,6 @@ objectdef obj_Configuration_Mission
 	Setting(string, ExplosiveAmmoSecondary, SetExplosiveAmmoSecondary)
 	Setting(int, Level, SetLevel)
 	Setting(int, Threshold, SetThreshold)
-
 }
 
 objectdef obj_Mission inherits obj_State
@@ -843,38 +840,51 @@ objectdef obj_Mission inherits obj_State
 		ActiveNPC.MinLockCount:Set[${MaxTarget}]
 		ActiveNPC.AutoLock:Set[TRUE]
 
-		This:BuildActivateJammerList
-		; Being jammed but the jammer is not the current target
-		if ${activetarget} != 0 && ${ActivateJammerSet.Used} && !${ActivateJammerSet.Contains[${activetarget}]}
-		{
-			variable iterator activateJammerIterator
-			ActivateJammerList:GetIterator[activateJammerIterator]
-			if ${activateJammerIterator:First(exists)}
-			{
-				do
-				{
-					if ${Entity[${activateJammerIterator.Value}].IsLockedTarget}
-					{
-						; UI:Update["Mission", "old target \ar${Entity[${activetarget}].Name}"]
-						activetarget:Set[${activateJammerIterator.Value}]
-						UI:Update["Mission", "Switching target to activate jammer \ar${Entity[${activetarget}].Name}"]
-						break
-					}
-				}
-				while ${activateJammerIterator:Next(exists)}
-			}
-		}
-
 		; Picked target not locked.
 		if !${Entity[${activetarget}]} || ${Entity[${activetarget}].IsMoribund} || !(${Entity[${activetarget}].IsLockedTarget} || ${Entity[${activetarget}].BeingTargeted})
 		{
 			activetarget:Set[0]
 		}
 
-		; Need to pick from locked target
-		if ${activetarget} == 0 && ${ActiveNPC.LockedTargetList.Used}
+		variable iterator lockedTargetIterator
+		if ${activetarget} != 0
 		{
-			variable iterator lockedTargetIterator
+			This:BuildActivateJammerList
+			if ${ActivateJammerList.Used} && !${ActivateJammerSet.Contains[${activetarget}]}
+			{
+				; Being jammed but the jammer is not the current target
+				variable iterator activateJammerIterator
+				ActivateJammerList:GetIterator[activateJammerIterator]
+				do
+				{
+					if ${Entity[${activateJammerIterator.Value}].IsLockedTarget}
+					{
+						activetarget:Set[${activateJammerIterator.Value}]
+						UI:Update["Mission", "Switching target to activate jammer \ar${Entity[${activetarget}].Name}", "g"]
+						break
+					}
+				}
+				while ${activateJammerIterator:Next(exists)}
+			}
+			elseif ${This.IsTargetNearbyFrigate[${activetarget}]} && ${ActiveNPC.LockedTargetList.Used}
+			{
+				; Switch to easier target
+				ActiveNPC.LockedTargetList:GetIterator[lockedTargetIterator]
+				do
+				{
+					if !${This.IsTargetNearbyFrigate[${lockedTargetIterator.Value}]}
+					{
+						activetarget:Set[${lockedTargetIterator.Value}]
+						UI:Update["Mission", "Switch to easier target: \ar${Entity[${activetarget}].Name}", "g"]
+						break
+					}
+				}
+				while ${lockedTargetIterator:Next(exists)}
+			}
+		}
+		elseif ${ActiveNPC.LockedTargetList.Used}
+		{
+			; Need to re-pick from locked target
 			ActiveNPC.LockedTargetList:GetIterator[lockedTargetIterator]
 			variable bool wantToSkipTarget = FALSE
 			do
