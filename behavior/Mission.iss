@@ -228,7 +228,7 @@ objectdef obj_Mission inherits obj_State
 					if ${ValidMissions.FirstKey(exists)}
 						do
 						{
-							if ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Find[${ValidMissions.CurrentKey} Objectives]}
+							if ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Escape.Find[${ValidMissions.CurrentKey} Objectives]}
 							{
 								UI:Update["Mission", "Accepting mission", "g"]
 								UI:Update["Mission", " ${m.Value.Name}", "o"]
@@ -240,7 +240,7 @@ objectdef obj_Mission inherits obj_State
 					if ${InvalidMissions.FirstKey(exists)}
 						do
 						{
-							if ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Find[${InvalidMissions.CurrentKey} Objectives]}
+							if ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Escape.Find[${InvalidMissions.CurrentKey} Objectives]}
 							{
 								UI:Update["Mission", "Declining mission", "g"]
 								UI:Update["Mission", " ${m.Value.Name}", "o"]
@@ -259,7 +259,7 @@ objectdef obj_Mission inherits obj_State
 					{
 						do
 						{
-							if ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Find[${ValidMissions.CurrentKey} Objectives Complete]}
+							if ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Escape.Find[${ValidMissions.CurrentKey} Objectives Complete]}
 							{
 								UI:Update["Mission", "Mission Complete", "g"]
 								UI:Update["Mission", " ${m.Value.Name}", "o"]
@@ -268,7 +268,7 @@ objectdef obj_Mission inherits obj_State
 								return TRUE
 							}
 
-							if ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Find[${ValidMissions.CurrentKey} Objectives]}
+							if ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Escape.Find[${ValidMissions.CurrentKey} Objectives]}
 							{
 								UI:Update["Mission", "Active mission identified", "g"]
 								UI:Update["Mission", " ${m.Value.Name}", "o"]
@@ -1436,7 +1436,6 @@ objectdef obj_Mission inherits obj_State
 				return FALSE
 			}
 		}
-
 
 		variable index:int64 loadAmmo
 		cargo:GetIterator[c]
