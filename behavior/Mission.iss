@@ -537,7 +537,6 @@ objectdef obj_Mission inherits obj_State
 					; Both scramble and disrupt
 					if ${jamsIterator.Value.Lower.Find["warp"]}
 					{
-						UI:Update["Mission", "found EW ${jamsIterator.Value}", "r"]
 						groups:Concat[${seperator}ID =- "${attackerIterator.Value.ID}"]
 						seperator:Set[" || "]
 					}
@@ -554,7 +553,6 @@ objectdef obj_Mission inherits obj_State
 					; Energy drain and neutralizer
 					elseif ${jamsIterator.Value.Lower.Find["energy"]}
 					{
-						UI:Update["Mission", "found EW ${jamsIterator.Value}", "r"]
 						groups:Concat[${seperator}ID =- "${attackerIterator.Value.ID}"]
 						seperator:Set[" || "]
 					}
@@ -1677,7 +1675,6 @@ objectdef obj_Mission inherits obj_State
 		}
 	}
 }
-
 
 
 objectdef obj_MissionUI inherits obj_State
