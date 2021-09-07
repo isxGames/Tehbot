@@ -272,6 +272,24 @@ objectdef obj_ModuleList
 		return ${Modules.Get[1].Range}
 	}
 	
+	member:bool IncludeModule(int64 ModuleID)
+	{
+		variable iterator ModuleIterator
+		Modules:GetIterator[ModuleIterator]
+		if ${ModuleIterator:First(exists)}
+		{
+			do
+			{
+				if ${ModuleIterator.Value.ID} == ${ModuleID}
+				{
+					return TRUE
+				}
+			}
+			while ${ModuleIterator:Next(exists)}
+		}
+		return FALSE
+	}
+
 	member:string GetFallthroughObject()
 	{
 		return "Ship.${This.ObjectName}.Modules"

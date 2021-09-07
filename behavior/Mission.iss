@@ -1626,8 +1626,11 @@ objectdef obj_Mission inherits obj_State
 					if ${m:First(exists)}
 						do
 						{
-							if !${m.Value.IsActivatable} || ${m.Value.Charge.Type.Equals[${ammo}]} || ${m.Value.IsReloading}
+							if !${Ship.ModuleList_Weapon:IncludeModule[${m.Value.ID}]} || ${m.Value.Charge.Type.Equals[${ammo}]} || ${m.Value.IsReloading}
+							{
 								continue
+							}
+
 							if ${m.Value.Charge.Type.Equals[${Config.KineticAmmo}]} || ${m.Value.Charge.Type.Equals[${Config.ThermalAmmo}]} || ${m.Value.Charge.Type.Equals[${Config.EMAmmo}]} || ${m.Value.Charge.Type.Equals[${Config.ExplosiveAmmo}]}
 							{
 								if (!${EVEWindow[Inventory](exists)})
