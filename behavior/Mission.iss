@@ -770,7 +770,7 @@ objectdef obj_Mission inherits obj_State
 										if ${c.Value.Type.Equal[${itemneeded}]}
 										{
 											c.Value:MoveTo[${MyShip.ID}, CargoHold]
-											This:InsertState["PerformMission"]
+											This:InsertState["CheckForWork"]
 											notdone:Set[FALSE]
 											return TRUE
 										}
