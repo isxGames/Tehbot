@@ -212,12 +212,17 @@ objectdef obj_Mission inherits obj_State
 			do
 			{
 				if ${m.Value.AgentID} != ${EVE.Agent[${agentIndex}].ID}
+				{
 					continue
+				}
+
 				if !${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}](exists)}
 				{
 					m.Value:GetDetails
 					return FALSE
 				}
+
+				variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Escape}
 
 				if ${m.Value.State} == 1
 				{
@@ -225,7 +230,7 @@ objectdef obj_Mission inherits obj_State
 					if ${ValidMissions.FirstKey(exists)}
 						do
 						{
-							if ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Escape.Find[${ValidMissions.CurrentKey} Objectives]}
+							if ${missionJournalText.Find[${ValidMissions.CurrentKey} Objectives]}
 							{
 								UI:Update["Mission", "Accepting mission", "g"]
 								UI:Update["Mission", " ${m.Value.Name}", "o"]
@@ -237,7 +242,7 @@ objectdef obj_Mission inherits obj_State
 					if ${InvalidMissions.FirstKey(exists)}
 						do
 						{
-							if ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Escape.Find[${InvalidMissions.CurrentKey} Objectives]}
+							if ${missionJournalText.Find[${InvalidMissions.CurrentKey} Objectives]}
 							{
 								UI:Update["Mission", "Declining mission", "g"]
 								UI:Update["Mission", " ${m.Value.Name}", "o"]
@@ -256,7 +261,9 @@ objectdef obj_Mission inherits obj_State
 					{
 						do
 						{
-							if ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Escape.Find[${ValidMissions.CurrentKey} Objectives Complete]}
+							variable string checkmarkIcon = "icon:38_193"
+							if ${missionJournalText.Find[${ValidMissions.CurrentKey} Objectives Complete]} || \
+							${Math.Calc[${missionJournalText.Length} - ${missionJournalText.ReplaceSubstring[${checkmarkIcon}, ""].Length}]} == ${Math.Calc[${checkmarkIcon.Length} * 2]}
 							{
 								UI:Update["Mission", "Mission Complete", "g"]
 								UI:Update["Mission", " ${m.Value.Name}", "o"]
@@ -265,7 +272,7 @@ objectdef obj_Mission inherits obj_State
 								return TRUE
 							}
 
-							if ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Escape.Find[${ValidMissions.CurrentKey} Objectives]}
+							if ${missionJournalText.Find[${ValidMissions.CurrentKey} Objectives]}
 							{
 								UI:Update["Mission", "Active mission identified", "g"]
 								UI:Update["Mission", " ${m.Value.Name}", "o"]
@@ -1009,13 +1016,15 @@ objectdef obj_Mission inherits obj_State
 			return TRUE
 		}
 
-		if ${Entity[Type = "Acceleration Gate"]} && !${EVEWindow[byName, modal].Text.Find[This gate is locked!]}
+		if ${Entity[Type = "Acceleration Gate"]} && !${EVEWindow[byName, modal].Text.Find[This gate is locked!]} && \
+			(${Me.ToEntity.Mode} != 1 || ${Me.ToEntity.Approaching.ID} != ${Entity[Type = "Acceleration Gate"].ID})
 		{
 			if ${Ship.ModuleList_Siege.ActiveCount}
 			{
 				UI:Update["Mission", "Deactivate siege module due to approaching"]
 				Ship.ModuleList_Siege:Deactivate
 			}
+
 			if ${Wrecks.TargetList.Used} && ${Config.SalvagePrefix.NotNULLOrEmpty}
 			{
 				EVE:GetBookmarks[BookmarkIndex]
@@ -1026,6 +1035,7 @@ objectdef obj_Mission inherits obj_State
 				if !${BookmarkIndex.Used}
 					Wrecks.TargetList.Get[1]:CreateBookmark["${Config.SalvagePrefix} ${Config.Agent} ${Me.Name} ${EVETime.Time.Left[5]}", "", "Corporation Locations", 1]
 			}
+
 			activetarget:Set[0]
 			Move:Gate[${Entity[Type = "Acceleration Gate"]}]
 			This:InsertState["PerformMission"]
