@@ -24,30 +24,30 @@ objectdef obj_Configuration_UndockWarp
 	}
 
 	Setting(string, substring, Setsubstring)
-	
+
 }
 
-objectdef obj_UndockWarp inherits obj_State
+objectdef obj_UndockWarp inherits obj_StateQueue
 {
 	variable obj_Configuration_UndockWarp Config
-	
+
 	method Initialize()
 	{
 		This[parent]:Initialize
 		This.NonGameTiedPulse:Set[TRUE]
 		DynamicAddMiniMode("UndockWarp", "UndockWarp")
 	}
-	
+
 	method Start()
 	{
 		This:QueueState["UndockWarp"]
 	}
-	
+
 	method Stop()
 	{
 		This:Clear
 	}
-	
+
 	member:bool UndockWarp()
 	{
 		if ${Client.Undock}

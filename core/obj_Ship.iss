@@ -19,10 +19,10 @@ along with ComBot.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-objectdef obj_Ship inherits obj_State
+objectdef obj_Ship inherits obj_StateQueue
 {
 	variable int RetryUpdateModuleList=1
-	
+
 	variable index:string ModuleLists
 	variable collection:uint ModuleQueries
 
@@ -50,7 +50,7 @@ objectdef obj_Ship inherits obj_State
 		This:AddModuleList[SurveyScanner, "ToItem.GroupID = GROUP_SURVEYSCANNER"]
 		This:AddModuleList[CommandBurst, "ToItem.GroupID = GROUP_COMMANDBURST"]
 		This:AddModuleList[StasisWeb, "ToItem.GroupID = GROUP_STASIS_WEB"]
-		This:AddModuleList[StasisGrap, "ToItem.GroupID = GROUP_STASIS_GRAPPLER"]		
+		This:AddModuleList[StasisGrap, "ToItem.GroupID = GROUP_STASIS_GRAPPLER"]
 		This:AddModuleList[SensorBoost, "ToItem.GroupID = GROUP_SENSORBOOSTER"]
 		This:AddModuleList[TargetPainter, "ToItem.GroupID = GROUP_TARGETPAINTER"]
 		This:AddModuleList[EnergyVampire, "ToItem.GroupID = GROUP_ENERGY_VAMPIRE"]
@@ -65,7 +65,7 @@ objectdef obj_Ship inherits obj_State
 		This:QueueState["WaitForSpace"]
 		This:QueueState["UpdateModules"]
 	}
-	
+
 	method AddModuleList(string Name, string QueryString)
 	{
 		This.ModuleLists:Insert[${Name}]
@@ -75,7 +75,7 @@ objectdef obj_Ship inherits obj_State
 		This:QueueState["WaitForSpace"]
 		This:QueueState["UpdateModules"]
 	}
-	
+
 	member:bool WaitForSpace()
 	{
 		if ${Client.InSpace}
@@ -83,14 +83,14 @@ objectdef obj_Ship inherits obj_State
 			return TRUE
 		}
 		return FALSE
-	}	
-	
+	}
+
 	member:bool UpdateModules()
 	{
 		variable iterator List
 		variable index:module ModuleList
 		ModuleLists:GetIterator[List]
-		
+
 		UI:Update["Ship", "Update Called"]
 
 		if !${Client.InSpace}
@@ -108,7 +108,7 @@ objectdef obj_Ship inherits obj_State
 			{
 				This.ModuleList_${List.Value}:Clear
 			}
-			while ${List:Next(exists)}		
+			while ${List:Next(exists)}
 
 		MyShip:GetModules[ModuleList]
 
@@ -124,9 +124,9 @@ objectdef obj_Ship inherits obj_State
 			return FALSE
 		}
 		RetryUpdateModuleList:Set[0]
-		
+
 		variable iterator ModuleIter
-		
+
 		ModuleList:GetIterator[ModuleIter]
 		if ${ModuleIter:First(exists)}
 		do
@@ -152,7 +152,7 @@ objectdef obj_Ship inherits obj_State
 		while ${ModuleIter:Next(exists)}
 
 		UI:Update["Ship", "Ship Module Inventory", "y"]
-		
+
 		if ${List:First(exists)}
 			do
 			{
@@ -178,7 +178,7 @@ objectdef obj_Ship inherits obj_State
 		This:QueueState["UpdateModules"]
 		return TRUE
 	}
-	
+
 	member:bool WaitForStation()
 	{
 		if ${Me.InStation}
@@ -187,5 +187,5 @@ objectdef obj_Ship inherits obj_State
 		}
 		return FALSE
 	}
-	
+
 }

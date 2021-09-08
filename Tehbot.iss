@@ -6,10 +6,10 @@
 ; Keep and updated
 #include core/obj_Configuration.iss
 ; Updated, possibly still need to remove independent pulse if it's not used
-#include core/obj_State.iss
+#include core/obj_StateQueue.iss
 ; Keep and updated
 #include core/obj_TehbotUI.iss
-; Need to implement menu/config item for accepting fleet invites from corp members  
+; Need to implement menu/config item for accepting fleet invites from corp members
 ; Update undock warp bookmark search to use aligned once it's moved to production out of dev version
 ; Probably need to restore undock minimode check, think undocks always happen right now
 ; Probably get rid of the Inventory member
@@ -72,17 +72,17 @@ function main(string Character="")
 	declarevariable BaseConfig obj_Configuration_BaseConfig script
 	declarevariable Config obj_Configuration script
 	UI:Reload
-	
+
 
 	declarevariable NPCData obj_NPCData script
 	declarevariable PriorityTargets obj_PriorityTargets script
 	declarevariable TehbotLogin obj_Login script
 	declarevariable Dynamic obj_Dynamic script
-	
+
 	declarevariable MiniMode obj_MiniMode script
 	declarevariable Salvager obj_Salvager script
 	declarevariable Mission obj_Mission script
-	
+
 	declarevariable Automate obj_Automate script
 	declarevariable AutoModule obj_AutoModule script
 	declarevariable AutoThrust obj_AutoThrust script
@@ -103,17 +103,17 @@ function main(string Character="")
 		wait 10
 	}
 	Config.Common:SetCharID[${Me.CharID}]
-	
+
 	declarevariable Client obj_Client script
 	declarevariable Move obj_Move script
 	declarevariable Ship obj_Ship script
 	declarevariable Cargo obj_Cargo script
 	declarevariable RefineData obj_Configuration_RefineData script
 	declarevariable Drones obj_Drones script
-	
-	
+
+
 	UI:Update["Tehbot", "Module initialization complete", "y"]
-	
+
 	if ${Config.Common.AutoStart}
 	{
 		Tehbot:Resume
@@ -122,7 +122,7 @@ function main(string Character="")
 	{
 		UI:Update["Tehbot", "Paused", "r"]
 	}
-	
+
 
 	while TRUE
 	{

@@ -37,13 +37,13 @@ objectdef obj_Configuration_AutoThrust
 	Setting(int, Velocity_Trigger, SetVelocity_Trigger)
 	Setting(int, Velocity_Threshold, SetVelocity_Threshold)
 
-	
+
 }
 
-objectdef obj_AutoThrust inherits obj_State
+objectdef obj_AutoThrust inherits obj_StateQueue
 {
 	variable obj_Configuration_AutoThrust Config
-	
+
 	method Initialize()
 	{
 		This[parent]:Initialize
@@ -51,22 +51,22 @@ objectdef obj_AutoThrust inherits obj_State
 		This.NonGameTiedPulse:Set[TRUE]
 		DynamicAddMiniMode("AutoThrust", "AutoThrust")
 	}
-	
+
 	method Start()
 	{
 		This:QueueState["AutoThrust"]
 	}
-	
+
 	method Stop()
 	{
 		This:Clear
 	}
-	
+
 	variable bool Override = FALSE
 	member:bool AutoThrust()
 	{
 		variable bool TurnOff=TRUE
-	
+
 		if !${Client.InSpace}
 		{
 			return FALSE
@@ -75,7 +75,7 @@ objectdef obj_AutoThrust inherits obj_State
 		{
 			return FALSE
 		}
-		
+
 		if !${Config.NeverDeactivate} && !${Override}
 		{
 			if ${Me.ToEntity.MaxVelocity} == 0
@@ -132,7 +132,7 @@ objectdef obj_AutoThrust inherits obj_State
 					Ship.ModuleList_AB_MWD:Deactivate
 					return FALSE
 				}
-				
+
 				if	${Me.ToEntity.Mode} != 2
 				{
 					TurnOff:Set[FALSE]
@@ -148,11 +148,11 @@ objectdef obj_AutoThrust inherits obj_State
 				return FALSE
 			}
 		}
-		
-		
-		
-		
-		
+
+
+
+
+
 		if 	${Config.Approach} &&\
 			!${Ship.ModuleList_AB_MWD.ActiveCount} &&\
 			${MyShip.CapacitorPct} > ${Config.Approach_Threshold} &&\
@@ -179,7 +179,7 @@ objectdef obj_AutoThrust inherits obj_State
 				Ship.ModuleList_AB_MWD:Activate
 				return FALSE
 		}
-		
+
 		if 	${Config.Velocity} &&\
 			!${Ship.ModuleList_AB_MWD.ActiveCount} &&\
 			${MyShip.CapacitorPct} > ${Config.Velocity_Threshold} &&\
@@ -189,8 +189,8 @@ objectdef obj_AutoThrust inherits obj_State
 				Ship.ModuleList_AB_MWD:Activate
 				return FALSE
 		}
-		
-		
+
+
 		return FALSE
 	}
 

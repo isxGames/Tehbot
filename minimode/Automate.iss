@@ -43,12 +43,12 @@ objectdef obj_Configuration_Automate
 }
 
 
-objectdef obj_Automate inherits obj_State
+objectdef obj_Automate inherits obj_StateQueue
 {
 	variable obj_Configuration_Automate Config
 	variable obj_AutomateUI LocalUI
 	variable bool StartComplete=FALSE
-	
+
 	method Initialize()
 	{
 		This[parent]:Initialize
@@ -58,7 +58,7 @@ objectdef obj_Automate inherits obj_State
 		Event[QuestorIdle]:AttachAtom[This:QuestorIdle]
 		DynamicAddMiniMode("Automate", "Automate")
 	}
-	
+
 	method Start()
 	{
 		UI:Update["Automate", "Starting Automate", "g"]
@@ -110,13 +110,13 @@ objectdef obj_Automate inherits obj_State
 		}
 		This:QueueState["Automate"]
 	}
-	
+
 	method Stop()
 	{
 		This:Clear
 		UI:Update["Automate", "Stopping Automate", "g"]
 	}
-	
+
 	member:bool Automate()
 	{
 		if ${Time.Hour} == ${Config.Hour} && ${Time.Minute} == ${Config.Minute}
@@ -150,18 +150,18 @@ objectdef obj_Automate inherits obj_State
 		}
 		return FALSE
 	}
-	
+
 	method QuestorIdle()
 	{
 		echo Automate found Questor is Idle!
 	}
-	
+
 	member:bool AllowLogin()
 	{
 		TehbotLogin.Wait:Set[FALSE]
 		return TRUE
 	}
-	
+
 	member:bool WaitForLogin()
 	{
 		if ${Me(exists)} && ${MyShip(exists)} && (${Me.InSpace} || ${Me.InStation})
@@ -171,13 +171,13 @@ objectdef obj_Automate inherits obj_State
 		}
 		return FALSE
 	}
-	
+
 	member:bool AutoStart()
 	{
 		Tehbot:Resume
 		return TRUE
 	}
-	
+
 	member:bool Launch()
 	{
 		echo Launching ${Config.LaunchCommand}
@@ -187,7 +187,7 @@ objectdef obj_Automate inherits obj_State
 		}
 		return TRUE
 	}
-	
+
 	method DeltaLogoutNow()
 	{
 		variable int Logout=${Math.Rand[${Config.LogoutDelta} + 1]}
@@ -207,8 +207,8 @@ objectdef obj_Automate inherits obj_State
 		This:QueueState["Traveling"]
 		This:QueueState["Logout"]
 	}
-	
-	
+
+
 	method GotoLogoutNow()
 	{
 		UI:Update["Automate", "Going Home!", "r"]
@@ -222,7 +222,7 @@ objectdef obj_Automate inherits obj_State
 		This:Clear
 		This:QueueState["Logout"]
 	}
-	
+
 	member:bool MoveToLogout()
 	{
 		if ${Busy.IsBusy}
@@ -247,7 +247,7 @@ objectdef obj_Automate inherits obj_State
 		Move:Bookmark[${Config.Bookmark}]
 		return TRUE
 	}
-	
+
 	member:bool Traveling()
 	{
 		if ${Move.Traveling} || ${Me.ToEntity.Mode} == 3
@@ -256,7 +256,7 @@ objectdef obj_Automate inherits obj_State
 		}
 		return TRUE
 	}
-	
+
 	member:bool Logout()
 	{
 		EVE:Execute[CmdQuitGame]
@@ -270,7 +270,7 @@ objectdef obj_Automate inherits obj_State
 }
 
 
-objectdef obj_AutomateUI inherits obj_State
+objectdef obj_AutomateUI inherits obj_StateQueue
 {
 
 
@@ -279,12 +279,12 @@ objectdef obj_AutomateUI inherits obj_State
 		This[parent]:Initialize
 		This.NonGameTiedPulse:Set[TRUE]
 	}
-	
+
 	method Start()
 	{
 		This:QueueState["UpdateBookmarkLists", 5]
 	}
-	
+
 	method Stop()
 	{
 		This:Clear
@@ -297,12 +297,12 @@ objectdef obj_AutomateUI inherits obj_State
 
 		EVE:GetBookmarks[Bookmarks]
 		Bookmarks:GetIterator[BookmarkIterator]
-		
+
 
 		UIElement[BookmarkList@AutoLogoutFrame@Tehbot_Automate_Frame@Tehbot_Automate]:ClearItems
 		if ${BookmarkIterator:First(exists)}
 			do
-			{	
+			{
 				if ${UIElement[Bookmark@AutoLogoutFrame@Tehbot_Automate_Frame@Tehbot_Automate].Text.Length}
 				{
 					if ${BookmarkIterator.Value.Label.Left[${Automate.Config.Bookmark.Length}].Equal[${Automate.Config.Bookmark}]}
@@ -314,8 +314,8 @@ objectdef obj_AutomateUI inherits obj_State
 				}
 			}
 			while ${BookmarkIterator:Next(exists)}
-			
-			
+
+
 		return FALSE
 	}
 

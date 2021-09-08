@@ -1,7 +1,7 @@
 objectdef obj_EVEExtension
 {
 	variable string Character=""
-	
+
 	function Initialize()
 	{
 		do
@@ -17,22 +17,22 @@ objectdef obj_EVEExtension
 }
 
 
-objectdef obj_Login inherits obj_State
+objectdef obj_Login inherits obj_StateQueue
 {
 	variable bool Wait=FALSE
-	
+
 	method Initialize()
 	{
 		This[parent]:Initialize
 		This.NonGameTiedPulse:Set[TRUE]
-		
+
 		if ${Me(exists)} && ${MyShip(exists)} && (${Me.InSpace} || ${Me.InStation})
 		{
 			return
 		}
 		This:QueueState["Build"]
 	}
-	
+
 	member:bool Build()
 	{
 		if ${Wait}
@@ -52,7 +52,7 @@ objectdef obj_Login inherits obj_State
 		This:QueueState["SelectCharacter"]
 		return TRUE
 	}
-	
+
 	member:bool WaitForLogin()
 	{
 		if ${Wait}
@@ -61,25 +61,25 @@ objectdef obj_Login inherits obj_State
 		}
 		return TRUE
 	}
-	
+
 	member:bool Log(string msg, string color)
 	{
-		UI:Update["Login", "${msg}", "${color}"]		
+		UI:Update["Login", "${msg}", "${color}"]
 		return TRUE
 	}
-	
+
 	member:bool SelectCharacter()
 	{
 		if ${Me(exists)} && ${MyShip(exists)} && (${Me.InSpace} || ${Me.InStation})
 		{
 			return TRUE
 		}
-		
+
 		if ${EVE.IsProgressWindowOpen}
 		{
 			return FALSE
 		}
-		
+
 		if ${EVEWindow[ByName,MessageBox](exists)} || ${EVEWindow[ByCaption,System Congested](exists)}
 		{
 			UI:Update["obj_Login", "System may be congested, waiting 10 seconds", "g"]
@@ -89,14 +89,14 @@ objectdef obj_Login inherits obj_State
 			This:QueueState["SelectCharacter"]
 			return TRUE
 		}
-		
+
 		if  ${EVEWindow[ByName,modal].Text.Find["The daily downtime will begin in"](exists)} || \
 			${EVEWindow[ByName,modal].Text.Find["local session information is corrupt"](exists)}
 		{
 			EVEWindow[ByName,modal]:ClickButtonOK
 			return FALSE
 		}
-		
+
 		if ${EVEWindow[ByName,modal].Text.Find["has been flagged for recustomization"](exists)}
 		{
 			EVEWindow[ByName,modal]:ClickButtonNo

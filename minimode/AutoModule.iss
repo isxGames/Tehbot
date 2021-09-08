@@ -69,15 +69,15 @@ objectdef obj_Configuration_AutoModule
 	Setting(bool, TrackingComputers, SetTrackingComputers)
 	Setting(bool, ECCM, SetECCM)
 	Setting(bool, DroneControlUnit, SetDroneControlUnit)
-	
+
 }
 
-objectdef obj_AutoModule inherits obj_State
+objectdef obj_AutoModule inherits obj_StateQueue
 {
 	variable obj_Configuration_AutoModule Config
 	variable bool SafetyOveride=FALSE
 	variable bool DropCloak=FALSE
-	
+
 	method Initialize()
 	{
 		This[parent]:Initialize
@@ -85,17 +85,17 @@ objectdef obj_AutoModule inherits obj_State
 		This.PulseFrequency:Set[100]
 		DynamicAddMiniMode("AutoModule", "AutoModule")
 	}
-	
+
 	method Start()
 	{
 		This:QueueState["AutoModule"]
 	}
-	
+
 	method Stop()
 	{
 		This:Clear
 	}
-	
+
 	variable int lastArmorRepActivate = 0
 	member:bool AutoModule()
 	{
@@ -113,7 +113,7 @@ objectdef obj_AutoModule inherits obj_State
 		if ${m:First(exists)}
 			do
 			{
-				
+
 				if ${m.Value.ToItem.Group.Equal[Cloaking Device]}
 				{
 					cloak:Set[${m.Value.Slot}]
@@ -121,7 +121,7 @@ objectdef obj_AutoModule inherits obj_State
 						cloakon:Set[TRUE]
 				}
 			}
-			while ${m:Next(exists)}		
+			while ${m:Next(exists)}
 
 		if !${cloak.Equal[""]} && ${Config.Cloak}
 		{
@@ -173,10 +173,10 @@ objectdef obj_AutoModule inherits obj_State
 					}
 				}
 				while ${m:Next(exists)}
-			
+
 		}
-		
-		
+
+
 		if ${Ship.ModuleList_Repair_Armor.InactiveCount} && ((${MyShip.ArmorPct} < ${Config.ActiveArmorRepair} && ${MyShip.CapacitorPct} > ${Config.ActiveArmorCap}) || ${Config.ArmorRepair}) && ${LavishScript.RunningTime} > ${lastArmorRepActivate}
 		{
 			Ship.ModuleList_Repair_Armor:ActivateCount[1]
@@ -186,12 +186,12 @@ objectdef obj_AutoModule inherits obj_State
 		{
 			Ship.ModuleList_Repair_Armor:DeactivateCount[${Ship.ModuleList_Repair_Armor.ActiveCount}]
 		}
-		
+
 		if ${Ship.ModuleList_ActiveResists.Count} && ${Config.ActiveHardeners}
 		{
 			Ship.ModuleList_ActiveResists:ActivateCount[${Ship.ModuleList_ActiveResists.Count}]
 		}
-		
+
 		if ${Ship.ModuleList_GangLinks.ActiveCount} < ${Ship.ModuleList_GangLinks.Count} && ${Me.ToEntity.Mode} != 3 && ${Config.GangLink}
 		{
 			Ship.ModuleList_GangLinks:ActivateCount[${Math.Calc[${Ship.ModuleList_GangLinks.Count} - ${Ship.ModuleList_GangLinks.ActiveCount}]}]
@@ -211,7 +211,7 @@ objectdef obj_AutoModule inherits obj_State
 		{
 			Ship.ModuleList_TrackingComputer:ActivateCount[${Math.Calc[${Ship.ModuleList_TrackingComputer.Count} - ${Ship.ModuleList_TrackingComputer.ActiveCount}]}]
 		}
-		
+
 		if ${Ship.ModuleList_ECCM.ActiveCount} < ${Ship.ModuleList_ECCM.Count} && ${Config.ECCM}
 		{
 			Ship.ModuleList_ECCM:ActivateCount[${Math.Calc[${Ship.ModuleList_ECCM.Count} - ${Ship.ModuleList_ECCM.ActiveCount}]}]
@@ -222,7 +222,7 @@ objectdef obj_AutoModule inherits obj_State
 			UI:Update["AutoModule", "Activating DroneControlUnit", "g"]
 			Ship.ModuleList_DroneControlUnit:ActivateCount[${Math.Calc[${Ship.ModuleList_DroneControlUnit.Count} - ${Ship.ModuleList_DroneControlUnit.ActiveCount}]}, FALSE]
 		}
-		
+
 		return FALSE
 	}
 

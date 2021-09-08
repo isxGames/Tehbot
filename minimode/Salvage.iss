@@ -4,14 +4,14 @@ objectdef obj_Configuration_Salvage inherits obj_Base_Configuration
 	{
 		This[parent]:Initialize["Salvage"]
 	}
-	
+
 	method Set_Default_Values()
 	{
 		This.CommonRef:AddSetting[LockCount, 2]
 		This.CommonRef:AddSetting[Size,"Small"]
 
-		
-		
+
+
 	}
 
 	Setting(int, LockCount, SetLockCount)
@@ -22,23 +22,23 @@ objectdef obj_Configuration_Salvage inherits obj_Base_Configuration
 
 
 
-objectdef obj_Salvage inherits obj_State
+objectdef obj_Salvage inherits obj_StateQueue
 {
 	variable obj_Configuration_Salvage Config
 	variable obj_LootCans LootCans
 
 	variable obj_TargetList Wrecks
 	variable bool IsBusy
-	
-	
+
+
 	method Initialize()
 	{
 		This[parent]:Initialize
 		DynamicAddMiniMode("Salvage", "Salvage")
 		PulseFrequency:Set[500]
 	}
-	
-	
+
+
 	method Start()
 	{
 		variable string Size
@@ -54,10 +54,10 @@ objectdef obj_Salvage inherits obj_State
 		{
 			Size:Set[&& (Type =- \"Large\" || Type =- \"Cargo Container\")]
 		}
-		
+
 		Wrecks:ClearTargetExceptions
 		Wrecks:ClearQueryString
-		
+
 		if ${Config.SalvageYellow}
 		{
 			echo SalvageYellow
@@ -72,7 +72,7 @@ objectdef obj_Salvage inherits obj_State
 		This:QueueState["Updated"]
 		This:QueueState["Salvage"]
 	}
-	
+
 	method Stop()
 	{
 		This.IsBusy:Set[FALSE]
@@ -80,19 +80,19 @@ objectdef obj_Salvage inherits obj_State
 		Wrecks.AutoLock:Set[FALSE]
 		This:Clear
 	}
-	
+
 	member:bool Updated()
 	{
 		return ${Wrecks.Updated}
 	}
-	
+
 	member:bool Salvage()
 	{
 		if !${Client.InSpace}
 		{
 			return FALSE
 		}
-	
+
 		variable iterator TargetIterator
 		variable queue:int LootRangeAndTractored
 		variable int MaxTarget = ${MyShip.MaxLockedTargets}
@@ -119,7 +119,7 @@ objectdef obj_Salvage inherits obj_State
 		Wrecks.LockOutOfRange:Set[FALSE]
 		Wrecks.AutoLock:Set[TRUE]
 		Wrecks:RequestUpdate
-		
+
 		Wrecks.LockedTargetList:GetIterator[TargetIterator]
 		if ${TargetIterator:First(exists)}
 		{
@@ -136,7 +136,7 @@ objectdef obj_Salvage inherits obj_State
 						TargetIterator.Value:UnlockTarget
 						return FALSE
 					}
-				
+
 					if  !${Ship.ModuleList_TractorBeams.IsActiveOn[${TargetIterator.Value.ID}]} &&\
 						${TargetIterator.Value.Distance} < ${Ship.ModuleList_TractorBeams.Range} &&\
 						${TargetIterator.Value.Distance} > 2500 &&\
@@ -220,36 +220,36 @@ objectdef obj_Salvage inherits obj_State
 }
 
 
-objectdef obj_LootCans inherits obj_State
+objectdef obj_LootCans inherits obj_StateQueue
 {
 	method Initialize()
 	{
 		This[parent]:Initialize
 		This.NonGameTiedPulse:Set[TRUE]
 	}
-	
+
 	method Enable()
 	{
 		This:QueueState["Loot", 3000]
 	}
-	
+
 	method Disable()
 	{
 		This:Clear
 	}
-	
+
 	member:bool Loot()
 	{
 		variable iterator TargetIterator
 		variable index:item TargetCargo
 		variable iterator CargoIterator
-		
-	
+
+
 		if !${Client.InSpace}
 		{
 			return FALSE
 		}
-		
+
 		if ${Me.ToEntity.Mode} == 3
 		{
 			return FALSE
@@ -273,7 +273,7 @@ objectdef obj_LootCans inherits obj_State
 						EVEWindow[Inventory].ChildWindow[${TargetIterator.Value}]:MakeActive
 						return FALSE
 					}
-					
+
 					Entity[${TargetIterator.Value}]:GetCargo[TargetCargo]
 					TargetCargo:GetIterator[CargoIterator]
 					if ${CargoIterator:First(exists)}
@@ -288,7 +288,7 @@ objectdef obj_LootCans inherits obj_State
 						}
 						while ${CargoIterator:Next(exists)}
 					}
-					
+
 					UI:Update["Salvage", "Looting - ${TargetIterator.Value.Name}", "g"]
 					EVEWindow[Inventory]:LootAll
 					This:InsertState["Loot"]
@@ -300,13 +300,13 @@ objectdef obj_LootCans inherits obj_State
 					UI:Update["Salvage", "Opening - ${TargetIterator.Value.Name}", "g"]
 					TargetIterator.Value:Open
 					return FALSE
-				}		
+				}
 			}
 			while ${TargetIterator:Next(exists)}
 		}
 		return FALSE
 	}
-	
+
 	member:bool Stack()
 	{
 		EVE:StackItems[MyShip, CargoHold]
