@@ -41,7 +41,8 @@ objectdef obj_Ship inherits obj_State
 		This:AddModuleList[Repair_Armor, "ToItem.GroupID = GROUP_ARMOR_REPAIRERS"]
 		This:AddModuleList[Repair_Hull, "ToItem.GroupID = NONE"]
 		This:AddModuleList[AB_MWD, "ToItem.GroupID = GROUP_AFTERBURNER"]
-		This:AddModuleList[Passive, "!IsActivatable"]
+		; Supress isxeve error log output.
+		; This:AddModuleList[Passive, "!IsActivatable"]
 		This:AddModuleList[Salvagers, "ToItem.GroupID = GROUP_SALVAGER"]
 		This:AddModuleList[TractorBeams, "ToItem.GroupID = GROUP_TRACTOR_BEAM"]
 		This:AddModuleList[Cloaks, "ToItem.GroupID = GROUP_CLOAKING_DEVICE"]
