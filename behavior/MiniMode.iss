@@ -1,4 +1,4 @@
-objectdef obj_MiniMode inherits obj_State
+objectdef obj_MiniMode inherits obj_StateQueue
 {
 	method Initialize()
 	{

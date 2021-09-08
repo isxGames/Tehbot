@@ -1,7 +1,7 @@
 variable set OwnedTargets
 variable collection:int TargetList_DeadDelay
 
-objectdef obj_TargetList inherits obj_State
+objectdef obj_TargetList inherits obj_StateQueue
 {
 	variable int64 DistanceTarget
 	variable index:entity TargetList
@@ -32,7 +32,7 @@ objectdef obj_TargetList inherits obj_State
 	variable bool Updated = FALSE
 	variable bool ForceLockExclusion = FALSE
 	variable bool LockTop = FALSE
-	
+
 	method Initialize()
 	{
 		This[parent]:Initialize
@@ -41,31 +41,31 @@ objectdef obj_TargetList inherits obj_State
 		This:QueueState["UpdateList"]
 		DistanceTarget:Set[${MyShip.ID}]
 	}
-	
+
 	method ClearQueryString()
 	{
 		QueryStringList:Clear
 	}
-	
+
 	method AddQueryString(string QueryString)
 	{
 		QueryStringList:Insert["${QueryString.Escape}"]
 		NeedUpdate:Set[TRUE]
 	}
-	
+
 	method AddTargetingMe()
 	{
 		This:AddQueryString["Distance < 150000 && IsTargetingMe && IsNPC && !IsMoribund"]
 		NeedUpdate:Set[TRUE]
 	}
-	
+
 	method AddNotTargetingMe()
 	{
 		This:AddQueryString["Distance < 150000 && !IsTargetingMe && IsNPC && CategoryID == 11 && !IsMoribund"]
 		NeedUpdate:Set[TRUE]
 	}
-	
-	
+
+
 	method RequestUpdate()
 	{
 		variable iterator TargetIterator
@@ -82,7 +82,7 @@ objectdef obj_TargetList inherits obj_State
 			while ${TargetIterator:Next(exists)}
 		}
 		TargetList:Collapse
-		
+
 		LockedTargetList:GetIterator[TargetIterator]
 		if ${TargetIterator:First(exists)}
 		{
@@ -110,15 +110,15 @@ objectdef obj_TargetList inherits obj_State
 			while ${TargetIterator:Next(exists)}
 		}
 		LockedAndLockingTargetList:Collapse
-		
+
 		NeedUpdate:Set[TRUE]
 		Updated:Set[FALSE]
 	}
-	
+
 	method AddAllNPCs()
 	{
 		variable string QueryString="CategoryID = CATEGORYID_ENTITY && IsNPC && !IsMoribund && !("
-		
+
 		;Exclude Groups here
 		QueryString:Concat["GroupID = GROUP_CONCORDDRONE ||"]
 		QueryString:Concat["GroupID = GROUP_CONVOYDRONE ||"]
@@ -129,10 +129,10 @@ objectdef obj_TargetList inherits obj_State
 		QueryString:Concat["GroupID = CATEGORYID_ORE ||"]
 		QueryString:Concat["GroupID = GROUP_DEADSPACEOVERSEERSSTRUCTURE ||"]
 		QueryString:Concat["GroupID = GROUP_LARGECOLLIDABLESTRUCTURE)"]
-		
+
 		This:AddQueryString["${QueryString.Escape}"]
 	}
-	
+
 	method AddTargetException(int64 ID)
 	{
 		variable iterator RemoveIterator
@@ -178,22 +178,22 @@ objectdef obj_TargetList inherits obj_State
 			Entity[${ID}]:UnlockTarget
 		}
 	}
-	
+
 	method ClearTargetExceptions()
 	{
 		TargetExceptions:Clear
 	}
-	
+
 	member:bool UpdateList()
 	{
 		if !${NeedUpdate} || !${Client.InSpace} || ${Me.ToEntity.Mode} == 3
 		{
 			return FALSE
 		}
-		
+
 		variable iterator QueryStringIterator
 		QueryStringList:GetIterator[QueryStringIterator]
-		
+
 		if ${QueryStringIterator:First(exists)}
 		{
 			do
@@ -202,7 +202,7 @@ objectdef obj_TargetList inherits obj_State
 			}
 			while ${QueryStringIterator:Next(exists)}
 		}
-		
+
 		This:QueueState["PopulateList"]
 		if ${AutoLock}
 		{
@@ -213,13 +213,13 @@ objectdef obj_TargetList inherits obj_State
 		NeedUpdate:Set[FALSE]
 		return TRUE
 	}
-	
+
 	member:bool SetUpdated()
 	{
 		Updated:Set[TRUE]
 		return TRUE
 	}
-	
+
 	member:bool GetQueryString(string QueryString, int Priority = 0)
 	{
 		variable index:entity entity_index
@@ -248,7 +248,7 @@ objectdef obj_TargetList inherits obj_State
 				}
 			}
 			while ${entity_iterator:Next(exists)}
-			
+
 			if ${entity_iterator.Value(exists)}
 			{
 				do
@@ -283,7 +283,7 @@ objectdef obj_TargetList inherits obj_State
 				}
 				while ${entity_iterator:Next(exists)}
 			}
-			
+
 			if ${entity_iterator.Value(exists)} && ${ListOutOfRange}
 			{
 				do
@@ -314,29 +314,29 @@ objectdef obj_TargetList inherits obj_State
 		}
 		return TRUE
 	}
-	
-	
+
+
 	member:bool PopulateList()
 	{
 		This.TargetList:Clear
 		This.LockedTargetList:Clear
 		This.LockedAndLockingTargetList:Clear
 		This.TargetLockPrioritys:Clear
-		
+
 		This:DeepCopyEntityIndex["This.TargetListBuffer", "This.TargetList"]
-		
+
 		This:DeepCopyEntityIndex["This.TargetListBufferOOR", "This.TargetList"]
-		
+
 		This:DeepCopyEntityIndex["This.LockedTargetListBuffer", "This.LockedTargetList"]
-		
+
 		This:DeepCopyEntityIndex["This.LockedTargetListBufferOOR", "This.LockedTargetList"]
-		
+
 		This:DeepCopyEntityIndex["This.LockedAndLockingTargetListBuffer", "This.LockedAndLockingTargetList"]
-		
+
 		This:DeepCopyEntityIndex["This.LockedAndLockingTargetListBufferOOR", "This.LockedAndLockingTargetList"]
-		
+
 		This:DeepCopyCollection["This.TargetLockPrioritysBuffer", "This.TargetLockPrioritys"]
-		
+
 		This.TargetListBuffer:Clear
 		This.TargetListBufferOOR:Clear
 		This.LockedTargetListBuffer:Clear
@@ -347,7 +347,7 @@ objectdef obj_TargetList inherits obj_State
 		AlreadyInList:Clear
 		return TRUE
 	}
-	
+
 	member:bool ManageLocks()
 	{
 		variable bool NeedLock = FALSE
@@ -379,7 +379,7 @@ objectdef obj_TargetList inherits obj_State
 			}
 			while ${EntityIterator:Next(exists)}
 		}
-		
+
 		This.LockedAndLockingTargets:GetIterator[EntityIterator]
 		if ${EntityIterator:First(exists)}
 		{
@@ -395,9 +395,9 @@ objectdef obj_TargetList inherits obj_State
 		}
 
 		This.TargetList:GetIterator[EntityIterator]
-		
-		
-		
+
+
+
 		if ${LockTop}
 		{
 			if ${EntityIterator:First(exists)}
@@ -432,7 +432,7 @@ objectdef obj_TargetList inherits obj_State
 				NeedLock:Set[TRUE]
 			}
 		}
-		
+
 		if ${NeedLock} && ${LockTop} && ${LockedAndLockingTargets.Used} >= ${MinLockCount}
 		{
 			LockedTargetList:GetIterator[LockIterator]
@@ -449,7 +449,7 @@ objectdef obj_TargetList inherits obj_State
 				while ${LockIterator:Next(exists)}
 			}
 		}
-		
+
 		if ${NeedLock}
 		{
 			if ${EntityIterator:First(exists)}
@@ -480,8 +480,8 @@ objectdef obj_TargetList inherits obj_State
 		}
 		return TRUE
 	}
-	
-	
+
+
 	method LockTarget(int64 Target, int Priority)
 	{
 		variable iterator LockIterator
@@ -510,7 +510,7 @@ objectdef obj_TargetList inherits obj_State
 		}
 		This:InsertState[LockNewTarget, 250, ${ID}]
 	}
-	
+
 	member:bool LockNewTarget(int64 ID)
 	{
 		if ${Entity[${ID}](exists)}
@@ -520,7 +520,7 @@ objectdef obj_TargetList inherits obj_State
 		return TRUE
 	}
 
-	
+
 	method DeepCopyEntityIndex(string From, string To)
 	{
 		variable iterator EntityIterator
@@ -534,7 +534,7 @@ objectdef obj_TargetList inherits obj_State
 			while ${EntityIterator:Next(exists)}
 		}
 	}
-	
+
 	method DeepCopyCollection(string From, string To)
 	{
 		variable iterator ColIterator
@@ -548,5 +548,5 @@ objectdef obj_TargetList inherits obj_State
 			while ${ColIterator:Next(exists)}
 		}
 	}
-	
+
 }

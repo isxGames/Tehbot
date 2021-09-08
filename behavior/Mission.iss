@@ -46,7 +46,7 @@ objectdef obj_Configuration_Mission
 	Setting(int, Threshold, SetThreshold)
 }
 
-objectdef obj_Mission inherits obj_State
+objectdef obj_Mission inherits obj_StateQueue
 {
 	variable int agentIndex = 0
 	variable string missiontarget

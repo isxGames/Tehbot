@@ -24,7 +24,7 @@ objectdef obj_Configuration_DroneData
 	{
 		LavishSettings[DroneData]:Clear
 	}
-	
+
 	member:string DroneType(int TypeID)
 	{
 		variable iterator DroneTypes
@@ -41,7 +41,7 @@ objectdef obj_Configuration_DroneData
 			while ${DroneTypes:Next(exists)}
 		}
 	}
-	
+
 	member:int FindType(string TypeName)
 	{
 		variable iterator DroneTypeIDs
@@ -62,12 +62,12 @@ objectdef obj_Configuration_DroneData
 }
 
 
-objectdef obj_Drones inherits obj_State
+objectdef obj_Drones inherits obj_StateQueue
 {
 	variable obj_Configuration_DroneData Data
 	variable set ActiveTypes
 	variable collection:queue TypeQueues
-	
+
 	method Initialize()
 	{
 		This[parent]:Initialize
@@ -75,12 +75,12 @@ objectdef obj_Drones inherits obj_State
 	}
 
 	method RecallAll()
-	{		
+	{
 		UI:Update["obj_Drone", "Recalling Drones", "g"]
 		EVE:Execute[CmdDronesReturnToBay]
 		DronesOut:Set[FALSE]
 	}
-	
+
 	method RefreshActiveTypes()
 	{
 		ActiveTypes:Clear
@@ -96,15 +96,15 @@ objectdef obj_Drones inherits obj_State
 			while ${DroneIterator:Next(exists)}
 		}
 	}
-	
+
 	method Deploy(string TypeQuery, int Count=-1)
 	{
 		variable index:item DroneBayDrones
 		variable index:int64 DronesToLaunch
 		variable iterator DroneIterator
 		variable int Selected = 0
-		
-		
+
+
 		MyShip:GetDrones[DroneBayDrones]
 		DroneBayDrones:RemoveByQuery[${LavishScript.CreateQuery[${TypeQuery}]}, FALSE]
 		DroneBayDrones:Collapse[]
@@ -125,7 +125,7 @@ objectdef obj_Drones inherits obj_State
 		}
 		EVE:LaunchDrones[DronesToLaunch]
 	}
-	
+
 	method Recall(string TypeQuery, int Count=-1)
 	{
 		variable index:activedrone ActiveDrones
@@ -151,7 +151,7 @@ objectdef obj_Drones inherits obj_State
 		}
 		EVE:DronesReturnToDroneBay[DronesToRecall]
 	}
-	
+
 	member:int GetTargeting(int64 TargetID)
 	{
 		variable index:activedrone ActiveDrones
@@ -172,7 +172,7 @@ objectdef obj_Drones inherits obj_State
 		}
 		return ${Targeting}
 	}
-	
+
 	method Engage(string TypeQuery, int64 TargetID, bool Force=FALSE, int Count = -1)
 	{
 		if ${Entity[${TargetID}].IsLockedTarget}
@@ -181,7 +181,7 @@ objectdef obj_Drones inherits obj_State
 			This:QueueState["EngageTarget", -1, "${TypeQuery.Escape}, ${TargetID}, ${Force}, ${Count}"]
 		}
 	}
-	
+
 	member:int InactiveDroneCount(string TypeQuery)
 	{
 		variable index:item DroneBayDrones
@@ -190,7 +190,7 @@ objectdef obj_Drones inherits obj_State
 		DroneBayDrones:Collapse[]
 		return ${DroneBayDrones.Used}
 	}
-	
+
 	member:int ActiveDroneCount(string TypeQuery)
 	{
 		variable index:activedrone ActiveDrones
@@ -199,7 +199,7 @@ objectdef obj_Drones inherits obj_State
 		ActiveDrones:Collapse[]
 		return ${ActiveDrones.Used}
 	}
-	
+
 	member:bool IdleDrone()
 	{
 		variable index:activedrone ActiveDrones
@@ -207,8 +207,8 @@ objectdef obj_Drones inherits obj_State
 		ActiveDrones:RemoveByQuery[${LavishScript.CreateQuery["State == 0"]}, FALSE]
 		ActiveDrones:Collapse[]
 		return ${ActiveDrones.Used}
-	}	
-	
+	}
+
 	member:bool SwitchTarget(int64 TargetID)
 	{
 		if ${Entity[${TargetID}].IsLockedTarget}
@@ -217,7 +217,7 @@ objectdef obj_Drones inherits obj_State
 		}
 		return TRUE
 	}
-	
+
 	member:bool EngageTarget(string TypeQuery, int64 TargetID, bool Force, int Count = -1)
 	{
 		if ${Entity[${TargetID}].IsLockedTarget} && ${Entity[${TargetID}].IsActiveTarget}
@@ -230,9 +230,9 @@ objectdef obj_Drones inherits obj_State
 			ActiveDrones:RemoveByQuery[${LavishScript.CreateQuery[${TypeQuery}]}, FALSE]
 			ActiveDrones:Collapse[]
 			ActiveDrones:GetIterator[DroneIterator]
-			
+
 			Count:Dec[${This.GetTargetting[${TargetID}]}]
-			
+
 			if ${DroneIterator:First(exists)}
 			{
 				do
@@ -253,21 +253,21 @@ objectdef obj_Drones inherits obj_State
 		}
 		return TRUE
 	}
-	
+
 	member:int DronesInSpace()
 	{
 		variable index:activedrone ActiveDrones
 		Me:GetActiveDrones[ActiveDrones]
 		return ${ActiveDrones.Used}
 	}
-	
+
 	member:int DronesInBay()
 	{
 		variable index:item Drones
 		MyShip:GetDrones[Drones]
 		return ${Drones.Used}
 	}
-	
-	
+
+
 
 }

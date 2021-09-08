@@ -19,7 +19,7 @@ along with ComBot.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-objectdef obj_ModuleBase inherits obj_State
+objectdef obj_ModuleBase inherits obj_StateQueue
 {
 	variable bool Activated = FALSE
 	variable bool Deactivated = FALSE
@@ -37,7 +37,7 @@ objectdef obj_ModuleBase inherits obj_State
 
 	member:bool IsActive()
 	{
-		if ${MyShip.Module[${ModuleID}].IsActive} 
+		if ${MyShip.Module[${ModuleID}].IsActive}
 			return TRUE
 		return ${Activated}
 	}
@@ -84,53 +84,53 @@ objectdef obj_ModuleBase inherits obj_State
         {
             This:QueueState["LoadMiningCrystal", 50, ${Entity[${newTarget}].Type}]
         }
-		
+
         if ${Entity[${newTarget}].CategoryID} == CATEGORYID_ENTITY && ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_PRECURSORWEAPON
         {
-			
+
 			if ${Entity[${newTarget}].Distance} > 70000 || ${Mission.RudeEwar}
 			{
 				This:QueueState["LoadOptimalAmmo", 50, Meson Exotic Plasma L]
 			}
-			
+
 			if ${Entity[${newTarget}].Distance} > 50000 && ${Entity[${newTarget}].Distance} < 70000 && !${Mission.RudeEwar}
 			{
 				This:QueueState["LoadOptimalAmmo", 50, Mystic L]
 			}
-			
+
 			if ${Entity[${newTarget}].Distance} > 27000 && ${Entity[${newTarget}].Distance} < 50000 && !${Mission.RudeEwar}
 			{
 				This:QueueState["LoadOptimalAmmo", 50, Baryon Exotic Plasma L]
 			}
-			
+
 			if ${Entity[${newTarget}].Distance} < 27000 && ${Entity[${newTarget}].Distance} > 7500 && !${Mission.RudeEwar}
-			
+
 			{
 				This:QueueState["LoadOptimalAmmo", 50, Occult L]
 			}
-			
+
 			if ${Entity[${newTarget}].Distance} < 7500 && !${Mission.RudeEwar}
-			
+
 			{
 				This:QueueState["LoadOptimalAmmo", 50, Baryon Exotic Plasma L]
 			}
         }
-        
+
 		if ${Entity[${newTarget}].CategoryID} == CATEGORYID_ENTITY && ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_PROJECTILEWEAPON
         {
-			
-			if ${Entity[${newTarget}].Distance} > 45000 
+
+			if ${Entity[${newTarget}].Distance} > 45000
 			{
 				This:QueueState["LoadOptimalAmmo", 50, Barrage L]
 			}
-			
+
 			if ${Entity[${newTarget}].Distance} < 45000
 			{
 				This:QueueState["LoadOptimalAmmo", 50, Hail L]
 			}
-			
-        }		
-		
+
+        }
+
 		if ${Entity[${newTarget}].CategoryID} == CATEGORYID_ENTITY && ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_MISSILELAUNCHERTORPEDO
 		{
 			variable string longRange = ""
@@ -159,24 +159,24 @@ objectdef obj_ModuleBase inherits obj_State
 			{
 				This:QueueState["LoadOptimalAmmo", 50, ${longRange}]
 			}
-			
+
 			if ${Entity[${newTarget}].Distance} < 62000 && !${shortRange.Equal[""]}
 			{
 				This:QueueState["LoadOptimalAmmo", 50, ${shortRange}]
 			}
-			
+
 		}
 
         if ${Entity[${newTarget}].CategoryID} == CATEGORYID_ENTITY && ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_ENERGYWEAPON
         {
-			if ${MyShip.Cargo[Scorch L].Quantity} > 0 && ${Entity[${newTarget}].Distance} > 49000 
+			if ${MyShip.Cargo[Scorch L].Quantity} > 0 && ${Entity[${newTarget}].Distance} > 49000
 			{
 				This:QueueState["LoadOptimalAmmo", 50, Scorch L]
-			}		
-			if ${MyShip.Cargo[Conflagration L].Quantity} > 0 && ${Entity[${newTarget}].Distance} < 49000 
+			}
+			if ${MyShip.Cargo[Conflagration L].Quantity} > 0 && ${Entity[${newTarget}].Distance} < 49000
 			{
 				This:QueueState["LoadOptimalAmmo", 50, Conflagration L]
-			}		
+			}
         }
         if ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_PRECURSORWEAPON && ${Entity[${newTarget}].Distance} > ${Ship.CurrentOptimal}
         {
@@ -187,7 +187,7 @@ objectdef obj_ModuleBase inherits obj_State
         {
            return
         }
-		
+
 		if ${MyShip.Module[${ModuleID}].IsReloading}
 		{
 			return
@@ -240,15 +240,15 @@ objectdef obj_ModuleBase inherits obj_State
 
 		return TRUE
 	}
-	
+
 	member:bool LoadOptimalAmmo(string AmmoName)
 	{
 		variable index:item Plasmas
 		variable iterator Plasma
-		
+
 		if ${MyShip.Module[${ModuleID}].IsReloading}
 			return FALSE
-		
+
 		if ${AmmoName.Find[${MyShip.Module[${ModuleID}].Charge.Type}]}
 		{
 			return TRUE
