@@ -781,7 +781,7 @@ objectdef obj_Move inherits obj_StateQueue
 		{
 			if ${Me.SolarSystemID} == ${ID}
 			{
-				UI:Update["Move", "Reached ${Universe[${ID}].Name", "g"]
+				UI:Update["Move", "Reached ${Universe[${ID}].Name}", "g"]
 				This.Traveling:Set[FALSE]
 				return TRUE
 			}
