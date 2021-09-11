@@ -18,8 +18,6 @@ Unless otherwise specified in the config, the bot will fly to the mission locati
 
 Note: THERE ARE missions that this bot will not run, no matter how much you try and configure them.  Examples are:  
 
- - Worlds Collide
-   - Multiple gates in one grid.  Not worth implementing since there's no other similar mission.
  - The Anomaly
    - Very difficult to find the correct loot container to get the loot.  Also very shitty rewards, so not worth doing.
 

@@ -10,13 +10,6 @@ function main()
 	Script[Tehbot].VariableScope.Mission.ValidMissions:Set["Gone Berserk", "Kinetic"]
 
 	;
-	; If you are having trouble with the bot not seeing a config for your mission, add a space to the end.  Often you'll need two configs for the same mission,
-	; because sometimes you'll get the mission with the space and sometimes without.  For example:
-	;
-	Script[Tehbot].VariableScope.Mission.ValidMissions:Set["The Score", "EM"]
-	Script[Tehbot].VariableScope.Mission.ValidMissions:Set["The Score ", "EM"]
-
-	;
 	; Some missions also require that you kill a target.  To configure these, use the AttackTarget collection.
 	; This collection requires the mission name and a search string.  Most of these use the Name member.  Note the single equal and the \ escaped quotes!
 	;
