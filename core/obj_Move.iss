@@ -851,7 +851,7 @@ objectdef obj_Move inherits obj_StateQueue
 			This:Warp[${ID}, ${Distance}, ${FleetWarp}]
 			return FALSE
 		}
-		elseif ${Entity[${ID}].GroupID} == 1404 || ${Entity[${ID}.]GroupID} == 1406 || ${Entity[${ID}].GroupID} == 1657
+		elseif ${Entity[${ID}].GroupID} == 1404 || ${Entity[${ID}].GroupID} == 1406 || ${Entity[${ID}].GroupID} == 1657
 		{
 			This:DockAtStation[${ID}]
 			return FALSE
