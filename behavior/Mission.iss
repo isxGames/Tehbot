@@ -21,6 +21,7 @@ objectdef obj_Configuration_Mission
 	{
 		BaseConfig.BaseRef:AddSet[${This.SetName}]
 		This.CommonRef:AddSetting[Threshold,100]
+		This.CommonRef:AddSetting[DeclineLowSec,TRUE]
 		This.CommonRef:AddSetting[SalvagePrefix,Salvage: ]
 	}
 
@@ -44,6 +45,7 @@ objectdef obj_Configuration_Mission
 	Setting(string, ExplosiveAmmoSecondary, SetExplosiveAmmoSecondary)
 	Setting(int, Level, SetLevel)
 	Setting(int, Threshold, SetThreshold)
+	Setting(bool, DeclineLowSec, SetDeclineLowSec)
 }
 
 objectdef obj_Mission inherits obj_StateQueue
@@ -233,6 +235,16 @@ objectdef obj_Mission inherits obj_StateQueue
 				; offered
 				if ${m.Value.State} == 1
 				{
+					if ${Config.DeclineLowSec} && ${missionJournalText.Find["low security system"]}
+					{
+						UI:Update["Mission", "Declining low security mission", "g"]
+						UI:Update["Mission", " ${m.Value.Name}", "o"]
+						This:InsertState["Cleanup"]
+						This:InsertState["CheckForWork"]
+						This:InsertState["InteractAgent", 1500, "DECLINE"]
+						return TRUE
+					}
+
 					if ${ValidMissions.FirstKey(exists)}
 					{
 						do
@@ -297,18 +309,21 @@ objectdef obj_Mission inherits obj_StateQueue
 								missionAttackTarget:Set[""]
 								if ${AttackTarget.Element[${ValidMissions.CurrentKey}](exists)}
 								{
+									UI:Update["Mission", "attack target: ${AttackTarget.Element[${ValidMissions.CurrentKey}]}", "g"]
 									missionAttackTarget:Set[${AttackTarget.Element[${ValidMissions.CurrentKey}]}]
 								}
 
 								missionLootContainer:Set[""]
 								if ${LootContainers.Element[${ValidMissions.CurrentKey}](exists)}
 								{
+									UI:Update["Mission", "loot container: ${LootContainers.Element[${ValidMissions.CurrentKey}]}", "g"]
 									missionLootContainer:Set[${LootContainers.Element[${ValidMissions.CurrentKey}]}]
 								}
 
 								missionItemRequired:Set[""]
 								if ${ItemsRequired.Element[${ValidMissions.CurrentKey}](exists)}
 								{
+									UI:Update["Mission", "acquire item: ${ItemsRequired.Element[${ValidMissions.CurrentKey}]}", "g"]
 									missionItemRequired:Set[${ItemsRequired.Element[${ValidMissions.CurrentKey}]}]
 								}
 

@@ -962,6 +962,29 @@
 						</OnMouseExit>
 					</Checkbox>	
 					
+					<Checkbox name='DeclineLowSec'>
+						<X>13%</X>
+						<Y>45%</Y>
+						<Width>30%</Width>
+						<Height>5%</Height>
+						<Text>Decline Low-Sec Missions</Text>
+						<OnLoad>
+							if ${Script[Tehbot].VariableScope.Mission.Config.DeclineLowSec}
+							{
+								This:SetChecked
+							}
+						</OnLoad>
+						<OnLeftClick>
+							Script[Tehbot].VariableScope.Mission.Config:SetDeclineLowSec[${This.Checked}]
+						</OnLeftClick>
+						<OnMouseEnter>
+							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText["If this is checked, the bot will decline missions with low-sec warning."]
+						</OnMouseEnter>
+						<OnMouseExit>
+							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
+						</OnMouseExit>
+					</Checkbox>
+
 					<Checkbox name='UseDrones'>
 						<X>1%</X>
 						<Y>50%</Y>
