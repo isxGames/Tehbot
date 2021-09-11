@@ -309,21 +309,21 @@ objectdef obj_Mission inherits obj_StateQueue
 								missionAttackTarget:Set[""]
 								if ${AttackTarget.Element[${ValidMissions.CurrentKey}](exists)}
 								{
-									UI:Update["Mission", "attack target: ${AttackTarget.Element[${ValidMissions.CurrentKey}]}", "g"]
+									UI:Update["Mission", "Attack target: \ao${AttackTarget.Element[${ValidMissions.CurrentKey}]}", "g"]
 									missionAttackTarget:Set[${AttackTarget.Element[${ValidMissions.CurrentKey}]}]
 								}
 
 								missionLootContainer:Set[""]
 								if ${LootContainers.Element[${ValidMissions.CurrentKey}](exists)}
 								{
-									UI:Update["Mission", "loot container: ${LootContainers.Element[${ValidMissions.CurrentKey}]}", "g"]
+									UI:Update["Mission", "Loot container: \ao${LootContainers.Element[${ValidMissions.CurrentKey}]}", "g"]
 									missionLootContainer:Set[${LootContainers.Element[${ValidMissions.CurrentKey}]}]
 								}
 
 								missionItemRequired:Set[""]
 								if ${ItemsRequired.Element[${ValidMissions.CurrentKey}](exists)}
 								{
-									UI:Update["Mission", "acquire item: ${ItemsRequired.Element[${ValidMissions.CurrentKey}]}", "g"]
+									UI:Update["Mission", "Acquire item: \ao${ItemsRequired.Element[${ValidMissions.CurrentKey}]}", "g"]
 									missionItemRequired:Set[${ItemsRequired.Element[${ValidMissions.CurrentKey}]}]
 								}
 
@@ -925,7 +925,9 @@ objectdef obj_Mission inherits obj_StateQueue
 		}
 
 		; Nothing locked
-		if (${activetarget} == 0 || ${activetarget} == ${ActiveNPC.TargetList.Get[1].ID}) && ${ActiveNPC.TargetList.Get[1].Distance} > 90000 && ${MyShip.ToEntity.Mode} != 1
+		if (${activetarget} == 0 || ${activetarget} == ${ActiveNPC.TargetList.Get[1].ID}) && \
+		   ${ActiveNPC.TargetList.Get[1].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * .95]} && \
+		   ${MyShip.ToEntity.Mode} != 1
 		{
 			if ${Ship.ModuleList_Siege.ActiveCount}
 			{
@@ -942,16 +944,21 @@ objectdef obj_Mission inherits obj_StateQueue
 		{
 			Ship.ModuleList_Siege:Activate
 			if ${Ship.ModuleList_Weapon.Range} > ${Entity[${activetarget}].Distance} || !${Config.RangeLimit}
+			{
 				Ship.ModuleList_Weapon:Activate[${activetarget}]
-			Ship.ModuleList_TargetPainter:Activate[${activetarget}]
-			Ship.ModuleList_Weapon:DeactivateNotOn[${activetarget}]
-			Ship.ModuleList_TargetPainter:DeactivateNotOn[${activetarget}]
-			if ${Entity[${activetarget}].Distance} <= 30000
+				Ship.ModuleList_Weapon:DeactivateNotOn[${activetarget}]
+			}
+			if ${Entity[${activetarget}].Distance} <= ${Ship.ModuleList_TargetPainter.Range}
+			{
+				Ship.ModuleList_TargetPainter:Activate[${activetarget}]
+				Ship.ModuleList_TargetPainter:DeactivateNotOn[${activetarget}]
+			}
+			if ${Entity[${activetarget}].Distance} <= ${Ship.ModuleList_StasisGrap.Range}
 			{
 				Ship.ModuleList_StasisGrap:Activate[${activetarget}]
 				Ship.ModuleList_StasisGrap:DeactivateNotOn[${activetarget}]
 			}
-			if ${Entity[${activetarget}].Distance} <= 15000
+			if ${Entity[${activetarget}].Distance} <= ${Ship.ModuleList_StasisWeb.Range}
 			{
 				Ship.ModuleList_StasisWeb:Activate[${activetarget}]
 				Ship.ModuleList_StasisWeb:DeactivateNotOn[${activetarget}]
@@ -972,7 +979,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 		if ${NPC.TargetList.Used}
 		{
-			if ${NPC.TargetList.Get[1].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.MaxRange} * .95]} && ${MyShip.ToEntity.Mode} != 1
+			if ${NPC.TargetList.Get[1].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * .95]} && ${MyShip.ToEntity.Mode} != 1
 			{
 				if ${Ship.ModuleList_Siege.ActiveCount}
 				{
@@ -997,7 +1004,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 		if ${Entity[${missionAttackTarget}]}
 		{
-			if ${Entity[${missionAttackTarget}].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.MaxRange} * .95]} && ${MyShip.ToEntity.Mode} != 1
+			if ${Entity[${missionAttackTarget}].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * .95]} && ${MyShip.ToEntity.Mode} != 1
 			{
 				if ${Ship.ModuleList_Siege.ActiveCount}
 				{
@@ -1126,7 +1133,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			return TRUE
 		}
 
-		if !${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].NumButtons} > 0
+		if !${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}](exists)}
 		{
 			EVE.Agent[${agentIndex}]:StartConversation
 			return FALSE
@@ -1183,7 +1190,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			return TRUE
 		}
 
-		if !${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].NumButtons} > 0
+		if !${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}](exists)}
 		{
 			EVE.Agent[${agentIndex}]:StartConversation
 			return FALSE
