@@ -1033,7 +1033,8 @@ objectdef obj_Mission inherits obj_StateQueue
 
 			activetarget:Set[0]
 			Move:Gate[${Entity[Type = "Acceleration Gate"]}]
-			This:InsertState["PerformMission"]
+			; Blitz cargo delivery and recon 1 of 3
+			This:InsertState["CheckForWork"]
 			This:InsertState["Traveling"]
 			This:InsertState["ReloadWeapons"]
 			return TRUE
