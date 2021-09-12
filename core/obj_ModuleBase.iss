@@ -76,108 +76,153 @@ objectdef obj_ModuleBase inherits obj_StateQueue
         {
             This:Deactivate
         }
+
         if ${newTarget} != ${CurrentTarget} &&  ${This.IsActive}
         {
             This:Deactivate
         }
+
         if ${Entity[${newTarget}].CategoryID} == CATEGORYID_ORE && ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_FREQUENCY_MINING_LASER
         {
             This:QueueState["LoadMiningCrystal", 50, ${Entity[${newTarget}].Type}]
         }
 
-        if ${Entity[${newTarget}].CategoryID} == CATEGORYID_ENTITY && ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_PRECURSORWEAPON
-        {
+		variable string shortRangeAmmo = ${Mission.ammo}
+		variable string longRangeAmmo = ${Mission.secondaryammo}
 
-			if ${Entity[${newTarget}].Distance} > 70000 || ${Mission.RudeEwar}
-			{
-				This:QueueState["LoadOptimalAmmo", 50, Meson Exotic Plasma L]
-			}
-
-			if ${Entity[${newTarget}].Distance} > 50000 && ${Entity[${newTarget}].Distance} < 70000 && !${Mission.RudeEwar}
-			{
-				This:QueueState["LoadOptimalAmmo", 50, Mystic L]
-			}
-
-			if ${Entity[${newTarget}].Distance} > 27000 && ${Entity[${newTarget}].Distance} < 50000 && !${Mission.RudeEwar}
-			{
-				This:QueueState["LoadOptimalAmmo", 50, Baryon Exotic Plasma L]
-			}
-
-			if ${Entity[${newTarget}].Distance} < 27000 && ${Entity[${newTarget}].Distance} > 7500 && !${Mission.RudeEwar}
-
-			{
-				This:QueueState["LoadOptimalAmmo", 50, Occult L]
-			}
-
-			if ${Entity[${newTarget}].Distance} < 7500 && !${Mission.RudeEwar}
-
-			{
-				This:QueueState["LoadOptimalAmmo", 50, Baryon Exotic Plasma L]
-			}
-        }
-
-		if ${Entity[${newTarget}].CategoryID} == CATEGORYID_ENTITY && ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_PROJECTILEWEAPON
-        {
-
-			if ${Entity[${newTarget}].Distance} > 45000
-			{
-				This:QueueState["LoadOptimalAmmo", 50, Barrage L]
-			}
-
-			if ${Entity[${newTarget}].Distance} < 45000
-			{
-				This:QueueState["LoadOptimalAmmo", 50, Hail L]
-			}
-
-        }
-
-		if ${Entity[${newTarget}].CategoryID} == CATEGORYID_ENTITY && ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_MISSILELAUNCHERTORPEDO
+		if ${Entity[${newTarget}].CategoryID} == CATEGORYID_ENTITY
 		{
-			variable string longRange = ""
-			variable string shortRange = ""
-			if ${MyShip.Cargo[Scourge Javelin Torpedo].Quantity} > 300 || ${MyShip.Cargo[Scourge Rage Torpedo].Quantity} > 300
+			if ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_PRECURSORWEAPON
 			{
-				longRange:Set[Scourge Javelin Torpedo]
-				shortRange:Set[Scourge Rage Torpedo]
-			}
-			if ${MyShip.Cargo[Mjolnir Javelin Torpedo].Quantity} > 300 || ${MyShip.Cargo[Mjolnir Rage Torpedo].Quantity} > 300
-			{
-				longRange:Set[Mjolnir Javelin Torpedo]
-				shortRange:Set[Mjolnir Rage Torpedo]
-			}
-			if ${MyShip.Cargo[Nova Javelin Torpedo].Quantity} > 300 || ${MyShip.Cargo[Nova Rage Torpedo].Quantity} > 300
-			{
-				longRange:Set[Nova Javelin Torpedo]
-				shortRange:Set[Nova Rage Torpedo]
-			}
-			if ${MyShip.Cargo[Inferno Javelin Torpedo].Quantity} > 300 || ${MyShip.Cargo[Inferno Rage Torpedo].Quantity} > 300
-			{
-				longRange:Set[Inferno Javelin Torpedo]
-				shortRange:Set[Inferno Rage Torpedo]
-			}
-			if ${Entity[${newTarget}].Distance} > 62000 && !${longRange.Equal[""]}
-			{
-				This:QueueState["LoadOptimalAmmo", 50, ${longRange}]
+				if ${Entity[${newTarget}].Distance} > 70000 || ${Mission.RudeEwar}
+				{
+					This:QueueState["LoadOptimalAmmo", 50, "Meson Exotic Plasma L"]
+				}
+
+				if ${Entity[${newTarget}].Distance} > 50000 && ${Entity[${newTarget}].Distance} < 70000 && !${Mission.RudeEwar}
+				{
+					This:QueueState["LoadOptimalAmmo", 50, "Mystic L"]
+				}
+
+				if ${Entity[${newTarget}].Distance} > 27000 && ${Entity[${newTarget}].Distance} < 50000 && !${Mission.RudeEwar}
+				{
+					This:QueueState["LoadOptimalAmmo", 50, "Baryon Exotic Plasma L"]
+				}
+
+				if ${Entity[${newTarget}].Distance} < 27000 && ${Entity[${newTarget}].Distance} > 7500 && !${Mission.RudeEwar}
+
+				{
+					This:QueueState["LoadOptimalAmmo", 50, "Occult L"]
+				}
+
+				if ${Entity[${newTarget}].Distance} < 7500 && !${Mission.RudeEwar}
+
+				{
+					This:QueueState["LoadOptimalAmmo", 50, "Baryon Exotic Plasma L"]
+				}
 			}
 
-			if ${Entity[${newTarget}].Distance} < 62000 && !${shortRange.Equal[""]}
+			if ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_PROJECTILEWEAPON
 			{
-				This:QueueState["LoadOptimalAmmo", 50, ${shortRange}]
+				; This expression returns TRUE when the Quantity is NULL
+				if ${MyShip.Cargo[${shortRangeAmmo}].Quantity} == 0
+				{
+					shortRangeAmmo:Set["Hail L"]
+				}
+
+				if ${MyShip.Cargo[${longRangeAmmo}].Quantity} == 0
+				{
+					longRangeAmmo:Set["Barrage L"]
+				}
+
+				if ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0 && ${Entity[${newTarget}].Distance} < 45000
+				{
+					This:QueueState["LoadOptimalAmmo", 50, ${shortRangeAmmo}]
+				}
+
+				if ${MyShip.Cargo[${longRangeAmmo}].Quantity} > 0 && ${Entity[${newTarget}].Distance} > 45000
+				{
+					This:QueueState["LoadOptimalAmmo", 50, ${longRangeAmmo}]
+				}
 			}
 
+			if ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_MISSILELAUNCHERTORPEDO
+			{
+				if ${MyShip.Cargo[${shortRangeAmmo}].Quantity} == 0
+				{
+					if ${MyShip.Cargo["Scourge Rage Torpedo"].Quantity} > 0
+					{
+						shortRangeAmmo:Set["Scourge Rage Torpedo"]
+					}
+					elseif ${MyShip.Cargo["Mjolnir Rage Torpedo"].Quantity} > 0
+					{
+						shortRangeAmmo:Set["Mjolnir Rage Torpedo"]
+					}
+					elseif ${MyShip.Cargo["Nova Rage Torpedo"].Quantity} > 0
+					{
+						shortRangeAmmo:Set["Nova Rage Torpedo"]
+					}
+					elseif ${MyShip.Cargo["Inferno Rage Torpedo"].Quantity} > 0
+					{
+						shortRangeAmmo:Set["Inferno Rage Torpedo"]
+					}
+				}
+
+				if ${MyShip.Cargo[${longRangeAmmo}].Quantity} == 0
+				{
+					if ${MyShip.Cargo["Scourge Javelin Torpedo"].Quantity} > 0
+					{
+						longRangeAmmo:Set["Scourge Javelin Torpedo"]
+					}
+					elseif ${MyShip.Cargo["Mjolnir Javelin Torpedo"].Quantity} > 0
+					{
+						longRangeAmmo:Set["Mjolnir Javelin Torpedo"]
+					}
+					elseif ${MyShip.Cargo["Nova Javelin Torpedo"].Quantity} > 0
+					{
+						longRangeAmmo:Set["Nova Javelin Torpedo"]
+					}
+					elseif ${MyShip.Cargo["Inferno Javelin Torpedo"].Quantity} > 0
+					{
+						longRangeAmmo:Set["Inferno Javelin Torpedo"]
+					}
+				}
+
+				if ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0 && ${Entity[${newTarget}].Distance} < 62000
+				{
+					This:QueueState["LoadOptimalAmmo", 50, ${shortRangeAmmo}]
+				}
+
+				if ${MyShip.Cargo[${longRangeAmmo}].Quantity} > 0 && ${Entity[${newTarget}].Distance} > 62000
+				{
+					This:QueueState["LoadOptimalAmmo", 50, ${longRangeAmmo}]
+				}
+			}
+
+			if ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_ENERGYWEAPON
+			{
+				if ${MyShip.Cargo[${shortRangeAmmo}].Quantity} == 0
+				{
+					shortRangeAmmo:Set["Conflagration L"]
+				}
+
+				if ${MyShip.Cargo[${longRangeAmmo}].Quantity} == 0
+				{
+					longRangeAmmo:Set["Scorch L"]
+				}
+
+				if ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0 && ${Entity[${newTarget}].Distance} < 49000
+				{
+					This:QueueState["LoadOptimalAmmo", 50, ${shortRangeAmmo}]
+				}
+
+				if ${MyShip.Cargo[${longRangeAmmo}].Quantity} > 0 && ${Entity[${newTarget}].Distance} > 49000
+				{
+					This:QueueState["LoadOptimalAmmo", 50, ${longRangeAmmo}]
+				}
+			}
 		}
 
-        if ${Entity[${newTarget}].CategoryID} == CATEGORYID_ENTITY && ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_ENERGYWEAPON
-        {
-			if ${MyShip.Cargo[Scorch L].Quantity} > 0 && ${Entity[${newTarget}].Distance} > 49000
-			{
-				This:QueueState["LoadOptimalAmmo", 50, Scorch L]
-			}
-			if ${MyShip.Cargo[Conflagration L].Quantity} > 0 && ${Entity[${newTarget}].Distance} < 49000
-			{
-				This:QueueState["LoadOptimalAmmo", 50, Conflagration L]
-			}
-        }
         if ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_PRECURSORWEAPON && ${Entity[${newTarget}].Distance} > ${Ship.CurrentOptimal}
         {
            return
@@ -192,12 +237,14 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 		{
 			return
 		}
+
         This:QueueState["ActivateOn", 50, "${newTarget}"]
         This:QueueState["WaitTillActive", 50, 20]
         if ${DeactivatePercent} < 100
         {
             This:QueueState["DeactivatePercent", 50, ${DeactivatePercent}]
         }
+
         This:QueueState["WaitTillInactive"]
         if ${DoDeactivate}
         {
