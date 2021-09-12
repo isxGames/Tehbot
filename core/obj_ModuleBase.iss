@@ -25,6 +25,7 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 	variable bool Deactivated = FALSE
 	variable int64 CurrentTarget = -1
 	variable int64 ModuleID
+	variable string TurretAmmoRangeType = "unknown"
 
 	method Initialize(int64 ID)
 	{
@@ -67,6 +68,101 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 			Deactivated:Set[TRUE]
 			This:Clear
 			This:QueueState["WaitTillInactive", 50, 0]
+		}
+	}
+
+	method ChooseAndLoadTurretAmmo(string shortRangeAmmo, string longRangeAmmo, int64 newTarget, int DefaultRangeThreshold)
+	{
+		; I can not reset TurretAmmoRangeType to 'unknown' between missions due to stupid script bugs,
+		; There will be tiny risk of inaccurate TurretAmmoRangeType when the ammo is
+		; changed manually between missions.
+		; But the script can basically auto correct it as the mission goes on as follows:
+
+		; 		Label "Short" X Ammo "Long":
+		; 			For Close Target: Will switch to Ammo "Short" immediately
+		; 			For Far Target: Will firstly switch to Ammo "Short" then switch to Label/Ammo "Long"
+		; 			For Out of Range Target: Will switch Label to "Long"
+
+		; 		Label "Long" X Ammo "Short":
+		; 			For Target Within 40% Range: Will switch to Label "Short" immediately
+		; 			For Target Within 40% - 100% Range: The only case that it cannot auto correct,
+		; 				but this won't be big deal or lasts long as "Short" ammo is preferred and
+		;				correct in this case, and the target in its optimal range should be destroyed soon.
+		; 			For Out of Range Target: Will switch Ammo to "Long" immediately
+
+		; The following code can completely fix this risk but it's too much extraS complexity
+		; variable string TurretAmmoRangeType = "unknown"
+		; if ${MyShip.Module[${ModuleID}].Charge.Type(exists)}
+		; {
+		; 	if ${MyShip.Module[${ModuleID}].Charge.Type.Find["Multifrequency"]} || \
+		; 	${MyShip.Module[${ModuleID}].Charge.Type.Find["Gamma"]} || \
+		; 	${MyShip.Module[${ModuleID}].Charge.Type.Find["Xray"]} || \
+		; 	${MyShip.Module[${ModuleID}].Charge.Type.Find["Ultraviolet"]} || \
+		; 	${MyShip.Module[${ModuleID}].Charge.Type.Find["Conflagration"]} || \
+		; 	${MyShip.Module[${ModuleID}].Charge.Type.Find["Hail"]}
+		; 	{
+		; 		TurretAmmoRangeType:Set["short"]
+		; 	}
+		; 	elseif ${MyShip.Module[${ModuleID}].Charge.Type.Find["Standard"]} || \
+		; 	${MyShip.Module[${ModuleID}].Charge.Type.Find["Infrared"]} || \
+		; 	${MyShip.Module[${ModuleID}].Charge.Type.Find["Microwave"]} || \
+		; 	${MyShip.Module[${ModuleID}].Charge.Type.Find["Radio"]} || \
+		; 	${MyShip.Module[${ModuleID}].Charge.Type.Find["Scorch"]} || \
+		; 	${MyShip.Module[${ModuleID}].Charge.Type.Find["Barrage"]}
+		; 	{
+		; 		TurretAmmoRangeType:Set["long"]
+		; 	}
+		; }
+
+		switch ${TurretAmmoRangeType}
+		{
+			; When current ammo state is unknown, chose ammo by estimated default range.
+			case unknown
+				; echo current unknown ammo range ${This.Range}
+				if ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0 && ${Entity[${newTarget}].Distance} <= ${DefaultRangeThreshold}
+				{
+					TurretAmmoRangeType:Set["short"]
+					This:QueueState["LoadOptimalAmmo", 50, ${shortRangeAmmo}]
+				}
+
+				if ${MyShip.Cargo[${longRangeAmmo}].Quantity} > 0 && ${Entity[${newTarget}].Distance} > ${DefaultRangeThreshold}
+				{
+					TurretAmmoRangeType:Set["long"]
+					This:QueueState["LoadOptimalAmmo", 50, ${longRangeAmmo}]
+				}
+
+				break
+			case short
+				; echo current \ao short \aw ammo range ${This.Range}
+				; Use dynamic range to take skills, tracking enhancers, tracking disrupters etc. to account
+				if ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0 && ${Entity[${newTarget}].Distance} <= ${This.Range}
+				{
+					TurretAmmoRangeType:Set["short"]
+					This:QueueState["LoadOptimalAmmo", 50, ${shortRangeAmmo}]
+				}
+
+				if ${MyShip.Cargo[${longRangeAmmo}].Quantity} > 0 && ${Entity[${newTarget}].Distance} > ${This.Range}
+				{
+					TurretAmmoRangeType:Set["long"]
+					This:QueueState["LoadOptimalAmmo", 50, ${longRangeAmmo}]
+				}
+
+				break
+			case long
+				; echo current \ag long \aw ammo range ${This.Range}
+				if ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0 && ${Entity[${newTarget}].Distance} <= ${Math.Calc[${This.Range} * 0.4]}
+				{
+					TurretAmmoRangeType:Set["short"]
+					This:QueueState["LoadOptimalAmmo", 50, ${shortRangeAmmo}]
+				}
+
+				if ${MyShip.Cargo[${longRangeAmmo}].Quantity} > 0 && ${Entity[${newTarget}].Distance} > ${Math.Calc[${This.Range} * 0.4]}
+				{
+					TurretAmmoRangeType:Set["long"]
+					This:QueueState["LoadOptimalAmmo", 50, ${longRangeAmmo}]
+				}
+
+				break
 		}
 	}
 
@@ -135,15 +231,7 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 					longRangeAmmo:Set["Barrage L"]
 				}
 
-				if ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0 && ${Entity[${newTarget}].Distance} < 45000
-				{
-					This:QueueState["LoadOptimalAmmo", 50, ${shortRangeAmmo}]
-				}
-
-				if ${MyShip.Cargo[${longRangeAmmo}].Quantity} > 0 && ${Entity[${newTarget}].Distance} > 45000
-				{
-					This:QueueState["LoadOptimalAmmo", 50, ${longRangeAmmo}]
-				}
+				This:ChooseAndLoadTurretAmmo[${shortRangeAmmo}, ${longRangeAmmo}, ${newTarget}, 45000]
 			}
 
 			if ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_MISSILELAUNCHERTORPEDO
@@ -211,15 +299,7 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 					longRangeAmmo:Set["Scorch L"]
 				}
 
-				if ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0 && ${Entity[${newTarget}].Distance} < 49000
-				{
-					This:QueueState["LoadOptimalAmmo", 50, ${shortRangeAmmo}]
-				}
-
-				if ${MyShip.Cargo[${longRangeAmmo}].Quantity} > 0 && ${Entity[${newTarget}].Distance} > 49000
-				{
-					This:QueueState["LoadOptimalAmmo", 50, ${longRangeAmmo}]
-				}
+				This:ChooseAndLoadTurretAmmo[${shortRangeAmmo}, ${longRangeAmmo}, ${newTarget}, 49000]
 			}
 		}
 
@@ -290,8 +370,8 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 
 	member:bool LoadOptimalAmmo(string AmmoName)
 	{
-		variable index:item Plasmas
-		variable iterator Plasma
+		variable index:item AvailableAmmos
+		variable iterator AvailableAmmoIterator
 
 		if ${MyShip.Module[${ModuleID}].IsReloading}
 			return FALSE
@@ -302,26 +382,34 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 		}
 		else
 		{
-			MyShip.Module[${ModuleID}]:GetAvailableAmmo[Plasmas]
+			MyShip.Module[${ModuleID}]:GetAvailableAmmo[AvailableAmmos]
 
-			if ${Plasmas.Used} == 0
+			if ${AvailableAmmos.Used} == 0
 			{
 				UI:Update["obj_Module", "No Ammo available - dreadful - also, annoying", "o"]
 			}
 
-			Plasmas:GetIterator[Plasma]
+			AvailableAmmos:GetIterator[AvailableAmmoIterator]
 
-			if ${Plasma:First(exists)}
+			if ${AvailableAmmoIterator:First(exists)}
 			do
 			{
-				if ${AmmoName.Find[${Plasma.Value.Name}](exists)}
+				if ${AmmoName.Find[${AvailableAmmoIterator.Value.Name}](exists)}
 				{
-					UI:Update["obj_Module", "Switching Ammo to ${Plasma.Value.Name}"]
-					MyShip.Module[${ModuleID}]:ChangeAmmo[${Plasma.Value.ID},1]
+					UI:Update["obj_Module", "Switching Ammo to ${AvailableAmmoIterator.Value.Name}"]
+
+					variable int ChargeAmountToLoad = ${MyShip.Cargo[${AmmoName}].Quantity}
+
+					if ${ChargeAmountToLoad} > ${MyShip.Module[${ModuleID}].MaxCharges}
+					{
+						ChargeAmountToLoad:Set[${MyShip.Module[${ModuleID}].MaxCharges}]
+					}
+
+					MyShip.Module[${ModuleID}]:ChangeAmmo[${AvailableAmmoIterator.Value.ID}, ${ChargeAmountToLoad}]
 					return TRUE
 				}
 			}
-			while ${Plasma:Next(exists)}
+			while ${AvailableAmmoIterator:Next(exists)}
 		}
 
 		return FALSE
