@@ -263,8 +263,9 @@ objectdef obj_Move inherits obj_StateQueue
 		UI:Update["Move", "Movement queued", "o"]
 		UI:Update["Move", " ${AgentName}", "-g"]
 		This.Traveling:Set[TRUE]
-		This:QueueState["AgentMove", 2000, ${EVE.Agent[AgentName].Index}]
+		This:InsertState["AgentMove", 2000, ${EVE.Agent[AgentName].Index}]
 	}
+
 	method Agent(int AgentIndex)
 	{
 		if ${This.Traveling}
@@ -282,9 +283,8 @@ objectdef obj_Move inherits obj_StateQueue
 		UI:Update["Move", "Movement queued", "o"]
 		UI:Update["Move", " ${EVE.Agent[${AgentIndex}].Name}", "-g"]
 		This.Traveling:Set[TRUE]
-		This:QueueState["AgentMove", 2000, ${AgentIndex}]
+		This:InsertState["AgentMove", 2000, ${AgentIndex}]
 	}
-
 
 	method Gate(int64 ID, bool CalledFromMove=FALSE)
 	{
@@ -331,7 +331,6 @@ objectdef obj_Move inherits obj_StateQueue
 		}
 		return FALSE
 	}
-
 
 	member:bool FleetmemberMove(int64 ID, bool IgnoreGate=FALSE, int Distance=0)
 	{
@@ -724,7 +723,6 @@ objectdef obj_Move inherits obj_StateQueue
 
 	member:bool AgentMove(int ID)
 	{
-
 		if ${Me.InStation}
 		{
 			if ${Me.StationID} == ${EVE.Agent[${ID}].StationID}

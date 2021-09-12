@@ -1033,8 +1033,60 @@ objectdef obj_Mission inherits obj_StateQueue
 			return TRUE
 		}
 
-		if ${Entity[Type = "Acceleration Gate"]} && !${EVEWindow[byName, modal].Text.Find[This gate is locked!]} && \
-			(${Me.ToEntity.Mode} != 1 || ${Me.ToEntity.Approaching.ID} != ${Entity[Type = "Acceleration Gate"].ID})
+		; Check mission complete for World Collide and Extravaganza before activating an extra gate
+		variable index:agentmission Missions
+		variable iterator MissionIterator
+		EVE:GetAgentMissions[Missions]
+		Missions:GetIterator[MissionIterator]
+
+		if ${MissionIterator:First(exists)}
+		{
+			do
+			{
+				if ${MissionIterator.Value.AgentID} != ${EVE.Agent[${agentIndex}].ID}
+				{
+					continue
+				}
+
+				if !${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}](exists)}
+				{
+					MissionIterator.Value:GetDetails
+					return FALSE
+				}
+
+				variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Escape}
+				if ${missionJournalText.Equals[NULL]}
+				{
+					MissionIterator.Value:GetDetails
+					return FALSE
+				}
+
+				; accepted
+				if ${MissionIterator.Value.State} == 2
+				{
+					if ${ValidMissions.FirstKey(exists)}
+					{
+						do
+						{
+							variable string checkmarkIcon = "icon:38_193"
+							if ${missionJournalText.Find[${ValidMissions.CurrentKey} Objectives Complete]} || \
+							${Math.Calc[${missionJournalText.Length} - ${missionJournalText.ReplaceSubstring[${checkmarkIcon}, ""].Length}]} >= ${Math.Calc[${checkmarkIcon.Length} * 2]}
+							{
+								UI:Update["Mission", "Mission Complete", "g"]
+								UI:Update["Mission", " ${MissionIterator.Value.Name}", "o"]
+								This:InsertState["Cleanup"]
+								This:InsertState["CompleteMission", 1500]
+								return TRUE
+							}
+						}
+						while ${ValidMissions.NextKey(exists)}
+					}
+				}
+			}
+			while ${MissionIterator:Next(exists)}
+		}
+
+		if ${Entity[Type = "Acceleration Gate"]} && !${EVEWindow[byName, modal].Text.Find[This gate is locked!]}
 		{
 			if ${Ship.ModuleList_Siege.ActiveCount}
 			{
