@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <ISUI>
-	<template name='Information.Font'>	
+	<template name='Information.Font'>
 		<Name>Terminal</Name>
 		<Size>8</Size>
 		<Color>FFFFFFFF</Color>
-	</template>	
+	</template>
 
 	<window name='Tehbot_CombatMissions'>
 		<Visible>1</Visible>
@@ -55,7 +55,7 @@
 					<OnMouseExit>
 						UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
 					</OnMouseExit>
-				</button>				
+				</button>
 				<button	Name='Resume'>
 					<Font template='Button.Font' />
 					<BackgroundColor>FF000000</BackgroundColor>
@@ -73,7 +73,7 @@
 					<OnMouseExit>
 						UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
 					</OnMouseExit>
-				</button>				
+				</button>
 			</Children>
 		</TitleBar>
 		<Children name="Tehbot_CombatMissions_Children">
@@ -86,23 +86,23 @@
 				<Border>1</Border>
 				<BorderColor>FFFFFFFF</BorderColor>
 				<Children name="Tehbot_CombatMissions_Frame_Children">
-					<Text name='obj_CombatInformation'> 
+					<Text name='obj_CombatInformation'>
 						<Font template='Information.Font' />
-						<X>1%</X> 
-						<Y>1%</Y> 
-						<Width>98%</Width> 
-						<Height>18%</Height> 
+						<X>1%</X>
+						<Y>1%</Y>
+						<Width>98%</Width>
+						<Height>18%</Height>
 						<Wrap />
 						<Text></Text>
-					</Text>						 
-					<Text name='obj_Combat_AgentListTitle'> 
-						<X>1%</X> 
-						<Y>5%</Y> 
-						<Width>30%</Width> 
-						<Height>2%</Height> 
+					</Text>
+					<Text name='obj_Combat_AgentListTitle'>
+						<X>1%</X>
+						<Y>5%</Y>
+						<Width>30%</Width>
+						<Height>2%</Height>
 						<Alignment>Center</Alignment>
 						<Text>Agent Configuration</Text>
-					</Text>		
+					</Text>
 					<combobox Name="Combat_AgentLevel">
 						<BackgroundColor>FF000000</BackgroundColor>
 						<X>1%</X>
@@ -142,10 +142,10 @@
 						<OnMouseExit>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
 						</OnMouseExit>
-						
+
 					</combobox>
-					
-					
+
+
 					<listbox Name="obj_Combat_AgentList">
 						<BackgroundColor>FF000000</BackgroundColor>
 						<Border>1</Border>
@@ -183,8 +183,8 @@
 							{
 								This:Hide
 							}
-						
-							
+
+
 						</OnLoad>
 						<OnMouseEnter>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText["Use this to configure the agent you will be running combat missions for.  This only lists agents that you've added to your address book."]
@@ -193,12 +193,12 @@
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
 						</OnMouseExit>
 					</listbox>
-					
+
 					<Checkbox name='Halt'>
 						<X>1%</X>
 						<Y>1%</Y>
-						<Width>32%</Width> 
-						<Height>4%</Height> 
+						<Width>32%</Width>
+						<Height>4%</Height>
 						<Text>Halt After Mission</Text>
 						<OnLoad>
 							if ${Script[Tehbot].VariableScope.Mission.Config.Halt}
@@ -215,13 +215,13 @@
 						<OnMouseExit>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
 						</OnMouseExit>
-					</Checkbox>	
+					</Checkbox>
 
 					<Text name='KineticAmmoLabel'>
 						<X>35%</X>
 						<Y>3%</Y>
-						<Width>50%</Width> 
-						<Height>5%</Height> 
+						<Width>50%</Width>
+						<Height>5%</Height>
 						<Alignment>Left</Alignment>
 						<Text>Kinetic Ammo</Text>
 					</Text>
@@ -265,7 +265,7 @@
 								if !${This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.KineticAmmo}](exists)}
 									This:AddItem[${Script[Tehbot].VariableScope.Mission.Config.KineticAmmo}]
 							}
-							This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.KineticAmmo}]:Select					
+							This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.KineticAmmo}]:Select
 							This:SetZOrder[movetop]
 						</OnLoad>
 						<OnSelect>
@@ -281,8 +281,8 @@
 					<Text name='ThermalAmmoLabel'>
 						<X>35%</X>
 						<Y>9%</Y>
-						<Width>50%</Width> 
-						<Height>5%</Height> 
+						<Width>50%</Width>
+						<Height>5%</Height>
 						<Alignment>Left</Alignment>
 						<Text>Thermal Ammo</Text>
 					</Text>
@@ -326,7 +326,7 @@
 								if !${This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.ThermalAmmo}](exists)}
 									This:AddItem[${Script[Tehbot].VariableScope.Mission.Config.ThermalAmmo}]
 							}
-							This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.ThermalAmmo}]:Select					
+							This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.ThermalAmmo}]:Select
 							This:SetZOrder[movetop]
 						</OnLoad>
 						<OnSelect>
@@ -342,8 +342,8 @@
 					<Text name='EMAmmoLabel'>
 						<X>35%</X>
 						<Y>15%</Y>
-						<Width>50%</Width> 
-						<Height>5%</Height> 
+						<Width>50%</Width>
+						<Height>5%</Height>
 						<Alignment>Left</Alignment>
 						<Text>EM Ammo</Text>
 					</Text>
@@ -387,7 +387,7 @@
 								if !${This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.EMAmmo}](exists)}
 									This:AddItem[${Script[Tehbot].VariableScope.Mission.Config.EMAmmo}]
 							}
-							This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.EMAmmo}]:Select					
+							This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.EMAmmo}]:Select
 							This:SetZOrder[movetop]
 						</OnLoad>
 						<OnSelect>
@@ -403,8 +403,8 @@
 					<Text name='ExplosiveAmmoLabel'>
 						<X>35%</X>
 						<Y>21%</Y>
-						<Width>50%</Width> 
-						<Height>5%</Height> 
+						<Width>50%</Width>
+						<Height>5%</Height>
 						<Alignment>Left</Alignment>
 						<Text>Explosive Ammo</Text>
 					</Text>
@@ -448,7 +448,7 @@
 								if !${This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.ExplosiveAmmo}](exists)}
 									This:AddItem[${Script[Tehbot].VariableScope.Mission.Config.ExplosiveAmmo}]
 							}
-							This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.ExplosiveAmmo}]:Select					
+							This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.ExplosiveAmmo}]:Select
 							This:SetZOrder[movetop]
 						</OnLoad>
 						<OnSelect>
@@ -465,11 +465,11 @@
 					<Checkbox name='UseSecondary'>
 						<X>35%</X>
 						<Y>26%</Y>
-						<Width>50%</Width> 
-						<Height>5%</Height> 
+						<Width>50%</Width>
+						<Height>5%</Height>
 						<Text>Use Long-range Ammo</Text>
 						<OnLoad>
-							if ${Script[Tehbot].VariableScope.Mission.Config.Secondary}
+							if ${Script[Tehbot].VariableScope.Mission.Config.UseSecondaryAmmo}
 							{
 								This:SetChecked
 							}
@@ -505,17 +505,17 @@
 						<OnMouseExit>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
 						</OnMouseExit>
-					</Checkbox>						
-					
+					</Checkbox>
+
 					<Text name='KineticAmmoLabel2'>
 						<X>35%</X>
 						<Y>32%</Y>
-						<Width>50%</Width> 
-						<Height>5%</Height> 
+						<Width>50%</Width>
+						<Height>5%</Height>
 						<Alignment>Left</Alignment>
 						<Text>Kinetic Ammo</Text>
 						<OnLoad>
-							if !${Script[Tehbot].VariableScope.Mission.Config.Secondary}
+							if !${Script[Tehbot].VariableScope.Mission.Config.UseSecondaryAmmo}
 							{
 								This:Hide
 							}
@@ -561,9 +561,9 @@
 								if !${This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.KineticAmmoSecondary}](exists)}
 									This:AddItem[${Script[Tehbot].VariableScope.Mission.Config.KineticAmmoSecondary}]
 							}
-							This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.KineticAmmoSecondary}]:Select					
+							This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.KineticAmmoSecondary}]:Select
 							This:SetZOrder[movetop]
-							if !${Script[Tehbot].VariableScope.Mission.Config.Secondary}
+							if !${Script[Tehbot].VariableScope.Mission.Config.UseSecondaryAmmo}
 							{
 								This:Hide
 							}
@@ -581,12 +581,12 @@
 					<Text name='ThermalAmmoLabel2'>
 						<X>35%</X>
 						<Y>38%</Y>
-						<Width>50%</Width> 
-						<Height>5%</Height> 
+						<Width>50%</Width>
+						<Height>5%</Height>
 						<Alignment>Left</Alignment>
 						<Text>Thermal Ammo</Text>
 						<OnLoad>
-							if !${Script[Tehbot].VariableScope.Mission.Config.Secondary}
+							if !${Script[Tehbot].VariableScope.Mission.Config.UseSecondaryAmmo}
 							{
 								This:Hide
 							}
@@ -632,9 +632,9 @@
 								if !${This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.ThermalAmmoSecondary}](exists)}
 									This:AddItem[${Script[Tehbot].VariableScope.Mission.Config.ThermalAmmoSecondary}]
 							}
-							This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.ThermalAmmoSecondary}]:Select					
+							This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.ThermalAmmoSecondary}]:Select
 							This:SetZOrder[movetop]
-							if !${Script[Tehbot].VariableScope.Mission.Config.Secondary}
+							if !${Script[Tehbot].VariableScope.Mission.Config.UseSecondaryAmmo}
 							{
 								This:Hide
 							}
@@ -652,12 +652,12 @@
 					<Text name='EMAmmoLabel2'>
 						<X>35%</X>
 						<Y>44%</Y>
-						<Width>50%</Width> 
-						<Height>5%</Height> 
+						<Width>50%</Width>
+						<Height>5%</Height>
 						<Alignment>Left</Alignment>
 						<Text>EM Ammo</Text>
 						<OnLoad>
-							if !${Script[Tehbot].VariableScope.Mission.Config.Secondary}
+							if !${Script[Tehbot].VariableScope.Mission.Config.UseSecondaryAmmo}
 							{
 								This:Hide
 							}
@@ -703,9 +703,9 @@
 								if !${This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.EMAmmoSecondary}](exists)}
 									This:AddItem[${Script[Tehbot].VariableScope.Mission.Config.EMAmmoSecondary}]
 							}
-							This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.EMAmmoSecondary}]:Select					
+							This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.EMAmmoSecondary}]:Select
 							This:SetZOrder[movetop]
-							if !${Script[Tehbot].VariableScope.Mission.Config.Secondary}
+							if !${Script[Tehbot].VariableScope.Mission.Config.UseSecondaryAmmo}
 							{
 								This:Hide
 							}
@@ -723,12 +723,12 @@
 					<Text name='ExplosiveAmmoLabel2'>
 						<X>35%</X>
 						<Y>50%</Y>
-						<Width>50%</Width> 
-						<Height>5%</Height> 
+						<Width>50%</Width>
+						<Height>5%</Height>
 						<Alignment>Left</Alignment>
 						<Text>Explosive Ammo</Text>
 						<OnLoad>
-							if !${Script[Tehbot].VariableScope.Mission.Config.Secondary}
+							if !${Script[Tehbot].VariableScope.Mission.Config.UseSecondaryAmmo}
 							{
 								This:Hide
 							}
@@ -774,9 +774,9 @@
 								if !${This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.ExplosiveAmmoSecondary}](exists)}
 									This:AddItem[${Script[Tehbot].VariableScope.Mission.Config.ExplosiveAmmoSecondary}]
 							}
-							This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.ExplosiveAmmoSecondary}]:Select					
+							This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.ExplosiveAmmoSecondary}]:Select
 							This:SetZOrder[movetop]
-							if !${Script[Tehbot].VariableScope.Mission.Config.Secondary}
+							if !${Script[Tehbot].VariableScope.Mission.Config.UseSecondaryAmmo}
 							{
 								This:Hide
 							}
@@ -791,12 +791,12 @@
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
 						</OnMouseExit>
 					</combobox>
-					
-					<Text name='AmmoSupplyTitle'> 
-						<X>1%</X> 
-						<Y>33%</Y> 
-						<Width>30%</Width> 
-						<Height>5%</Height> 
+
+					<Text name='AmmoSupplyTitle'>
+						<X>1%</X>
+						<Y>33%</Y>
+						<Width>30%</Width>
+						<Height>5%</Height>
 						<Alignment>Center</Alignment>
 						<Text>
 							Ammo Supply Configuration
@@ -807,15 +807,15 @@
 						<OnMouseExit>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
 						</OnMouseExit>
-					</Text>		
-					<Text name='AmmoSupplyValue'> 
-						<X>1%</X> 
-						<Y>37%</Y> 
-						<Width>30%</Width> 
-						<Height>5%</Height> 
+					</Text>
+					<Text name='AmmoSupplyValue'>
+						<X>1%</X>
+						<Y>37%</Y>
+						<Width>30%</Width>
+						<Height>5%</Height>
 						<Alignment>Center</Alignment>
 						<OnLoad>
-							This:SetText[${Script[Tehbot].VariableScope.Mission.Config.Threshold}]
+							This:SetText[${Script[Tehbot].VariableScope.Mission.Config.AmmoAmountToLoad}]
 						</OnLoad>
 						<OnMouseEnter>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText["This configures how many rounds of ammo you will load before a mission."]
@@ -823,7 +823,7 @@
 						<OnMouseExit>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
 						</OnMouseExit>
-					</Text>		
+					</Text>
 					<button	Name='AmmoInc1'>
 						<Font template='Button.Font' />
 						<BackgroundColor>FF000000</BackgroundColor>
@@ -833,8 +833,8 @@
 						<Height>5%</Height>
 						<Text>1</Text>
 						<OnLeftClick>
-							Script[Tehbot].VariableScope.Mission.Config:SetThreshold[${Math.Calc[${Script[Tehbot].VariableScope.Mission.Config.Threshold} + 1]}]
-							UIElement[AmmoSupplyValue@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[${Script[Tehbot].VariableScope.Mission.Config.Threshold}]
+							Script[Tehbot].VariableScope.Mission.Config:SetAmmoAmountToLoad[${Math.Calc[${Script[Tehbot].VariableScope.Mission.Config.AmmoAmountToLoad} + 1]}]
+							UIElement[AmmoSupplyValue@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[${Script[Tehbot].VariableScope.Mission.Config.AmmoAmountToLoad}]
 						</OnLeftClick>
 						<OnMouseEnter>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText["This configures how many rounds of ammo you will load before a mission."]
@@ -842,7 +842,7 @@
 						<OnMouseExit>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
 						</OnMouseExit>
-					</button>				
+					</button>
 					<button	Name='AmmoInc10'>
 						<Font template='Button.Font' />
 						<BackgroundColor>FF000000</BackgroundColor>
@@ -852,8 +852,8 @@
 						<Height>5%</Height>
 						<Text>10</Text>
 						<OnLeftClick>
-							Script[Tehbot].VariableScope.Mission.Config:SetThreshold[${Math.Calc[${Script[Tehbot].VariableScope.Mission.Config.Threshold} + 10]}]
-							UIElement[AmmoSupplyValue@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[${Script[Tehbot].VariableScope.Mission.Config.Threshold}]
+							Script[Tehbot].VariableScope.Mission.Config:SetAmmoAmountToLoad[${Math.Calc[${Script[Tehbot].VariableScope.Mission.Config.AmmoAmountToLoad} + 10]}]
+							UIElement[AmmoSupplyValue@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[${Script[Tehbot].VariableScope.Mission.Config.AmmoAmountToLoad}]
 						</OnLeftClick>
 						<OnMouseEnter>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText["This configures how many rounds of ammo you will load before a mission."]
@@ -861,7 +861,7 @@
 						<OnMouseExit>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
 						</OnMouseExit>
-					</button>				
+					</button>
 					<button	Name='AmmoInc100'>
 						<Font template='Button.Font' />
 						<BackgroundColor>FF000000</BackgroundColor>
@@ -871,8 +871,8 @@
 						<Height>5%</Height>
 						<Text>100</Text>
 						<OnLeftClick>
-							Script[Tehbot].VariableScope.Mission.Config:SetThreshold[${Math.Calc[${Script[Tehbot].VariableScope.Mission.Config.Threshold} + 100]}]
-							UIElement[AmmoSupplyValue@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[${Script[Tehbot].VariableScope.Mission.Config.Threshold}]
+							Script[Tehbot].VariableScope.Mission.Config:SetAmmoAmountToLoad[${Math.Calc[${Script[Tehbot].VariableScope.Mission.Config.AmmoAmountToLoad} + 100]}]
+							UIElement[AmmoSupplyValue@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[${Script[Tehbot].VariableScope.Mission.Config.AmmoAmountToLoad}]
 						</OnLeftClick>
 						<OnMouseEnter>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText["This configures how many rounds of ammo you will load before a mission."]
@@ -880,7 +880,7 @@
 						<OnMouseExit>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
 						</OnMouseExit>
-					</button>				
+					</button>
 					<button	Name='AmmoDec100'>
 						<Font template='Button.Font' />
 						<BackgroundColor>FF000000</BackgroundColor>
@@ -890,8 +890,8 @@
 						<Height>5%</Height>
 						<Text>100</Text>
 						<OnLeftClick>
-							Script[Tehbot].VariableScope.Mission.Config:SetThreshold[${Math.Calc[${Script[Tehbot].VariableScope.Mission.Config.Threshold} - 100]}]
-							UIElement[AmmoSupplyValue@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[${Script[Tehbot].VariableScope.Mission.Config.Threshold}]
+							Script[Tehbot].VariableScope.Mission.Config:SetAmmoAmountToLoad[${Math.Calc[${Script[Tehbot].VariableScope.Mission.Config.AmmoAmountToLoad} - 100]}]
+							UIElement[AmmoSupplyValue@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[${Script[Tehbot].VariableScope.Mission.Config.AmmoAmountToLoad}]
 						</OnLeftClick>
 						<OnMouseEnter>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText["This configures how many rounds of ammo you will load before a mission."]
@@ -899,7 +899,7 @@
 						<OnMouseExit>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
 						</OnMouseExit>
-					</button>				
+					</button>
 					<button	Name='AmmoDec10'>
 						<Font template='Button.Font' />
 						<BackgroundColor>FF000000</BackgroundColor>
@@ -909,8 +909,8 @@
 						<Height>5%</Height>
 						<Text>10</Text>
 						<OnLeftClick>
-							Script[Tehbot].VariableScope.Mission.Config:SetThreshold[${Math.Calc[${Script[Tehbot].VariableScope.Mission.Config.Threshold} - 10]}]
-							UIElement[AmmoSupplyValue@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[${Script[Tehbot].VariableScope.Mission.Config.Threshold}]
+							Script[Tehbot].VariableScope.Mission.Config:SetAmmoAmountToLoad[${Math.Calc[${Script[Tehbot].VariableScope.Mission.Config.AmmoAmountToLoad} - 10]}]
+							UIElement[AmmoSupplyValue@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[${Script[Tehbot].VariableScope.Mission.Config.AmmoAmountToLoad}]
 						</OnLeftClick>
 						<OnMouseEnter>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText["This configures how many rounds of ammo you will load before a mission."]
@@ -918,7 +918,7 @@
 						<OnMouseExit>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
 						</OnMouseExit>
-					</button>				
+					</button>
 					<button	Name='AmmoDec1'>
 						<Font template='Button.Font' />
 						<BackgroundColor>FF000000</BackgroundColor>
@@ -928,8 +928,8 @@
 						<Height>5%</Height>
 						<Text>1</Text>
 						<OnLeftClick>
-							Script[Tehbot].VariableScope.Mission.Config:SetThreshold[${Math.Calc[${Script[Tehbot].VariableScope.Mission.Config.Threshold} - 1]}]
-							UIElement[AmmoSupplyValue@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[${Script[Tehbot].VariableScope.Mission.Config.Threshold}]
+							Script[Tehbot].VariableScope.Mission.Config:SetAmmoAmountToLoad[${Math.Calc[${Script[Tehbot].VariableScope.Mission.Config.AmmoAmountToLoad} - 1]}]
+							UIElement[AmmoSupplyValue@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[${Script[Tehbot].VariableScope.Mission.Config.AmmoAmountToLoad}]
 						</OnLeftClick>
 						<OnMouseEnter>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText["This configures how many rounds of ammo you will load before a mission."]
@@ -938,12 +938,12 @@
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
 						</OnMouseExit>
 					</button>
-					
+
 					<Checkbox name='RangeLimit'>
 						<X>1%</X>
 						<Y>45%</Y>
-						<Width>30%</Width> 
-						<Height>5%</Height> 
+						<Width>30%</Width>
+						<Height>5%</Height>
 						<Text>Range Limit</Text>
 						<OnLoad>
 							if ${Script[Tehbot].VariableScope.Mission.Config.RangeLimit}
@@ -960,8 +960,8 @@
 						<OnMouseExit>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
 						</OnMouseExit>
-					</Checkbox>	
-					
+					</Checkbox>
+
 					<Checkbox name='DeclineLowSec'>
 						<X>13%</X>
 						<Y>45%</Y>
@@ -988,11 +988,11 @@
 					<Checkbox name='UseDrones'>
 						<X>1%</X>
 						<Y>50%</Y>
-						<Width>30%</Width> 
-						<Height>5%</Height> 
+						<Width>30%</Width>
+						<Height>5%</Height>
 						<Text>Use Drones</Text>
 						<OnLoad>
-							if ${Script[Tehbot].VariableScope.Mission.Config.Drones}
+							if ${Script[Tehbot].VariableScope.Mission.Config.UseDrones}
 							{
 								This:SetChecked
 							}
@@ -1009,12 +1009,12 @@
 							}
 						</OnLeftClick>
 						<OnMouseEnter>
-							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText["Check this if you'll be using drones to shoot small shit.  This tells the bot to make sure to top off drones before running a mission."]
+							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText["Check this if you'll be using drones to shoot small shit. This tells the bot to make sure to top off drones before running a mission."]
 						</OnMouseEnter>
 						<OnMouseExit>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
 						</OnMouseExit>
-					</Checkbox>			
+					</Checkbox>
 
 					<combobox Name="DroneType">
 						<BackgroundColor>FF000000</BackgroundColor>
@@ -1023,7 +1023,7 @@
 						<Width>30%</Width>
 						<Height>5%</Height>
 						<OnLoad>
-							if !${Script[Tehbot].VariableScope.Mission.Config.Drones}
+							if !${Script[Tehbot].VariableScope.Mission.Config.UseDrones}
 								This:Hide
 							variable index:item cargo
 							variable iterator c
@@ -1057,7 +1057,7 @@
 								if !${This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.DroneType}](exists)}
 									This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.DroneType}]:Select
 							}
-							This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.DroneType}]:Select					
+							This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.DroneType}]:Select
 							This:SetZOrder[movetop]
 						</OnLoad>
 						<OnSelect>
@@ -1069,14 +1069,14 @@
 						<OnMouseExit>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
 						</OnMouseExit>
-					</combobox>			
+					</combobox>
 
 
-					<Text name='DropoffTypeTitle'> 
-						<X>36%</X> 
-						<Y>56%</Y> 
-						<Width>30%</Width> 
-						<Height>5%</Height> 
+					<Text name='DropoffTypeTitle'>
+						<X>36%</X>
+						<Y>56%</Y>
+						<Width>30%</Width>
+						<Height>5%</Height>
 						<Alignment>Center</Alignment>
 						<Text>Ammo/Drone Storage</Text>
 					</Text>
@@ -1115,12 +1115,12 @@
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
 						</OnMouseExit>
 					</listbox>
-					
-					<Text name='DropoffSubTypeTitle'> 
-						<X>67%</X> 
-						<Y>56%</Y> 
-						<Width>32%</Width> 
-						<Height>5%</Height> 
+
+					<Text name='DropoffSubTypeTitle'>
+						<X>67%</X>
+						<Y>56%</Y>
+						<Width>32%</Width>
+						<Height>5%</Height>
 						<Alignment>Center</Alignment>
 						<Text>Corporation Folder</Text>
 						<OnLoad>
@@ -1173,16 +1173,16 @@
 						<OnMouseExit>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
 						</OnMouseExit>
-					</listbox>					
-					
-					<Text name='SalvagePrefixTitle'> 
-						<X>1%</X> 
-						<Y>64%</Y> 
-						<Width>34%</Width> 
-						<Height>5%</Height> 
+					</listbox>
+
+					<Text name='SalvagePrefixTitle'>
+						<X>1%</X>
+						<Y>64%</Y>
+						<Width>34%</Width>
+						<Height>5%</Height>
 						<Alignment>Center</Alignment>
 						<Text>Salvage Prefix</Text>
-					</Text>						 
+					</Text>
 					<Textentry Name="SalvagePrefix">
 						<BackgroundColor>FF000000</BackgroundColor>
 						<Border>1</Border>
@@ -1203,18 +1203,18 @@
 						<OnMouseExit>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
 						</OnMouseExit>
-					</Textentry>					
-					
-					<Text name='MissionConfigTitle'> 
-						<X>1%</X> 
-						<Y>71%</Y> 
-						<Width>98%</Width> 
-						<Height>5%</Height> 
+					</Textentry>
+
+					<Text name='MissionConfigTitle'>
+						<X>1%</X>
+						<Y>71%</Y>
+						<Width>98%</Width>
+						<Height>5%</Height>
 						<Alignment>Center</Alignment>
 						<Text>
 							Mission Configuration File
 						</Text>
-					</Text>		
+					</Text>
 					<combobox Name="MissionConfig">
 						<BackgroundColor>FF000000</BackgroundColor>
 						<X>1%</X>
@@ -1233,7 +1233,7 @@
 									This:AddItem[${MissionDataList.File[${Count}].Filename}]
 								}
 							}
-							This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.MissionFile}]:Select	
+							This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.MissionFile}]:Select
 						</OnLoad>
 						<OnSelect>
 							Script[Tehbot].VariableScope.Mission.Config:SetMissionFile[${This.SelectedItem.Text}]
@@ -1244,13 +1244,13 @@
 						<OnMouseExit>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
 						</OnMouseExit>
-					</combobox>					
+					</combobox>
 
-					<Text name='InformationFrameTitle'> 
-						<X>1%</X> 
-						<Y>80%</Y> 
-						<Width>32%</Width> 
-						<Height>4%</Height> 
+					<Text name='InformationFrameTitle'>
+						<X>1%</X>
+						<Y>80%</Y>
+						<Width>32%</Width>
+						<Height>4%</Height>
 						<Text>Information</Text>
 						<OnLoad>
 							This.Font:SetColor[FFFFFF00]
@@ -1265,19 +1265,19 @@
 						<Border>1</Border>
 						<BorderColor>FFFFFFFF</BorderColor>
 						<Children>
-							<Text name='Information'> 
-								<X>5%</X> 
-								<Y>5%</Y> 
-								<Width>90%</Width> 
-								<Height>90%</Height> 
+							<Text name='Information'>
+								<X>5%</X>
+								<Y>5%</Y>
+								<Width>90%</Width>
+								<Height>90%</Height>
 								<Wrap />
 								<VerticalAlignment>Center</VerticalAlignment>
 							</Text>
 						</Children>
-					</Frame>					
+					</Frame>
 				</Children>
 			</Frame>
 		</Children>
 	</window>
-	
+
 </ISUI>

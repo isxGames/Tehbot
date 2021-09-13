@@ -184,7 +184,7 @@ objectdef obj_ModuleBase inherits obj_StateQueue
         }
 
 		variable string shortRangeAmmo = ${Mission.ammo}
-		variable string longRangeAmmo = ${Mission.secondaryammo}
+		variable string longRangeAmmo = ${Mission.secondaryAmmo}
 
 		if ${Entity[${newTarget}].CategoryID} == CATEGORYID_ENTITY
 		{

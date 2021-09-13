@@ -20,14 +20,14 @@ objectdef obj_Configuration_Mission
 	method Set_Default_Values()
 	{
 		BaseConfig.BaseRef:AddSet[${This.SetName}]
-		This.CommonRef:AddSetting[Threshold,100]
-		This.CommonRef:AddSetting[DeclineLowSec,TRUE]
-		This.CommonRef:AddSetting[SalvagePrefix,Salvage: ]
+		This.CommonRef:AddSetting[AmmoAmountToLoad, 100]
+		This.CommonRef:AddSetting[DeclineLowSec, TRUE]
+		This.CommonRef:AddSetting[SalvagePrefix, "Salvage: "]
 	}
 
 	Setting(bool, Halt, SetHalt)
-	Setting(bool, Secondary, SetSecondary)
-	Setting(bool, Drones, SetDrones)
+	Setting(bool, UseSecondaryAmmo, SetSecondary)
+	Setting(bool, UseDrones, SetDrones)
 	Setting(bool, RangeLimit, SetRangeLimit)
 	Setting(string, SalvagePrefix, SetSalvagePrefix)
 	Setting(string, DropoffType, SetDropoffType)
@@ -44,7 +44,7 @@ objectdef obj_Configuration_Mission
 	Setting(string, EMAmmoSecondary, SetEMAmmoSecondary)
 	Setting(string, ExplosiveAmmoSecondary, SetExplosiveAmmoSecondary)
 	Setting(int, Level, SetLevel)
-	Setting(int, Threshold, SetThreshold)
+	Setting(int, AmmoAmountToLoad, SetAmmoAmountToLoad)
 	Setting(bool, DeclineLowSec, SetDeclineLowSec)
 }
 
@@ -53,9 +53,10 @@ objectdef obj_Mission inherits obj_StateQueue
 	variable int agentIndex = 0
 	variable string missionAttackTarget
 	variable string ammo
-	variable string secondaryammo
+	variable string secondaryAmmo
 	variable string missionLootContainer
 	variable string missionItemRequired
+	; variable int useDroneRace = 0
 
 	variable collection:string ValidMissions
 	variable collection:string AttackTarget
@@ -205,40 +206,40 @@ objectdef obj_Mission inherits obj_StateQueue
 			agentIndex:Set[${EVE.Agent[${Config.Agent}].Index}]
 		}
 
-		variable index:agentmission Missions
-		variable iterator m
+		variable index:agentmission missions
+		variable iterator missionIterator
 
-		EVE:GetAgentMissions[Missions]
-		Missions:GetIterator[m]
-		if ${m:First(exists)}
+		EVE:GetAgentMissions[missions]
+		missions:GetIterator[missionIterator]
+		if ${missionIterator:First(exists)}
 		{
 			do
 			{
-				if ${m.Value.AgentID} != ${EVE.Agent[${agentIndex}].ID}
+				if ${missionIterator.Value.AgentID} != ${EVE.Agent[${agentIndex}].ID}
 				{
 					continue
 				}
 
 				if !${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}](exists)}
 				{
-					m.Value:GetDetails
+					missionIterator.Value:GetDetails
 					return FALSE
 				}
 
 				variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Escape}
-				if ${missionJournalText.Equals[NULL]}
+				if ${missionJournalText.Equal[NULL]}
 				{
-					m.Value:GetDetails
+					missionIterator.Value:GetDetails
 					return FALSE
 				}
 
 				; offered
-				if ${m.Value.State} == 1
+				if ${missionIterator.Value.State} == 1
 				{
 					if ${Config.DeclineLowSec} && ${missionJournalText.Find["low security system"]}
 					{
 						UI:Update["Mission", "Declining low security mission", "g"]
-						UI:Update["Mission", " ${m.Value.Name}", "o"]
+						UI:Update["Mission", " ${missionIterator.Value.Name}", "o"]
 						This:InsertState["Cleanup"]
 						This:InsertState["CheckForWork"]
 						This:InsertState["InteractAgent", 1500, "DECLINE"]
@@ -252,10 +253,11 @@ objectdef obj_Mission inherits obj_StateQueue
 							if ${missionJournalText.Find[${ValidMissions.CurrentKey} Objectives]}
 							{
 								UI:Update["Mission", "Accepting mission", "g"]
-								UI:Update["Mission", " ${m.Value.Name}", "o"]
+								UI:Update["Mission", " ${missionIterator.Value.Name}", "o"]
 								This:InsertState["Cleanup"]
 								This:InsertState["CheckForWork"]
 								This:InsertState["InteractAgent", 1500, "ACCEPT"]
+								; useDroneRace:Set[0]
 								return TRUE
 							}
 						}
@@ -269,7 +271,7 @@ objectdef obj_Mission inherits obj_StateQueue
 							if ${missionJournalText.Find[${InvalidMissions.CurrentKey} Objectives]}
 							{
 								UI:Update["Mission", "Declining mission", "g"]
-								UI:Update["Mission", " ${m.Value.Name}", "o"]
+								UI:Update["Mission", " ${missionIterator.Value.Name}", "o"]
 								This:InsertState["Cleanup"]
 								This:InsertState["CheckForWork"]
 								This:InsertState["InteractAgent", 1500, "DECLINE"]
@@ -284,7 +286,7 @@ objectdef obj_Mission inherits obj_StateQueue
 					return TRUE
 				}
 				; accepted
-				elseif ${m.Value.State} == 2
+				elseif ${missionIterator.Value.State} == 2
 				{
 					if ${ValidMissions.FirstKey(exists)}
 					{
@@ -295,7 +297,7 @@ objectdef obj_Mission inherits obj_StateQueue
 							${Math.Calc[${missionJournalText.Length} - ${missionJournalText.ReplaceSubstring[${checkmarkIcon}, ""].Length}]} >= ${Math.Calc[${checkmarkIcon.Length} * 2]}
 							{
 								UI:Update["Mission", "Mission Complete", "g"]
-								UI:Update["Mission", " ${m.Value.Name}", "o"]
+								UI:Update["Mission", " ${missionIterator.Value.Name}", "o"]
 								This:InsertState["Cleanup"]
 								This:InsertState["CompleteMission", 1500]
 								return TRUE
@@ -304,7 +306,7 @@ objectdef obj_Mission inherits obj_StateQueue
 							if ${missionJournalText.Find[${ValidMissions.CurrentKey} Objectives]}
 							{
 								UI:Update["Mission", "Ongoing mission identified", "g"]
-								UI:Update["Mission", " ${m.Value.Name}", "o"]
+								UI:Update["Mission", " ${missionIterator.Value.Name}", "o"]
 
 								missionAttackTarget:Set[""]
 								if ${AttackTarget.Element[${ValidMissions.CurrentKey}](exists)}
@@ -331,38 +333,42 @@ objectdef obj_Mission inherits obj_StateQueue
 								{
 									case kinetic
 										ammo:Set[${Config.KineticAmmo}]
-										if ${Config.Secondary}
-											secondaryammo:Set[${Config.KineticAmmoSecondary}]
+										if ${Config.UseSecondaryAmmo}
+											secondaryAmmo:Set[${Config.KineticAmmoSecondary}]
 										else
-											secondaryammo:Set[""]
+											secondaryAmmo:Set[""]
+										; useDroneRace:Set[1]
 										break
 									case em
 										ammo:Set[${Config.EMAmmo}]
-										if ${Config.Secondary}
-											secondaryammo:Set[${Config.EMAmmoSecondary}]
+										if ${Config.UseSecondaryAmmo}
+											secondaryAmmo:Set[${Config.EMAmmoSecondary}]
 										else
-											secondaryammo:Set[""]
+											secondaryAmmo:Set[""]
+										; useDroneRace:Set[4]
 										break
 									case thermal
 										ammo:Set[${Config.ThermalAmmo}]
-										if ${Config.Secondary}
-											secondaryammo:Set[${Config.ThermalAmmoSecondary}]
+										if ${Config.UseSecondaryAmmo}
+											secondaryAmmo:Set[${Config.ThermalAmmoSecondary}]
 										else
-											secondaryammo:Set[""]
+											secondaryAmmo:Set[""]
+										; useDroneRace:Set[8]
 										break
 									case explosive
 										ammo:Set[${Config.ExplosiveAmmo}]
-										if ${Config.Secondary}
-											secondaryammo:Set[${Config.ExplosiveAmmoSecondary}]
+										if ${Config.UseSecondaryAmmo}
+											secondaryAmmo:Set[${Config.ExplosiveAmmoSecondary}]
 										else
-											secondaryammo:Set[""]
+											secondaryAmmo:Set[""]
+										; useDroneRace:Set[2]
 										break
 									default
 										ammo:Set[${Config.KineticAmmo}]
-										if ${Config.Secondary}
-											secondaryammo:Set[${Config.KineticAmmoSecondary}]
+										if ${Config.UseSecondaryAmmo}
+											secondaryAmmo:Set[${Config.KineticAmmoSecondary}]
 										else
-											secondaryammo:Set[""]
+											secondaryAmmo:Set[""]
 										break
 								}
 
@@ -381,26 +387,26 @@ objectdef obj_Mission inherits obj_StateQueue
 					{
 						UI:Update["Mission", "Loading Ammo", "g"]
 						UI:Update["Mission", " ${ammo}", "o"]
-						if ${Config.Secondary}
-							UI:Update["Mission", " ${secondaryammo}", "o"]
+						if ${Config.UseSecondaryAmmo}
+							UI:Update["Mission", " ${secondaryAmmo}", "o"]
 						reload:Set[FALSE]
 						This:InsertState["CheckForWork"]
-						This:InsertState["LoadAmmo"]
+						This:InsertState["LoadAmmoAndDrones"]
 						This:InsertState["PrepHangars"]
 						return TRUE
 					}
 
 					variable index:bookmark missionBookmarks
-					variable iterator b
-					m.Value:GetBookmarks[missionBookmarks]
-					missionBookmarks:GetIterator[b]
-					if ${b:First(exists)}
+					variable iterator bookmarkIterator
+					missionIterator.Value:GetBookmarks[missionBookmarks]
+					missionBookmarks:GetIterator[bookmarkIterator]
+					if ${bookmarkIterator:First(exists)}
 					{
 						do
 						{
-							if ${b.Value.LocationType.Equal[dungeon]}
+							if ${bookmarkIterator.Value.LocationType.Equal[dungeon]}
 							{
-								Move:AgentBookmark[${b.Value.ID}]
+								Move:AgentBookmark[${bookmarkIterator.Value.ID}]
 								This:InsertState["PerformMission"]
 								This:InsertState["Traveling"]
 								This:InsertState["Cleanup"]
@@ -408,11 +414,11 @@ objectdef obj_Mission inherits obj_StateQueue
 								return TRUE
 							}
 						}
-						while ${b:Next(exists)}
+						while ${bookmarkIterator:Next(exists)}
 					}
 				}
 			}
-			while ${m:Next(exists)}
+			while ${missionIterator:Next(exists)}
 		}
 
 		UI:Update["Mission", "Requesting mission", "g"]
@@ -676,7 +682,7 @@ objectdef obj_Mission inherits obj_StateQueue
 	variable bool notDone = FALSE
 	member:bool PerformMission(int nextwaitcomplete = 0)
 	{
-		variable iterator c
+		variable iterator itemIterator
 		This:BuildActiveNPC
 		Wrecks:RequestUpdate
 		ActiveNPC:RequestUpdate
@@ -693,14 +699,14 @@ objectdef obj_Mission inherits obj_StateQueue
 		variable index:entity lootContainers
 		EVE:QueryEntities[lootContainers, ${missionLootContainer}]
 
-		variable iterator b
-		blackListedContainers:GetIterator[b]
-		if ${b:First(exists)}
+		variable iterator containerIterator
+		blackListedContainers:GetIterator[containerIterator]
+		if ${containerIterator:First(exists)}
 			do
 			{
-				lootContainers:RemoveByQuery[${LavishScript.CreateQuery[ID = ${b.Value}]}]
+				lootContainers:RemoveByQuery[${LavishScript.CreateQuery[ID = ${containerIterator.Value}]}]
 			}
-			while ${b:Next(exists)}
+			while ${containerIterator:Next(exists)}
 		lootContainers:Collapse
 
 		; Determine movement and perform loot
@@ -759,7 +765,7 @@ objectdef obj_Mission inherits obj_StateQueue
 					}
 					elseif !${NPC.TargetList.Used}
 					{
-						variable index:item cargo
+						variable index:item items
 						if !${EVEWindow[Inventory].ChildWindow[${currentLootContainer}](exists)}
 						{
 							Entity[${currentLootContainer}]:Open
@@ -768,22 +774,22 @@ objectdef obj_Mission inherits obj_StateQueue
 						}
 						else
 						{
-							EVEWindow[Inventory].ChildWindow[${currentLootContainer}]:GetItems[cargo]
-							if ${cargo.Used}
+							EVEWindow[Inventory].ChildWindow[${currentLootContainer}]:GetItems[items]
+							if ${items.Used}
 							{
-								cargo:GetIterator[c]
-								if ${c:First(exists)}
+								items:GetIterator[itemIterator]
+								if ${itemIterator:First(exists)}
 									do
 									{
-										if ${c.Value.Type.Equal[${missionItemRequired}]}
+										if ${itemIterator.Value.Type.Equal[${missionItemRequired}]}
 										{
-											c.Value:MoveTo[${MyShip.ID}, CargoHold]
+											itemIterator.Value:MoveTo[${MyShip.ID}, CargoHold]
 											This:InsertState["CheckForWork"]
 											notDone:Set[FALSE]
 											return TRUE
 										}
 									}
-									while ${c:Next(exists)}
+									while ${itemIterator:Next(exists)}
 								blackListedContainers:Add[${currentLootContainer}]
 								currentLootContainer:Set[0]
 								EVE:Execute[CmdStopShip]
@@ -921,9 +927,8 @@ objectdef obj_Mission inherits obj_StateQueue
 			}
 			else
 			{
-				; Priortize the closest target which is not hard to deal to try
-				; to reduce the frequency of switching ammo.
-
+				; Priortize the closest target which is not hard to deal with to
+				; reduce the frequency of switching ammo.
 				variable int64 HardToDealWithTarget = 0
 				ActiveNPC.LockedTargetList:GetIterator[lockedTargetIterator]
 				do
@@ -1045,7 +1050,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				UI:Update["Mission", " ${Entity[${missionAttackTarget}].Name}", "o"]
 				Entity[${missionAttackTarget}]:LockTarget
 			}
-			elseif !${Entity[${missionAttackTarget}].BeingTargeted}
+			elseif ${Entity[${missionAttackTarget}].IsLockedTarget}
 			{
 				Ship.ModuleList_Weapon:ActivateAll[${Entity[${missionAttackTarget}].ID}]
 			}
@@ -1062,7 +1067,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		; Check mission complete for World Collide and Extravaganza before activating an extra gate
 		variable index:agentmission missions
 		variable iterator missionIterator
-		EVE:GetAgentMissions[Missions]
+		EVE:GetAgentMissions[missions]
 		missions:GetIterator[missionIterator]
 
 		if ${missionIterator:First(exists)}
@@ -1081,7 +1086,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				}
 
 				variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Escape}
-				if ${missionJournalText.Equals[NULL]}
+				if ${missionJournalText.Equal[NULL]}
 				{
 					missionIterator.Value:GetDetails
 					return FALSE
@@ -1229,18 +1234,18 @@ objectdef obj_Mission inherits obj_StateQueue
 			relay "all" -event Tehbot_SalvageBookmark ${Me.ID}
 		}
 
-		variable index:agentmission Missions
-		variable iterator m
+		variable index:agentmission missions
+		variable iterator missionIterator
 
-		EVE:GetAgentMissions[Missions]
-		Missions:GetIterator[m]
-		if ${m:First(exists)}
+		EVE:GetAgentMissions[missions]
+		missions:GetIterator[missionIterator]
+		if ${missionIterator:First(exists)}
 			do
 			{
-				if ${m.Value.AgentID} == ${EVE.Agent[${agentIndex}].ID} && ${m.Value.State} == 2
+				if ${missionIterator.Value.AgentID} == ${EVE.Agent[${agentIndex}].ID} && ${missionIterator.Value.State} == 2
 					return FALSE
 			}
-			while ${m:Next(exists)}
+			while ${missionIterator:Next(exists)}
 
 		if !${Config.Halt} && !${halt}
 		{
@@ -1333,9 +1338,10 @@ objectdef obj_Mission inherits obj_StateQueue
 
 	member:bool StackShip()
 	{
-		EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo]:StackAll
+		EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:StackAll
 		return TRUE
 	}
+
 	member:bool StackHangars()
 	{
 		if ${Config.DropoffType.Equal[Corporation Hangar]}
@@ -1356,13 +1362,13 @@ objectdef obj_Mission inherits obj_StateQueue
 		}
 		else
 		{
-			if !${EVEWindow[Inventory].ChildWindow[${Me.Station.ID},StationItems](exists)}
+			if !${EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems](exists)}
 			{
 
-				EVEWindow[Inventory].ChildWindow[${Me.Station.ID},StationItems]:MakeActive
+				EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:MakeActive
 				return FALSE
 			}
-			EVEWindow[Inventory].ChildWindow[${Me.Station.ID},StationItems]:StackAll
+			EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:StackAll
 		}
 		return TRUE
 	}
@@ -1393,154 +1399,166 @@ objectdef obj_Mission inherits obj_StateQueue
 			return FALSE
 		}
 
-		variable index:item cargo
-
-		if ${Config.DropoffType.Equal[Corporation Hangar]}
+		variable string folder
+		switch ${Config.DropoffSubType}
 		{
-			if !${EVEWindow[Inventory].ChildWindow[StationCorpHangar](exists)}
-			{
-				EVEWindow[Inventory].ChildWindow[StationCorpHangars]:MakeActive
-				return FALSE
-			}
-
-			if !${EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}](exists)}
-			{
-
-				EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}]:MakeActive
-				return FALSE
-			}
-
-			EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}]:GetItems[cargo]
-		}
-		else
-		{
-			if !${EVEWindow[Inventory].ChildWindow[${Me.Station.ID},StationItems](exists)}
-			{
-				EVEWindow[Inventory].ChildWindow[${Me.Station.ID},StationItems]:MakeActive
-				return FALSE
-			}
-
-			EVEWindow[Inventory].ChildWindow[${Me.Station.ID},StationItems]:GetItems[cargo]
+			case Folder1
+				folder:Set[Corporation Folder 1]
+				break
+			case Folder2
+				folder:Set[Corporation Folder 2]
+				break
+			case Folder3
+				folder:Set[Corporation Folder 3]
+				break
+			case Folder4
+				folder:Set[Corporation Folder 4]
+				break
+			case Folder5
+				folder:Set[Corporation Folder 5]
+				break
+			case Folder6
+				folder:Set[Corporation Folder 6]
+				break
+			case Folder7
+				folder:Set[Corporation Folder 7]
+				break
 		}
 
-		variable iterator c
-		variable int toMove
-		if !${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo](exists)}
+		if !${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo](exists)}
 		{
-			EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo]:MakeActive
+			EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:MakeActive
 			return FALSE
 		}
 
-		; TODO Apprant bug about get items here.
-		EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo]:GetItems[cargo]
-		cargo:GetIterator[c]
-		if ${c:First(exists)}
+		variable index:item items
+		EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:GetItems[items]
+		variable iterator itemIterator
+		items:GetIterator[itemIterator]
+		if ${itemIterator:First(exists)}
+		{
 			do
 			{
-				if ${Config.DropoffType.Equal[Corporation Hangar]}
-				{
-					variable string folder
-					switch ${Config.DropoffSubType}
-					{
-						case Folder1
-							folder:Set[Corporation Folder 1]
-							break
-						case Folder2
-							folder:Set[Corporation Folder 2]
-							break
-						case Folder3
-							folder:Set[Corporation Folder 3]
-							break
-						case Folder4
-							folder:Set[Corporation Folder 4]
-							break
-						case Folder5
-							folder:Set[Corporation Folder 5]
-							break
-						case Folder6
-							folder:Set[Corporation Folder 6]
-							break
-						case Folder7
-							folder:Set[Corporation Folder 7]
-							break
-					}
+				if ${itemIterator.Value.Name.Equal[${Config.KineticAmmo}]} || \
+				   ${itemIterator.Value.Name.Equal[${Config.ThermalAmmo}]} || \
+				   ${itemIterator.Value.Name.Equal[${Config.EMAmmo}]} || \
+				   ${itemIterator.Value.Name.Equal[${Config.ExplosiveAmmo}]} || \
+				   ${itemIterator.Value.Name.Equal[${Config.KineticAmmoSecondary}]} || \
+				   ${itemIterator.Value.Name.Equal[${Config.ThermalAmmoSecondary}]} || \
+				   ${itemIterator.Value.Name.Equal[${Config.EMAmmoSecondary}]} || \
+				   ${itemIterator.Value.Name.Equal[${Config.ExplosiveAmmoSecondary}]}
+				   {
+						if ${Config.DropoffType.Equal[Corporation Hangar]}
+						{
+							if !${EVEWindow[Inventory].ChildWindow[StationCorpHangar](exists)}
+							{
+								EVEWindow[Inventory].ChildWindow[StationCorpHangars]:MakeActive
+								return FALSE
+							}
 
-					if ${c.Value.Name.Equal[Militants]}
-						c.Value:MoveTo[MyStationCorporateHangar,StationCorporateHangar,${c.Value.Quantity},${folder}]
-					if ${c.Value.Name.Equal[${Config.KineticAmmo}]} || ${c.Value.Name.Equal[${Config.ThermalAmmo}]} || ${c.Value.Name.Equal[${Config.EMAmmo}]} || ${c.Value.Name.Equal[${Config.ExplosiveAmmo}]}
-					{
-						c.Value:MoveTo[MyStationCorporateHangar,StationCorporateHangar,${c.Value.Quantity},${folder}]
+							if !${EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}](exists)}
+							{
+
+								EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}]:MakeActive
+								return FALSE
+							}
+
+							itemIterator.Value:MoveTo[MyStationCorporateHangar, StationCorporateHangar, ${itemIterator.Value.Quantity}, ${folder}]
+						}
+						else
+						{
+							if !${EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems](exists)}
+							{
+								EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:MakeActive
+								return FALSE
+							}
+
+							itemIterator.Value:MoveTo[MyStationHangar, Hangar, ${itemIterator.Value.Quantity}]
+						}
 					}
-					if ${Config.Secondary} && (${c.Value.Name.Equal[${Config.KineticAmmoSecondary}]} || ${c.Value.Name.Equal[${Config.ThermalAmmoSecondary}]} || ${c.Value.Name.Equal[${Config.EMAmmoSecondary}]} || ${c.Value.Name.Equal[${Config.ExplosiveAmmoSecondary}]})
-					{
-						c.Value:MoveTo[MyStationCorporateHangar,StationCorporateHangar,${c.Value.Quantity},${folder}]
-					}
-				}
-				else
-				{
-					if ${c.Value.Name.Equal[Militants]}
-						c.Value:MoveTo[MyStationHangar,Hangar,${c.Value.Quantity}]
-					if ${c.Value.Name.Equal[${Config.KineticAmmo}]} || ${c.Value.Name.Equal[${Config.ThermalAmmo}]} || ${c.Value.Name.Equal[${Config.EMAmmo}]} || ${c.Value.Name.Equal[${Config.ExplosiveAmmo}]}
-					{
-						c.Value:MoveTo[MyStationHangar,Hangar,${c.Value.Quantity}]
-					}
-					if ${Config.Secondary} && (${c.Value.Name.Equal[${Config.KineticAmmoSecondary}]} || ${c.Value.Name.Equal[${Config.ThermalAmmoSecondary}]} || ${c.Value.Name.Equal[${Config.EMAmmoSecondary}]} || ${c.Value.Name.Equal[${Config.ExplosiveAmmoSecondary}]})
-					{
-						c.Value:MoveTo[MyStationHangar,Hangar,${c.Value.Quantity}]
-					}
-				}
 			}
-			while ${c:Next(exists)}
+			while ${itemIterator:Next(exists)}
+		}
 		This:InsertState["StackHangars"]
 		return TRUE
 	}
 
-	member:bool LoadAmmo()
+	member:bool LoadAmmoAndDrones()
 	{
+		if ${Config.AmmoAmountToLoad} <= 0
+			return TRUE
+
+		variable index:item items
+		variable iterator itemIterator
+		variable int defaultAmmoAmountToLoad = ${Config.AmmoAmountToLoad}
+		variable int secondaryAmmoAmountToLoad = ${Config.AmmoAmountToLoad}
+		variable int droneAmountToLoad = -1
+
 		if (!${EVEWindow[Inventory](exists)})
 		{
 			EVE:Execute[OpenInventory]
 			return FALSE
 		}
 
-		variable index:item cargo
-		variable iterator c
-		variable int Scorch = ${Config.Threshold}
-		variable int Conflagration = ${Config.Threshold}
-		if !${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo](exists)} || ${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo].Capacity} < 0
+		if !${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo](exists)} || ${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo].Capacity} < 0
 		{
-			EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo]:MakeActive
+			EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:MakeActive
 			return FALSE
 		}
 
-		EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo]:GetItems[cargo]
+		if ${Config.UseDrones} && \
+		   (!${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipDroneBay](exists)} || ${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipDroneBay].Capacity} < 0)
+		{
+			EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipDroneBay]:MakeActive
+			return FALSE
+		}
 
-		cargo:GetIterator[c]
-		if ${c:First(exists)}
+		if ${Config.UseDrones}
+		{
+			EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipDroneBay]:GetItems[items]
+			variable float droneSpace = ${Math.Calc[${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipDroneBay].Capacity} - ${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipDroneBay].UsedCapacity}]}
+			variable float specifiedDroneVolume = ${Drones.Data.GetVolume[${Config.DroneType}]}
+
+			if ${specifiedDroneVolume} > 0
+			{
+				droneAmountToLoad:Set[${Math.Calc[${droneSpace} / ${specifiedDroneVolume}].Int}]
+				if ${droneAmountToLoad} > 0
+				{
+					UI:Update["Mission", "Loading ${droneAmountToLoad} \ao${Config.DroneType}\ags."]
+				}
+			}
+		}
+
+		EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:GetItems[items]
+		items:GetIterator[itemIterator]
+		if ${itemIterator:First(exists)}
+		{
 			do
 			{
-				if ${c.Value.Name.Equal[${ammo}]}
+				if ${itemIterator.Value.Name.Equal[${ammo}]}
 				{
-					Scorch:Dec[${c.Value.Quantity}]
+					defaultAmmoAmountToLoad:Dec[${itemIterator.Value.Quantity}]
 				}
-				if ${c.Value.Name.Equal[${secondaryammo}]}
+
+				if ${itemIterator.Value.Name.Equal[${secondaryAmmo}]}
 				{
-					Conflagration:Dec[${c.Value.Quantity}]
+					secondaryAmmoAmountToLoad:Dec[${itemIterator.Value.Quantity}]
+				}
+
+				if ${itemIterator.Value.Name.Equal[${Config.DroneType}]}
+				{
+					if ${itemIterator.Value.Quantity} >= ${droneAmountToLoad}
+					{
+						itemIterator.Value:MoveTo[${MyShip.ID}, DroneBay, ${droneAmountToLoad}]
+					}
+					else
+					{
+						itemIterator.Value:MoveTo[${MyShip.ID}, DroneBay, ${itemIterator.Value.Quantity}]
+					}
+					droneAmountToLoad:Dec[${itemIterator.Value.Quantity}]
 				}
 			}
-			while ${c:Next(exists)}
-
-		if ${Config.Drones}
-		{
-			if !${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipDroneBay](exists)} || ${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipDroneBay].Capacity} < 0
-			{
-				EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipDroneBay]:MakeActive
-				return FALSE
-			}
-
-		EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipDroneBay]:GetItems[cargo]
-
-			variable float64 dronespace = ${Math.Calc[${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipDroneBay].Capacity} - ${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipDroneBay].UsedCapacity}]}
+			while ${itemIterator:Next(exists)}
 		}
 
 		if ${Config.DropoffType.Equal[Corporation Hangar]}
@@ -1553,103 +1571,91 @@ objectdef obj_Mission inherits obj_StateQueue
 
 			if !${EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}](exists)}
 			{
-
 				EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}]:MakeActive
 				return FALSE
 			}
 
-			${EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}]:GetItems[cargo]
+			EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}]:GetItems[items]
 		}
 		else
 		{
-			if !${EVEWindow[Inventory].ChildWindow[${Me.Station.ID},StationItems](exists)}
+			if !${EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems](exists)}
 			{
-				EVEWindow[Inventory].ChildWindow[${Me.Station.ID},StationItems]:MakeActive
+				EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:MakeActive
 				return FALSE
 			}
 
-			EVEWindow[Inventory].ChildWindow[${Me.Station.ID},StationItems]:GetItems[cargo]
+			EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:GetItems[items]
 		}
 
-		variable index:int64 loadAmmo
-		cargo:GetIterator[c]
-		if ${c:First(exists)}
-			do
-			{
-				if ${Config.Drones}
-				{
-					if ${c.Value.Name.Equal[${Config.DroneType}]} && ${dronespace} >= ${c.Value.Volume}
-					{
-						c.Value:MoveTo[${MyShip.ID},DroneBay,${Math.Calc[${dronespace}\\${c.Value.Volume}]}]
-						return FALSE
-					}
-				}
-				if ${c.Value.Name.Equal[${secondaryammo}]} && ${c.Value.Quantity} == 1 && ${Conflagration} > 0
-				{
-					loadAmmo:Insert[${c.Value.ID}]
-					Conflagration:Dec
-				}
-				if ${c.Value.Name.Equal[${ammo}]} && ${c.Value.Quantity} == 1 && ${Scorch} > 0
-				{
-					loadAmmo:Insert[${c.Value.ID}]
-					Scorch:Dec
-				}
-			}
-			while ${c:Next(exists)}
-
-		if ${loadAmmo.Used}
+		if ${itemIterator:First(exists)}
 		{
-			EVE:MoveItemsTo[loadAmmo, MyShip, CargoHold]
-			return FALSE
-		}
-
-		if ${Config.Threshold} <= 0
-			return TRUE
-		if ${c:First(exists)}
 			do
 			{
-				if ${c.Value.Name.Equal[${ammo}]} && ${Scorch} > 0
+				if  ${defaultAmmoAmountToLoad} > 0 && ${itemIterator.Value.Name.Equal[${ammo}]}
 				{
-					if ${c.Value.Quantity} >= ${Scorch}
+					if ${itemIterator.Value.Quantity} >= ${defaultAmmoAmountToLoad}
 					{
-						c.Value:MoveTo[${MyShip.ID},CargoHold,${Scorch}]
+						itemIterator.Value:MoveTo[${MyShip.ID}, CargoHold, ${defaultAmmoAmountToLoad}]
+						defaultAmmoAmountToLoad:Set[0]
 						return FALSE
 					}
 					else
 					{
-						c.Value:MoveTo[${MyShip.ID},CargoHold,${c.Value.Quantity}]
+						itemIterator.Value:MoveTo[${MyShip.ID}, CargoHold, ${itemIterator.Value.Quantity}]
+						defaultAmmoAmountToLoad:Dec[${itemIterator.Value.Quantity}]
 						return FALSE
 					}
 				}
-				if ${c.Value.Name.Equal[${secondaryammo}]} && ${Conflagration} > 0
+
+				if ${secondaryAmmoAmountToLoad} > 0 && ${itemIterator.Value.Name.Equal[${secondaryAmmo}]}
 				{
-					if ${c.Value.Quantity} >= ${Conflagration}
+					if ${itemIterator.Value.Quantity} >= ${secondaryAmmoAmountToLoad}
 					{
-						c.Value:MoveTo[${MyShip.ID},CargoHold,${Conflagration}]
+						itemIterator.Value:MoveTo[${MyShip.ID}, CargoHold, ${secondaryAmmoAmountToLoad}]
+						secondaryAmmoAmountToLoad:Set[0]
 						return FALSE
 					}
 					else
 					{
-						c.Value:MoveTo[${MyShip.ID},CargoHold,${Conflagration}]
+						itemIterator.Value:MoveTo[${MyShip.ID}, CargoHold, ${itemIterator.Value.Quantity}]
+						secondaryAmmoAmountToLoad:Dec[${itemIterator.Value.Quantity}]
+						return FALSE
+					}
+				}
+
+				if ${droneAmountToLoad} > 0 && ${itemIterator.Value.Name.Equal[${Config.DroneType}]}
+				{
+					if ${itemIterator.Value.Quantity} >= ${droneAmountToLoad}
+					{
+						itemIterator.Value:MoveTo[${MyShip.ID}, DroneBay, ${droneAmountToLoad}]
+						droneAmountToLoad:Set[0]
+						return FALSE
+					}
+					else
+					{
+						itemIterator.Value:MoveTo[${MyShip.ID}, DroneBay, ${itemIterator.Value.Quantity}]
+						droneAmountToLoad:Dec[${itemIterator.Value.Quantity}]
 						return FALSE
 					}
 				}
 			}
-			while ${c:Next(exists)}
+			while ${itemIterator:Next(exists)}
+		}
 
-		if ${Scorch} > 0
+		if ${defaultAmmoAmountToLoad} > 0
 		{
 			UI:Update["Mission", "You're out of ${ammo}, halting.", "r"]
 			This:Clear
 			return TRUE
 		}
-		elseif ${Conflagration} > 0
+		elseif ${Config.UseSecondaryAmmo} && ${secondaryAmmoAmountToLoad} > 0
 		{
-			UI:Update["Mission", "You're out of ${secondaryammo}, halting.", "r"]
+			UI:Update["Mission", "You're out of ${secondaryAmmo}, halting.", "r"]
 			This:Clear
 			return TRUE
 		}
-		elseif ${Hobgoblin} > 0
+		elseif ${Config.UseDrones} && ${droneAmountToLoad} > 0
 		{
 			UI:Update["Mission", "You're out of drones, halting.", "r"]
 			This:Clear
@@ -1724,18 +1730,18 @@ objectdef obj_Mission inherits obj_StateQueue
 				if ${ammo.Length}
 				{
 					variable index:module modules
-					variable iterator m
+					variable iterator moduleIterator
 					MyShip:GetModules[modules]
-					modules:GetIterator[m]
-					if ${m:First(exists)}
+					modules:GetIterator[moduleIterator]
+					if ${moduleIterator:First(exists)}
 						do
 						{
-							if !${Ship.ModuleList_Weapon:IncludeModule[${m.Value.ID}]} || ${m.Value.Charge.Type.Equals[${ammo}]} || ${m.Value.IsReloading}
+							if !${Ship.ModuleList_Weapon:IncludeModule[${moduleIterator.Value.ID}]} || ${moduleIterator.Value.Charge.Type.Equal[${ammo}]} || ${moduleIterator.Value.IsReloading}
 							{
 								continue
 							}
 
-							if ${m.Value.Charge.Type.Equals[${Config.KineticAmmo}]} || ${m.Value.Charge.Type.Equals[${Config.ThermalAmmo}]} || ${m.Value.Charge.Type.Equals[${Config.EMAmmo}]} || ${m.Value.Charge.Type.Equals[${Config.ExplosiveAmmo}]}
+							if ${moduleIterator.Value.Charge.Type.Equal[${Config.KineticAmmo}]} || ${moduleIterator.Value.Charge.Type.Equal[${Config.ThermalAmmo}]} || ${moduleIterator.Value.Charge.Type.Equal[${Config.EMAmmo}]} || ${moduleIterator.Value.Charge.Type.Equal[${Config.ExplosiveAmmo}]}
 							{
 								if (!${EVEWindow[Inventory](exists)})
 								{
@@ -1743,30 +1749,30 @@ objectdef obj_Mission inherits obj_StateQueue
 									return FALSE
 								}
 
-								variable index:item cargo
-								variable iterator c
-								if !${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo](exists)} || ${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo].Capacity} < -1
+								variable index:item items
+								variable iterator itemIterator
+								if !${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo](exists)} || ${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo].Capacity} < -1
 								{
-									EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo]:MakeActive
+									EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:MakeActive
 									return FALSE
 								}
 
-								EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo]:GetItems[cargo]
+								EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:GetItems[items]
 
-								cargo:GetIterator[c]
-								if ${c:First(exists)}
+								items:GetIterator[itemIterator]
+								if ${itemIterator:First(exists)}
 									do
 									{
-										if ${c.Value.Type.Equal[${ammo}]}
+										if ${itemIterator.Value.Type.Equal[${ammo}]}
 										{
-											m.Value:ChangeAmmo[${c.Value.ID}]
+											moduleIterator.Value:ChangeAmmo[${itemIterator.Value.ID}]
 											return FALSE
 										}
 									}
-									while ${c:Next(exists)}
+									while ${itemIterator:Next(exists)}
 							}
 						}
-						while ${m:Next(exists)}
+						while ${moduleIterator:Next(exists)}
 				}
 			}
 

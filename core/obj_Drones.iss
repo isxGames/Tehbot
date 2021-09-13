@@ -42,6 +42,33 @@ objectdef obj_Configuration_DroneData
 		}
 	}
 
+	member:float GetVolume(string DroneType)
+	{
+		variable iterator DroneTypes
+		variable iterator Drones
+		BaseRef:GetSetIterator[DroneTypes]
+		if ${DroneTypes:First(exists)}
+		{
+			do
+			{
+				DroneTypes.Value:GetSettingIterator[Drones]
+				if ${Drones:First(exists)}
+				{
+					do
+					{
+						if ${Drones.Value.FindAttribute[Type].String.Equal[${DroneType}]}
+						{
+							return ${Drones.Value.FindAttribute[Volume].Float}
+						}
+					}
+					while ${Drones:Next(exists)}
+				}
+			}
+			while ${DroneTypes:Next(exists)}
+		}
+		return -1
+	}
+
 	member:int FindType(string TypeName)
 	{
 		variable iterator DroneTypeIDs
