@@ -669,12 +669,11 @@ objectdef obj_Mission inherits obj_StateQueue
 	}
 
 	variable bool looted = FALSE
-	variable int64 activetarget = 0
-	variable set blacklistedcontainers
-	variable int WCgateUsed = 0
+	variable int64 currentTarget = 0
+	variable set blackListedContainers
 	variable int64 currentLootContainer
 	variable int64 approachTimer
-	variable bool notdone = FALSE
+	variable bool notDone = FALSE
 	member:bool PerformMission(int nextwaitcomplete = 0)
 	{
 		variable iterator c
@@ -682,7 +681,6 @@ objectdef obj_Mission inherits obj_StateQueue
 		Wrecks:RequestUpdate
 		ActiveNPC:RequestUpdate
 		NPC:RequestUpdate
-		variable iterator TargetIterator
 		Ship.ModuleList_ActiveResists:Activate
 		variable index:bookmark BookmarkIndex
 
@@ -692,25 +690,25 @@ objectdef obj_Mission inherits obj_StateQueue
 			return TRUE
 		}
 
-		variable index:entity lootcontainers
-		EVE:QueryEntities[lootcontainers, ${missionLootContainer}]
+		variable index:entity lootContainers
+		EVE:QueryEntities[lootContainers, ${missionLootContainer}]
 
 		variable iterator b
-		blacklistedcontainers:GetIterator[b]
+		blackListedContainers:GetIterator[b]
 		if ${b:First(exists)}
 			do
 			{
-				lootcontainers:RemoveByQuery[${LavishScript.CreateQuery[ID = ${b.Value}]}]
+				lootContainers:RemoveByQuery[${LavishScript.CreateQuery[ID = ${b.Value}]}]
 			}
 			while ${b:Next(exists)}
-		lootcontainers:Collapse
+		lootContainers:Collapse
 
 		; Determine movement and perform loot
-		if ${missionLootContainer.NotNULLOrEmpty} && ${lootcontainers.Used}
+		if ${missionLootContainer.NotNULLOrEmpty} && ${lootContainers.Used}
 		{
 			if !${currentLootContainer}
 			{
-				currentLootContainer:Set[${lootcontainers.Get[1].ID}]
+				currentLootContainer:Set[${lootContainers.Get[1].ID}]
 			}
 			else
 			{
@@ -726,7 +724,7 @@ objectdef obj_Mission inherits obj_StateQueue
 						{
 							if ${Ship.ModuleList_Siege.ActiveCount}
 							{
-								UI:Update["Mission", "Deactivate siege module due to approaching"]
+								; UI:Update["Mission", "Deactivate siege module due to approaching"]
 								Ship.ModuleList_Siege:Deactivate
 							}
 							Entity[${currentLootContainer}]:Approach[1000]
@@ -757,7 +755,7 @@ objectdef obj_Mission inherits obj_StateQueue
 								}
 							}
 						}
-						notdone:Set[TRUE]
+						notDone:Set[TRUE]
 					}
 					elseif !${NPC.TargetList.Used}
 					{
@@ -781,39 +779,39 @@ objectdef obj_Mission inherits obj_StateQueue
 										{
 											c.Value:MoveTo[${MyShip.ID}, CargoHold]
 											This:InsertState["CheckForWork"]
-											notdone:Set[FALSE]
+											notDone:Set[FALSE]
 											return TRUE
 										}
 									}
 									while ${c:Next(exists)}
-								blacklistedcontainers:Add[${currentLootContainer}]
+								blackListedContainers:Add[${currentLootContainer}]
 								currentLootContainer:Set[0]
 								EVE:Execute[CmdStopShip]
 								This:InsertState["PerformMission"]
-								notdone:Set[FALSE]
+								notDone:Set[FALSE]
 								return TRUE
 							}
 							else
 							{
-								blacklistedcontainers:Add[${currentLootContainer}]
+								blackListedContainers:Add[${currentLootContainer}]
 								currentLootContainer:Set[0]
 								EVE:Execute[CmdStopShip]
 								This:InsertState["PerformMission"]
-								notdone:Set[FALSE]
+								notDone:Set[FALSE]
 								return TRUE
 							}
 						}
 					}
 					else
 					{
-						notdone:Set[TRUE]
+						notDone:Set[TRUE]
 					}
 				}
 			}
 		}
 		else
 		{
-			notdone:Set[FALSE]
+			notDone:Set[FALSE]
 			if ${Entity[Type = "Acceleration Gate"]}
 			{
 				if ${MyShip.ToEntity.Mode} != 4 && ${MyShip.ToEntity.Mode} != 1
@@ -858,42 +856,45 @@ objectdef obj_Mission inherits obj_StateQueue
 		ActiveNPC.AutoLock:Set[TRUE]
 
 		; Picked target not locked.
-		if !${Entity[${activetarget}]} || ${Entity[${activetarget}].IsMoribund} || !(${Entity[${activetarget}].IsLockedTarget} || ${Entity[${activetarget}].BeingTargeted})
+		if !${Entity[${currentTarget}]} || ${Entity[${currentTarget}].IsMoribund} || !(${Entity[${currentTarget}].IsLockedTarget} || ${Entity[${currentTarget}].BeingTargeted})
 		{
-			activetarget:Set[0]
+			currentTarget:Set[0]
 		}
 
 		variable iterator lockedTargetIterator
-		if ${activetarget} != 0
+		variable iterator activateJammerIterator
+		if ${currentTarget} != 0
 		{
 			This:BuildActivateJammerList
-			if ${ActivateJammerList.Used} && !${ActivateJammerSet.Contains[${activetarget}]}
+			if ${ActivateJammerList.Used}
 			{
-				; Being jammed but the jammer is not the current target
-				variable iterator activateJammerIterator
-				ActivateJammerList:GetIterator[activateJammerIterator]
-				do
+				if !${ActivateJammerSet.Contains[${currentTarget}]}
 				{
-					if ${Entity[${activateJammerIterator.Value}].IsLockedTarget}
+					; Being jammed but the jammer is not the current target
+					ActivateJammerList:GetIterator[activateJammerIterator]
+					do
 					{
-						activetarget:Set[${activateJammerIterator.Value}]
-						UI:Update["Mission", "Switching target to activate jammer \ar${Entity[${activetarget}].Name}", "g"]
-						break
+						if ${Entity[${activateJammerIterator.Value}].IsLockedTarget}
+						{
+							currentTarget:Set[${activateJammerIterator.Value}]
+							UI:Update["Mission", "Switching target to activate jammer \ar${Entity[${currentTarget}].Name}", "g"]
+							break
+						}
 					}
+					while ${activateJammerIterator:Next(exists)}
 				}
-				while ${activateJammerIterator:Next(exists)}
 			}
-			elseif ${This.IsTargetNearbyFrigate[${activetarget}]} && ${ActiveNPC.LockedTargetList.Used}
+			elseif ${This.IsHardToDealWithTarget[${currentTarget}]} && ${ActiveNPC.LockedTargetList.Used}
 			{
 				; Switch to easier target
 				ActiveNPC.LockedTargetList:GetIterator[lockedTargetIterator]
 				do
 				{
-					if !${This.IsTargetNearbyFrigate[${lockedTargetIterator.Value}]}
+					if !${This.IsHardToDealWithTarget[${lockedTargetIterator.Value}]} && \
+					(${This.IsHardToDealWithTarget[${currentTarget}]} || ${Entity[${currentTarget}].Distance} > ${Entity[${lockedTargetIterator.Value}].Distance})
 					{
-						activetarget:Set[${lockedTargetIterator.Value}]
-						UI:Update["Mission", "Switch to easier target: \ar${Entity[${activetarget}].Name}", "g"]
-						break
+						currentTarget:Set[${lockedTargetIterator.Value}]
+						UI:Update["Mission", "Switch to easier target: \ar${Entity[${currentTarget}].Name}", "g"]
 					}
 				}
 				while ${lockedTargetIterator:Next(exists)}
@@ -902,36 +903,61 @@ objectdef obj_Mission inherits obj_StateQueue
 		elseif ${ActiveNPC.LockedTargetList.Used}
 		{
 			; Need to re-pick from locked target
-			ActiveNPC.LockedTargetList:GetIterator[lockedTargetIterator]
-			variable bool wantToSkipTarget = FALSE
-			do
+
+			This:BuildActivateJammerList
+			if ${ActivateJammerList.Used}
 			{
-				; From revious iteration
-				if ${activetarget} && ${wantToSkipTarget}
+				ActivateJammerList:GetIterator[activateJammerIterator]
+				do
 				{
-					UI:Update["Mission", "Skiping target ${Entity[${activetarget}].Name}"]
+					if ${Entity[${activateJammerIterator.Value}].IsLockedTarget}
+					{
+						currentTarget:Set[${activateJammerIterator.Value}]
+						UI:Update["Mission", "Targeting activate jammer \ar${Entity[${currentTarget}].Name}", "g"]
+						break
+					}
 				}
+				while ${activateJammerIterator:Next(exists)}
+			}
+			else
+			{
+				; Priortize the closest target which is not hard to deal to try
+				; to reduce the frequency of switching ammo.
 
-				wantToSkipTarget:Set[FALSE]
-				activetarget:Set[${lockedTargetIterator.Value}]
-
-				if ${This.IsTargetNearbyFrigate[${activetarget}]}
+				variable int64 HardToDealWithTarget = 0
+				ActiveNPC.LockedTargetList:GetIterator[lockedTargetIterator]
+				do
 				{
-					wantToSkipTarget:Set[TRUE]
+					if ${This.IsHardToDealWithTarget[${lockedTargetIterator.Value}]}
+					{
+						HardToDealWithTarget:Set[${lockedTargetIterator.Value}]
+					}
+					elseif ${currentTarget} == 0 || ${Entity[${currentTarget}].Distance} > ${Entity[${lockedTargetIterator.Value}].Distance}
+					{
+						; if ${currentTarget} != 0
+						; 	UI:Update["Mission", "there is something closer ${Entity[${lockedTargetIterator.Value}].Name}"]
+						currentTarget:Set[${lockedTargetIterator.Value}]
+					}
+				}
+				while ${lockedTargetIterator:Next(exists)}
+
+				if ${currentTarget} == 0
+				{
+					; UI:Update["Mission", "no easy target"]
+					currentTarget:Set[${HardToDealWithTarget}]
 				}
 			}
-			while ${wantToSkipTarget} && ${lockedTargetIterator:Next(exists)}
-			UI:Update["Mission", "Primary target: \ar${Entity[${activetarget}].Name}", "g"]
+			UI:Update["Mission", "Primary target: \ar${Entity[${currentTarget}].Name}", "g"]
 		}
 
 		; Nothing locked
-		if (${activetarget} == 0 || ${activetarget} == ${ActiveNPC.TargetList.Get[1].ID}) && \
+		if (${currentTarget} == 0 || ${currentTarget} == ${ActiveNPC.TargetList.Get[1].ID}) && \
 		   ${ActiveNPC.TargetList.Get[1].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * .95]} && \
 		   ${MyShip.ToEntity.Mode} != 1
 		{
 			if ${Ship.ModuleList_Siege.ActiveCount}
 			{
-				UI:Update["Mission", "Deactivate siege module due to no target"]
+				; UI:Update["Mission", "Deactivate siege module due to no target"]
 				Ship.ModuleList_Siege:Deactivate
 			}
 			UI:Update["Mission", "Approaching distanced target: \ar${ActiveNPC.TargetList.Get[1].Name}", "g"]
@@ -940,28 +966,28 @@ objectdef obj_Mission inherits obj_StateQueue
 			return TRUE
 		}
 
-		if ${activetarget} != 0 && ${Entity[${activetarget}]} && !${Entity[${activetarget}].IsMoribund}
+		if ${currentTarget} != 0 && ${Entity[${currentTarget}]} && !${Entity[${currentTarget}].IsMoribund}
 		{
 			Ship.ModuleList_Siege:Activate
-			if ${Ship.ModuleList_Weapon.Range} > ${Entity[${activetarget}].Distance} || !${Config.RangeLimit}
+			if ${Ship.ModuleList_Weapon.Range} > ${Entity[${currentTarget}].Distance} || !${Config.RangeLimit}
 			{
-				Ship.ModuleList_Weapon:Activate[${activetarget}]
-				Ship.ModuleList_Weapon:DeactivateNotOn[${activetarget}]
+				Ship.ModuleList_Weapon:Activate[${currentTarget}]
+				Ship.ModuleList_Weapon:DeactivateNotOn[${currentTarget}]
 			}
-			if ${Entity[${activetarget}].Distance} <= ${Ship.ModuleList_TargetPainter.Range}
+			if ${Entity[${currentTarget}].Distance} <= ${Ship.ModuleList_TargetPainter.Range}
 			{
-				Ship.ModuleList_TargetPainter:Activate[${activetarget}]
-				Ship.ModuleList_TargetPainter:DeactivateNotOn[${activetarget}]
+				Ship.ModuleList_TargetPainter:Activate[${currentTarget}]
+				Ship.ModuleList_TargetPainter:DeactivateNotOn[${currentTarget}]
 			}
-			if ${Entity[${activetarget}].Distance} <= ${Ship.ModuleList_StasisGrap.Range}
+			if ${Entity[${currentTarget}].Distance} <= ${Ship.ModuleList_StasisGrap.Range}
 			{
-				Ship.ModuleList_StasisGrap:Activate[${activetarget}]
-				Ship.ModuleList_StasisGrap:DeactivateNotOn[${activetarget}]
+				Ship.ModuleList_StasisGrap:Activate[${currentTarget}]
+				Ship.ModuleList_StasisGrap:DeactivateNotOn[${currentTarget}]
 			}
-			if ${Entity[${activetarget}].Distance} <= ${Ship.ModuleList_StasisWeb.Range}
+			if ${Entity[${currentTarget}].Distance} <= ${Ship.ModuleList_StasisWeb.Range}
 			{
-				Ship.ModuleList_StasisWeb:Activate[${activetarget}]
-				Ship.ModuleList_StasisWeb:DeactivateNotOn[${activetarget}]
+				Ship.ModuleList_StasisWeb:Activate[${currentTarget}]
+				Ship.ModuleList_StasisWeb:DeactivateNotOn[${currentTarget}]
 			}
 		}
 
@@ -983,18 +1009,18 @@ objectdef obj_Mission inherits obj_StateQueue
 			{
 				if ${Ship.ModuleList_Siege.ActiveCount}
 				{
-					UI:Update["Mission", "Deactivate siege module due to approaching"]
+					; UI:Update["Mission", "Deactivate siege module due to approaching"]
 					Ship.ModuleList_Siege:Deactivate
 				}
 				NPC.TargetList.Get[1]:Approach
 			}
 
-			if ${activetarget} == 0 || ${Entity[${activetarget}].IsMoribund} || !${Entity[${activetarget}]}
+			if ${currentTarget} == 0 || ${Entity[${currentTarget}].IsMoribund} || !${Entity[${currentTarget}]}
 			{
 				if ${NPC.LockedTargetList.Used}
-					activetarget:Set[${NPC.LockedTargetList.Get[1]}]
+					currentTarget:Set[${NPC.LockedTargetList.Get[1]}]
 				else
-					activetarget:Set[0]
+					currentTarget:Set[0]
 			}
 			This:InsertState["PerformMission"]
 			return TRUE
@@ -1008,7 +1034,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			{
 				if ${Ship.ModuleList_Siege.ActiveCount}
 				{
-					UI:Update["Mission", "Deactivate siege module due to approaching"]
+					; UI:Update["Mission", "Deactivate siege module due to approaching"]
 					Ship.ModuleList_Siege:Deactivate
 				}
 				Entity[${missionAttackTarget}]:Approach
@@ -1027,42 +1053,42 @@ objectdef obj_Mission inherits obj_StateQueue
 			return TRUE
 		}
 
-		if ${notdone} || ${Busy.IsBusy}
+		if ${notDone} || ${Busy.IsBusy}
 		{
 			This:InsertState["PerformMission"]
 			return TRUE
 		}
 
 		; Check mission complete for World Collide and Extravaganza before activating an extra gate
-		variable index:agentmission Missions
-		variable iterator MissionIterator
+		variable index:agentmission missions
+		variable iterator missionIterator
 		EVE:GetAgentMissions[Missions]
-		Missions:GetIterator[MissionIterator]
+		missions:GetIterator[missionIterator]
 
-		if ${MissionIterator:First(exists)}
+		if ${missionIterator:First(exists)}
 		{
 			do
 			{
-				if ${MissionIterator.Value.AgentID} != ${EVE.Agent[${agentIndex}].ID}
+				if ${missionIterator.Value.AgentID} != ${EVE.Agent[${agentIndex}].ID}
 				{
 					continue
 				}
 
 				if !${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}](exists)}
 				{
-					MissionIterator.Value:GetDetails
+					missionIterator.Value:GetDetails
 					return FALSE
 				}
 
 				variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Escape}
 				if ${missionJournalText.Equals[NULL]}
 				{
-					MissionIterator.Value:GetDetails
+					missionIterator.Value:GetDetails
 					return FALSE
 				}
 
 				; accepted
-				if ${MissionIterator.Value.State} == 2
+				if ${missionIterator.Value.State} == 2
 				{
 					if ${ValidMissions.FirstKey(exists)}
 					{
@@ -1073,7 +1099,7 @@ objectdef obj_Mission inherits obj_StateQueue
 							${Math.Calc[${missionJournalText.Length} - ${missionJournalText.ReplaceSubstring[${checkmarkIcon}, ""].Length}]} >= ${Math.Calc[${checkmarkIcon.Length} * 2]}
 							{
 								UI:Update["Mission", "Mission Complete", "g"]
-								UI:Update["Mission", " ${MissionIterator.Value.Name}", "o"]
+								UI:Update["Mission", " ${missionIterator.Value.Name}", "o"]
 								This:InsertState["Cleanup"]
 								This:InsertState["CompleteMission", 1500]
 								return TRUE
@@ -1083,14 +1109,14 @@ objectdef obj_Mission inherits obj_StateQueue
 					}
 				}
 			}
-			while ${MissionIterator:Next(exists)}
+			while ${missionIterator:Next(exists)}
 		}
 
 		if ${Entity[Type = "Acceleration Gate"]} && !${EVEWindow[byName, modal].Text.Find[This gate is locked!]}
 		{
 			if ${Ship.ModuleList_Siege.ActiveCount}
 			{
-				UI:Update["Mission", "Deactivate siege module due to approaching"]
+				; UI:Update["Mission", "Deactivate siege module due to approaching"]
 				Ship.ModuleList_Siege:Deactivate
 			}
 
@@ -1105,7 +1131,7 @@ objectdef obj_Mission inherits obj_StateQueue
 					Wrecks.TargetList.Get[1]:CreateBookmark["${Config.SalvagePrefix} ${Config.Agent} ${Me.Name} ${EVETime.Time.Left[5]}", "", "Corporation Locations", 1]
 			}
 
-			activetarget:Set[0]
+			currentTarget:Set[0]
 			Move:Gate[${Entity[Type = "Acceleration Gate"]}]
 			; Blitz cargo delivery and recon 1 of 3
 			This:InsertState["CheckForWork"]
@@ -1125,7 +1151,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				Wrecks.TargetList.Get[1]:CreateBookmark["${Config.SalvagePrefix} ${Config.Agent} ${EVETime.Time.Left[5]}", "", "Corporation Locations", 1]
 		}
 
-		activetarget:Set[0]
+		currentTarget:Set[0]
 		This:InsertState["CheckForWork"]
 		This:InsertState["ReloadWeapons"]
 		looted:Set[FALSE]
@@ -1171,7 +1197,7 @@ objectdef obj_Mission inherits obj_StateQueue
 	{
 		if ${Me.InSpace} && ${Ship.ModuleList_Siege.ActiveCount}
 		{
-			UI:Update["Mission", "Deactivate siege module due to mission complete"]
+			; UI:Update["Mission", "Deactivate siege module due to mission complete"]
 			Ship.ModuleList_Siege:Deactivate
 		}
 
@@ -1774,7 +1800,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		}
 	}
 
-	member:bool IsTargetNearbyFrigate(int64 targetID)
+	member:bool IsClosebyFrigate(int64 targetID)
 	{
 		if (${Entity[${targetID}].Group.Find[Frigate]} && ${Entity[${targetID}].Distance} < 15000) || \
 		   (${Entity[${targetID}].Group.Find[Destroyer]} && ${Entity[${targetID}].Distance} < 10000)
@@ -1785,6 +1811,12 @@ objectdef obj_Mission inherits obj_StateQueue
 		{
 			return FALSE
 		}
+	}
+
+	member:bool IsHardToDealWithTarget(int64 targetID)
+	{
+		; TODO Add issile judgement
+		return ${This.IsClosebyFrigate[${targetID}]}
 	}
 
 }
