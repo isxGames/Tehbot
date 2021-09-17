@@ -909,7 +909,6 @@ objectdef obj_Mission inherits obj_StateQueue
 		elseif ${ActiveNPC.LockedTargetList.Used}
 		{
 			; Need to re-pick from locked target
-
 			This:BuildActivateJammerList
 			if ${ActivateJammerList.Used}
 			{
@@ -925,7 +924,8 @@ objectdef obj_Mission inherits obj_StateQueue
 				}
 				while ${activateJammerIterator:Next(exists)}
 			}
-			else
+
+			if ${currentTarget} == 0
 			{
 				; Priortize the closest target which is not hard to deal with to
 				; reduce the frequency of switching ammo.
