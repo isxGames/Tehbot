@@ -69,6 +69,79 @@ objectdef obj_Configuration_DroneData
 		return -1
 	}
 
+	member:string SearchSimilarDroneFromRace(string DroneType, int RaceID)
+	{
+		variable iterator DroneTypes
+		variable iterator Drones
+		variable settingsetref TargetDroneType
+		BaseRef:GetSetIterator[DroneTypes]
+		if ${DroneTypes:First(exists)}
+		{
+			do
+			{
+				DroneTypes.Value:GetSettingIterator[Drones]
+				if ${Drones:First(exists)}
+				{
+					do
+					{
+						if ${Drones.Value.FindAttribute[Type].String.Equal[${DroneType}]}
+						{
+							TargetDroneType:Set[${DroneTypes.Value}]
+							break
+						}
+					}
+					while ${Drones:Next(exists)}
+
+					if ${TargetDroneType}
+					{
+						break
+					}
+				}
+			}
+			while ${DroneTypes:Next(exists)}
+		}
+
+		variable string affix = ""
+		variable bool isNavy = FALSE
+		if ${DroneType.Find["'Integrated'"]}
+		{
+			affix:Set["'Integrated'"]
+		}
+		elseif ${DroneType.Find["'Augmented'"]}
+		{
+			affix:Set["'Augmented'"]
+		}
+		elseif ${DroneType.Find["Navy"]} || ${DroneType.Find["Fleet"]}
+		{
+			isNavy:Set[TRUE]
+		}
+		elseif ${DroneType.Find[" II"]}
+		{
+			affix:Set[" II"]
+		}
+		elseif ${DroneType.Find[" I"]}
+		{
+			affix:Set[" I"]
+		}
+
+		TargetDroneType:GetSettingIterator[Drones]
+		do
+		{
+			if ${Drones.Value.FindAttribute[Race].Int} == ${RaceID} && \
+			   ((!${affix.Equal[""]} && \
+			     ${Drones.Value.FindAttribute[Type].String.Find[${affix}]}) || \
+			    ((${isNavy} && \
+			     (${Drones.Value.FindAttribute[Type].String.Find[Navy]} || \
+			      ${Drones.Value.FindAttribute[Type].String.Find[Fleet]})))
+			{
+				return ${Drones.Value.FindAttribute[Type].String}
+			}
+		}
+		while ${Drones:Next(exists)}
+
+		return NULL
+	}
+
 	member:int FindType(string TypeName)
 	{
 		variable iterator DroneTypeIDs

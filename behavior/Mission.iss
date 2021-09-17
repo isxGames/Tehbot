@@ -56,7 +56,7 @@ objectdef obj_Mission inherits obj_StateQueue
 	variable string secondaryAmmo
 	variable string missionLootContainer
 	variable string missionItemRequired
-	; variable int useDroneRace = 0
+	variable int useDroneRace = 0
 
 	variable collection:string ValidMissions
 	variable collection:string AttackTarget
@@ -227,8 +227,10 @@ objectdef obj_Mission inherits obj_StateQueue
 				}
 
 				variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Escape}
-				if ${missionJournalText.Equal[NULL]}
+
+				if !${missionJournalText.NotNULLOrEmpty} || ${missionJournalText.Length} < 200
 				{
+					; echo case1${missionJournalText.Length}
 					missionIterator.Value:GetDetails
 					return FALSE
 				}
@@ -257,7 +259,7 @@ objectdef obj_Mission inherits obj_StateQueue
 								This:InsertState["Cleanup"]
 								This:InsertState["CheckForWork"]
 								This:InsertState["InteractAgent", 1500, "ACCEPT"]
-								; useDroneRace:Set[0]
+								useDroneRace:Set[0]
 								return TRUE
 							}
 						}
@@ -337,7 +339,7 @@ objectdef obj_Mission inherits obj_StateQueue
 											secondaryAmmo:Set[${Config.KineticAmmoSecondary}]
 										else
 											secondaryAmmo:Set[""]
-										; useDroneRace:Set[1]
+										useDroneRace:Set[1]
 										break
 									case em
 										ammo:Set[${Config.EMAmmo}]
@@ -345,7 +347,7 @@ objectdef obj_Mission inherits obj_StateQueue
 											secondaryAmmo:Set[${Config.EMAmmoSecondary}]
 										else
 											secondaryAmmo:Set[""]
-										; useDroneRace:Set[4]
+										useDroneRace:Set[4]
 										break
 									case thermal
 										ammo:Set[${Config.ThermalAmmo}]
@@ -353,7 +355,7 @@ objectdef obj_Mission inherits obj_StateQueue
 											secondaryAmmo:Set[${Config.ThermalAmmoSecondary}]
 										else
 											secondaryAmmo:Set[""]
-										; useDroneRace:Set[8]
+										useDroneRace:Set[8]
 										break
 									case explosive
 										ammo:Set[${Config.ExplosiveAmmo}]
@@ -361,7 +363,7 @@ objectdef obj_Mission inherits obj_StateQueue
 											secondaryAmmo:Set[${Config.ExplosiveAmmoSecondary}]
 										else
 											secondaryAmmo:Set[""]
-										; useDroneRace:Set[2]
+										useDroneRace:Set[2]
 										break
 									default
 										ammo:Set[${Config.KineticAmmo}]
@@ -1086,7 +1088,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				}
 
 				variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Escape}
-				if ${missionJournalText.Equal[NULL]}
+				if !${missionJournalText.NotNULLOrEmpty} || ${missionJournalText.Length} < 200
 				{
 					missionIterator.Value:GetDetails
 					return FALSE
@@ -1259,7 +1261,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			UIElement[Run@TitleBar@Tehbot]:SetText[Run]
 		}
 		halt:Set[FALSE]
-		This:InsertState["UnloadAmmo"]
+		This:InsertState["UnloadAmmoAndDrones"]
 		return TRUE
 	}
 
@@ -1391,7 +1393,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		return TRUE
 	}
 
-	member:bool UnloadAmmo()
+	member:bool UnloadAmmoAndDrones()
 	{
 		if (!${EVEWindow[Inventory](exists)})
 		{
@@ -1431,9 +1433,16 @@ objectdef obj_Mission inherits obj_StateQueue
 			return FALSE
 		}
 
+		if ${Config.UseDrones} && \
+		   (!${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipDroneBay](exists)} || ${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipDroneBay].Capacity} < 0)
+		{
+			EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipDroneBay]:MakeActive
+			return FALSE
+		}
+
 		variable index:item items
-		EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:GetItems[items]
 		variable iterator itemIterator
+		EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:GetItems[items]
 		items:GetIterator[itemIterator]
 		if ${itemIterator:First(exists)}
 		{
@@ -1447,35 +1456,73 @@ objectdef obj_Mission inherits obj_StateQueue
 				   ${itemIterator.Value.Name.Equal[${Config.ThermalAmmoSecondary}]} || \
 				   ${itemIterator.Value.Name.Equal[${Config.EMAmmoSecondary}]} || \
 				   ${itemIterator.Value.Name.Equal[${Config.ExplosiveAmmoSecondary}]}
-				   {
-						if ${Config.DropoffType.Equal[Corporation Hangar]}
+				{
+					if ${Config.DropoffType.Equal[Corporation Hangar]}
+					{
+						if !${EVEWindow[Inventory].ChildWindow[StationCorpHangar](exists)}
 						{
-							if !${EVEWindow[Inventory].ChildWindow[StationCorpHangar](exists)}
-							{
-								EVEWindow[Inventory].ChildWindow[StationCorpHangars]:MakeActive
-								return FALSE
-							}
-
-							if !${EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}](exists)}
-							{
-
-								EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}]:MakeActive
-								return FALSE
-							}
-
-							itemIterator.Value:MoveTo[MyStationCorporateHangar, StationCorporateHangar, ${itemIterator.Value.Quantity}, ${folder}]
+							EVEWindow[Inventory].ChildWindow[StationCorpHangars]:MakeActive
+							return FALSE
 						}
-						else
+
+						if !${EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}](exists)}
 						{
-							if !${EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems](exists)}
-							{
-								EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:MakeActive
-								return FALSE
-							}
 
-							itemIterator.Value:MoveTo[MyStationHangar, Hangar, ${itemIterator.Value.Quantity}]
+							EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}]:MakeActive
+							return FALSE
 						}
+
+						itemIterator.Value:MoveTo[MyStationCorporateHangar, StationCorporateHangar, ${itemIterator.Value.Quantity}, ${folder}]
 					}
+					else
+					{
+						if !${EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems](exists)}
+						{
+							EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:MakeActive
+							return FALSE
+						}
+
+						itemIterator.Value:MoveTo[MyStationHangar, Hangar, ${itemIterator.Value.Quantity}]
+					}
+				}
+			}
+			while ${itemIterator:Next(exists)}
+		}
+
+		EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipDroneBay]:GetItems[items]
+		items:GetIterator[itemIterator]
+		if ${itemIterator:First(exists)}
+		{
+			do
+			{
+				if ${Config.DropoffType.Equal[Corporation Hangar]}
+				{
+					if !${EVEWindow[Inventory].ChildWindow[StationCorpHangar](exists)}
+					{
+						EVEWindow[Inventory].ChildWindow[StationCorpHangars]:MakeActive
+						return FALSE
+					}
+
+					if !${EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}](exists)}
+					{
+
+						EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}]:MakeActive
+						return FALSE
+					}
+
+					itemIterator.Value:MoveTo[MyStationCorporateHangar, StationCorporateHangar, ${itemIterator.Value.Quantity}, ${folder}]
+				}
+				else
+				{
+					if !${EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems](exists)}
+					{
+						EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:MakeActive
+						return FALSE
+					}
+
+					itemIterator.Value:MoveTo[MyStationHangar, Hangar, ${itemIterator.Value.Quantity}]
+				}
+
 			}
 			while ${itemIterator:Next(exists)}
 		}
@@ -1493,16 +1540,12 @@ objectdef obj_Mission inherits obj_StateQueue
 		variable int defaultAmmoAmountToLoad = ${Config.AmmoAmountToLoad}
 		variable int secondaryAmmoAmountToLoad = ${Config.AmmoAmountToLoad}
 		variable int droneAmountToLoad = -1
+		variable string preferredDroneType
+		variable string fallbackDroneType
 
 		if (!${EVEWindow[Inventory](exists)})
 		{
 			EVE:Execute[OpenInventory]
-			return FALSE
-		}
-
-		if !${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo](exists)} || ${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo].Capacity} < 0
-		{
-			EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:MakeActive
 			return FALSE
 		}
 
@@ -1524,9 +1567,47 @@ objectdef obj_Mission inherits obj_StateQueue
 				droneAmountToLoad:Set[${Math.Calc[${droneSpace} / ${specifiedDroneVolume}].Int}]
 				if ${droneAmountToLoad} > 0
 				{
-					UI:Update["Mission", "Loading ${droneAmountToLoad} \ao${Config.DroneType}\ags."]
+					preferredDroneType:Set[${Drones.Data.SearchSimilarDroneFromRace[${Config.DroneType}, ${useDroneRace}]}]
+					if !${preferredDroneType.Equal[${Config.DroneType}]}
+					{
+						fallbackDroneType:Set[${Config.DroneType}]
+					}
 				}
 			}
+		}
+
+		variable int loadingDroneNumber = ${droneAmountToLoad}
+
+		variable string folder
+		switch ${Config.DropoffSubType}
+		{
+			case Folder1
+				folder:Set[Corporation Folder 1]
+				break
+			case Folder2
+				folder:Set[Corporation Folder 2]
+				break
+			case Folder3
+				folder:Set[Corporation Folder 3]
+				break
+			case Folder4
+				folder:Set[Corporation Folder 4]
+				break
+			case Folder5
+				folder:Set[Corporation Folder 5]
+				break
+			case Folder6
+				folder:Set[Corporation Folder 6]
+				break
+			case Folder7
+				folder:Set[Corporation Folder 7]
+				break
+		}
+
+		if !${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo](exists)} || ${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo].Capacity} < 0
+		{
+			EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:MakeActive
+			return FALSE
 		}
 
 		EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:GetItems[items]
@@ -1538,24 +1619,70 @@ objectdef obj_Mission inherits obj_StateQueue
 				if ${itemIterator.Value.Name.Equal[${ammo}]}
 				{
 					defaultAmmoAmountToLoad:Dec[${itemIterator.Value.Quantity}]
+					continue
 				}
 
 				if ${itemIterator.Value.Name.Equal[${secondaryAmmo}]}
 				{
 					secondaryAmmoAmountToLoad:Dec[${itemIterator.Value.Quantity}]
+					continue
 				}
 
-				if ${itemIterator.Value.Name.Equal[${Config.DroneType}]}
+				if ${itemIterator.Value.Name.Equal[${preferredDroneType}]}
 				{
-					if ${itemIterator.Value.Quantity} >= ${droneAmountToLoad}
+					if (!${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipDroneBay](exists)} || ${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipDroneBay].Capacity} < 0)
 					{
-						itemIterator.Value:MoveTo[${MyShip.ID}, DroneBay, ${droneAmountToLoad}]
+						EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipDroneBay]:MakeActive
+						return FALSE
+					}
+
+					if ${itemIterator.Value.Name.Equal[${preferredDroneType}]}
+					{
+						loadingDroneNumber:Set[${droneAmountToLoad}]
+						if ${itemIterator.Value.Quantity} < ${droneAmountToLoad}
+						{
+							loadingDroneNumber:Set[${itemIterator.Value.Quantity}]
+						}
+						UI:Update["Mission", "Loading ${loadingDroneNumber} \ao${preferredDroneType}\aws."]
+						itemIterator.Value:MoveTo[${MyShip.ID}, DroneBay, ${loadingDroneNumber}]
+						droneAmountToLoad:Dec[${loadingDroneNumber}]
+						return FALSE
+					}
+					continue
+				}
+
+				; Move fallback drones together(to station hanger) before moving them to drone bay to ensure preferred type is loaded before fallback type.
+				if ${itemIterator.Value.Name.Equal[${fallbackDroneType}]}
+				{
+					if ${Config.DropoffType.Equal[Corporation Hangar]}
+					{
+						if !${EVEWindow[Inventory].ChildWindow[StationCorpHangar](exists)}
+						{
+							EVEWindow[Inventory].ChildWindow[StationCorpHangars]:MakeActive
+							return FALSE
+						}
+
+						if !${EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}](exists)}
+						{
+
+							EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}]:MakeActive
+							return FALSE
+						}
+
+						itemIterator.Value:MoveTo[MyStationCorporateHangar, StationCorporateHangar, ${itemIterator.Value.Quantity}, ${folder}]
 					}
 					else
 					{
-						itemIterator.Value:MoveTo[${MyShip.ID}, DroneBay, ${itemIterator.Value.Quantity}]
+						if !${EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems](exists)}
+						{
+							EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:MakeActive
+							return FALSE
+						}
+
+						itemIterator.Value:MoveTo[MyStationHangar, Hangar, ${itemIterator.Value.Quantity}]
+						return FALSE
 					}
-					droneAmountToLoad:Dec[${itemIterator.Value.Quantity}]
+					continue
 				}
 			}
 			while ${itemIterator:Next(exists)}
@@ -1588,11 +1715,13 @@ objectdef obj_Mission inherits obj_StateQueue
 			EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:GetItems[items]
 		}
 
+		; Load ammos
+		items:GetIterator[itemIterator]
 		if ${itemIterator:First(exists)}
 		{
 			do
 			{
-				if  ${defaultAmmoAmountToLoad} > 0 && ${itemIterator.Value.Name.Equal[${ammo}]}
+				if ${defaultAmmoAmountToLoad} > 0 && ${itemIterator.Value.Name.Equal[${ammo}]}
 				{
 					if ${itemIterator.Value.Quantity} >= ${defaultAmmoAmountToLoad}
 					{
@@ -1623,24 +1752,61 @@ objectdef obj_Mission inherits obj_StateQueue
 						return FALSE
 					}
 				}
+			}
+			while ${itemIterator:Next(exists)}
+		}
 
-				if ${droneAmountToLoad} > 0 && ${itemIterator.Value.Name.Equal[${Config.DroneType}]}
+		if (!${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipDroneBay](exists)} || ${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipDroneBay].Capacity} < 0)
+		{
+			EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipDroneBay]:MakeActive
+			return FALSE
+		}
+
+		; Load preferred type of drones
+		items:GetIterator[itemIterator]
+		if ${droneAmountToLoad} > 0 && ${itemIterator:First(exists)}
+		{
+			do
+			{
+				if ${droneAmountToLoad} > 0 && ${itemIterator.Value.Name.Equal[${preferredDroneType}]}
 				{
-					if ${itemIterator.Value.Quantity} >= ${droneAmountToLoad}
+					loadingDroneNumber:Set[${droneAmountToLoad}]
+					if ${itemIterator.Value.Quantity} < ${droneAmountToLoad}
 					{
-						itemIterator.Value:MoveTo[${MyShip.ID}, DroneBay, ${droneAmountToLoad}]
-						droneAmountToLoad:Set[0]
-						return FALSE
+						loadingDroneNumber:Set[${itemIterator.Value.Quantity}]
 					}
-					else
-					{
-						itemIterator.Value:MoveTo[${MyShip.ID}, DroneBay, ${itemIterator.Value.Quantity}]
-						droneAmountToLoad:Dec[${itemIterator.Value.Quantity}]
-						return FALSE
-					}
+					UI:Update["Mission", "Loading ${loadingDroneNumber} \ao${preferredDroneType}\aws."]
+					itemIterator.Value:MoveTo[${MyShip.ID}, DroneBay, ${loadingDroneNumber}]
+					droneAmountToLoad:Dec[${loadingDroneNumber}]
+					return FALSE
 				}
 			}
 			while ${itemIterator:Next(exists)}
+		}
+
+		; Out of preferred type of drones, load fallback(configged) type
+		if ${droneAmountToLoad} > 0 && ${fallbackDroneType.NotNULLOrEmpty}
+		{
+			items:GetIterator[itemIterator]
+			if ${itemIterator:First(exists)}
+			{
+				do
+				{
+					if ${droneAmountToLoad} > 0 && ${itemIterator.Value.Name.Equal[${fallbackDroneType}]}
+					{
+						loadingDroneNumber:Set[${droneAmountToLoad}]
+						if ${itemIterator.Value.Quantity} < ${droneAmountToLoad}
+						{
+							loadingDroneNumber:Set[${itemIterator.Value.Quantity}]
+						}
+						UI:Update["Mission", "Loading ${loadingDroneNumber} \ao${fallbackDroneType}\aws for having no \ao${preferredDroneType}\aw."]
+						itemIterator.Value:MoveTo[${MyShip.ID}, DroneBay, ${loadingDroneNumber}]
+						droneAmountToLoad:Dec[${loadingDroneNumber}]
+						return FALSE
+					}
+				}
+				while ${itemIterator:Next(exists)}
+			}
 		}
 
 		if ${defaultAmmoAmountToLoad} > 0
