@@ -49,7 +49,7 @@
 #define GROUP_ENERGY_VAMPIRE 																					68
 #define GROUP_ENERGY_TRANSFER																					67
 #define GROUP_TRACKINGCOMPUTER 																					213
-#define GROUP_AUTOMATED_TARGETING_SYSTEM																		96.
+#define GROUP_AUTOMATED_TARGETING_SYSTEM																		96
 #define GROUP_SIEGEMODULE 																						515
 #define GROUP_CONCORDDRONE 																						301
 #define GROUP_CONVOY 																							297
