@@ -228,7 +228,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 				variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Escape}
 
-				if !${missionJournalText.NotNULLOrEmpty} || ${missionJournalText.Length} < 200
+				if !${missionJournalText.NotNULLOrEmpty} || ${missionJournalText.Length} < 1000
 				{
 					; echo case1${missionJournalText.Length}
 					missionIterator.Value:GetDetails
@@ -296,7 +296,7 @@ objectdef obj_Mission inherits obj_StateQueue
 						{
 							variable string checkmarkIcon = "icon:38_193"
 							if ${missionJournalText.Find[${ValidMissions.CurrentKey} Objectives Complete]} || \
-							${Math.Calc[${missionJournalText.Length} - ${missionJournalText.ReplaceSubstring[${checkmarkIcon}, ""].Length}]} >= ${Math.Calc[${checkmarkIcon.Length} * 2]}
+							${Math.Calc[${missionJournalText.Length} - ${missionJournalText.ReplaceSubstring[${checkmarkIcon}, ""].Length}].Int} >= ${Math.Calc[${checkmarkIcon.Length} * 2].Int}
 							{
 								UI:Update["Mission", "Mission Complete", "g"]
 								UI:Update["Mission", " ${missionIterator.Value.Name}", "o"]
@@ -787,6 +787,7 @@ objectdef obj_Mission inherits obj_StateQueue
 										{
 											itemIterator.Value:MoveTo[${MyShip.ID}, CargoHold]
 											This:InsertState["CheckForWork"]
+											This:InsertState["Idle", 2000]
 											notDone:Set[FALSE]
 											return TRUE
 										}
@@ -863,7 +864,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		ActiveNPC.MinLockCount:Set[${MaxTarget}]
 		ActiveNPC.AutoLock:Set[TRUE]
 
-		; Picked target not locked.
+	; Picked target not locked.
 		if !${Entity[${currentTarget}]} || ${Entity[${currentTarget}].IsMoribund} || !(${Entity[${currentTarget}].IsLockedTarget} || ${Entity[${currentTarget}].BeingTargeted})
 		{
 			currentTarget:Set[0]
@@ -1088,7 +1089,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				}
 
 				variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Escape}
-				if !${missionJournalText.NotNULLOrEmpty} || ${missionJournalText.Length} < 200
+				if !${missionJournalText.NotNULLOrEmpty} || ${missionJournalText.Length} < 1000
 				{
 					missionIterator.Value:GetDetails
 					return FALSE
@@ -1103,7 +1104,7 @@ objectdef obj_Mission inherits obj_StateQueue
 						{
 							variable string checkmarkIcon = "icon:38_193"
 							if ${missionJournalText.Find[${ValidMissions.CurrentKey} Objectives Complete]} || \
-							${Math.Calc[${missionJournalText.Length} - ${missionJournalText.ReplaceSubstring[${checkmarkIcon}, ""].Length}]} >= ${Math.Calc[${checkmarkIcon.Length} * 2]}
+							${Math.Calc[${missionJournalText.Length} - ${missionJournalText.ReplaceSubstring[${checkmarkIcon}, ""].Length}].Int} >= ${Math.Calc[${checkmarkIcon.Length} * 2].Int}
 							{
 								UI:Update["Mission", "Mission Complete", "g"]
 								UI:Update["Mission", " ${missionIterator.Value.Name}", "o"]
@@ -1142,6 +1143,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			Move:Gate[${Entity[Type = "Acceleration Gate"]}]
 			; Blitz cargo delivery and recon 1 of 3
 			This:InsertState["CheckForWork"]
+			This:InsertState["Idle", 2000]
 			This:InsertState["Traveling"]
 			This:InsertState["ReloadWeapons"]
 			return TRUE
