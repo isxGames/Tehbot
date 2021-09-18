@@ -990,6 +990,10 @@ objectdef obj_Mission inherits obj_StateQueue
 			{
 				Ship.ModuleList_Weapon:Activate[${currentTarget}]
 				Ship.ModuleList_Weapon:DeactivateNotOn[${currentTarget}]
+				if ${AutoModule.Config.TrackingComputers}
+				{
+					Ship.ModuleList_TrackingComputer:ActivateAll[${currentTarget}]
+				}
 			}
 			if ${Entity[${currentTarget}].Distance} <= ${Ship.ModuleList_TargetPainter.Range}
 			{
@@ -1065,6 +1069,10 @@ objectdef obj_Mission inherits obj_StateQueue
 			elseif ${Entity[${missionAttackTarget}].IsLockedTarget}
 			{
 				Ship.ModuleList_Weapon:ActivateAll[${Entity[${missionAttackTarget}].ID}]
+				if ${AutoModule.Config.TrackingComputers}
+				{
+					Ship.ModuleList_TrackingComputer:ActivateAll[${currentTarget}]
+				}
 			}
 			This:InsertState["PerformMission"]
 			return TRUE

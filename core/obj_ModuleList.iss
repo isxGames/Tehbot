@@ -39,7 +39,7 @@ objectdef obj_ModuleList
 		{
 			do
 			{
-				if !${ModuleIterator.Value.IsActive}
+				if !${ModuleIterator.Value.IsActiveOn[${target}]}
 				{
 					ModuleIterator.Value:Activate[${target}, ${DoDeactivate}, ${DeactivatePercent}]
 					activatedCount:Inc
@@ -61,7 +61,7 @@ objectdef obj_ModuleList
 		{
 			do
 			{
-				if !${ModuleIterator.Value.IsActive}
+				if !${ModuleIterator.Value.IsActiveOn[${target}]}
 				{
 					ModuleIterator.Value:Activate[${target}, ${DoDeactivate}, ${DeactivatePercent}]
 					activatedCount:Inc
@@ -144,7 +144,7 @@ objectdef obj_ModuleList
 			while ${ModuleIterator:Next(exists)}
 		}
 	}	
-	
+
 	method Reactivate(int ModuleID, int64 target=-1)
 	{
 		Modules[${ModuleID}]:Activate[${target}]
@@ -272,6 +272,11 @@ objectdef obj_ModuleList
 		return ${Modules.Get[1].Range}
 	}
 	
+	member:float OptimalRange()
+	{
+		return ${Modules.Get[1].OptimalRange}
+	}
+
 	member:bool IncludeModule(int64 ModuleID)
 	{
 		variable iterator ModuleIterator

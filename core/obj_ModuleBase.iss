@@ -22,7 +22,7 @@ along with ComBot.  If not, see <http://www.gnu.org/licenses/>.
 objectdef obj_ModuleBase inherits obj_StateQueue
 {
 	variable bool Activated = FALSE
-	variable bool Deactivated = FALSE
+	variable bool Deactivating = FALSE
 	variable int64 CurrentTarget = -1
 	variable int64 ModuleID
 	variable string TurretAmmoRangeType = "unknown"
@@ -45,27 +45,24 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 
 	member:bool IsDeactivating()
 	{
-		return ${Deactivated}
+		return ${Deactivating}
 	}
 
 	member:bool IsActiveOn(int64 checkTarget)
 	{
-		if (${This.CurrentTarget.Equal[${checkTarget}]})
+		if (${This.IsActive} && ${This.CurrentTarget.Equal[${checkTarget}]})
 		{
-			if ${This.IsActive}
-			{
-				return TRUE
-			}
+			return TRUE
 		}
 		return FALSE
 	}
 
 	method Deactivate()
 	{
-		if !${Deactivated}
+		if !${Deactivating}
 		{
 			MyShip.Module[${ModuleID}]:Deactivate
-			Deactivated:Set[TRUE]
+			Deactivating:Set[TRUE]
 			This:Clear
 			This:QueueState["WaitTillInactive", 50, 0]
 		}
@@ -166,14 +163,51 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 		}
 	}
 
+	method ChooseAndLoadTrackingComputerScript(int64 newTarget, int OptimalRange)
+	{
+		if ${Entity[${newTarget}].Distance} > ${OptimalRange}
+		{
+			; echo need range
+			if !${MyShip.Module[${ModuleID}].Charge.Type(exists)} || ${MyShip.Module[${ModuleID}].Charge.Type.Find["Tracking Speed Script"]}
+			{
+				if ${MyShip.Cargo["Optimal Range Script"].Quantity} > 0
+				{
+					This:Deactivate
+					This:QueueState["LoadOptimalAmmo", 50, "Optimal Range Script"]
+				}
+				elseif ${MyShip.Module[${ModuleID}].Charge.Type.Find["Tracking Speed Script"]}
+				{
+					UI:Update["obj_Module", "Unloading Tracking Speed Script"]
+					This:Deactivate
+					MyShip.Module[${ModuleID}]:UnloadToCargo
+				}
+			}
+		}
+		elseif ${Entity[${newTarget}].Distance} < ${Math.Calc[${OptimalRange} * 0.6]}
+		{
+			; echo need tracking
+			if !${MyShip.Module[${ModuleID}].Charge.Type(exists)} || ${MyShip.Module[${ModuleID}].Charge.Type.Find["Optimal Range Script"]}
+			{
+				if ${MyShip.Cargo["Tracking Speed Script"].Quantity} > 0
+				{
+					This:Deactivate
+					This:QueueState["LoadOptimalAmmo", 50, "Tracking Speed Script"]
+				}
+				elseif ${MyShip.Module[${ModuleID}].Charge.Type.Find["Optimal Range Script"]}
+				{
+					UI:Update["obj_Module", "Unloading Optimal Range Script"]
+					This:Deactivate
+					MyShip.Module[${ModuleID}]:UnloadToCargo
+				}
+			}
+		}
+	}
+
     method Activate(int64 newTarget=-1, bool DoDeactivate=TRUE, int DeactivatePercent=100)
     {
-        if ${DoDeactivate} && ${This.IsActive}
-        {
-            This:Deactivate
-        }
-
-        if ${newTarget} != ${CurrentTarget} &&  ${This.IsActive}
+        if ${newTarget} != ${CurrentTarget} && ${This.IsActive} && \
+		${MyShip.Module[${ModuleID}].ToItem.GroupID} != GROUP_TRACKINGCOMPUTER && \
+		${MyShip.Module[${ModuleID}].ToItem.GroupID} != GROUP_MISSILEGUIDANCECOMPUTER
         {
             This:Deactivate
         }
@@ -301,6 +335,11 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 
 				This:ChooseAndLoadTurretAmmo[${shortRangeAmmo}, ${longRangeAmmo}, ${newTarget}, 49000]
 			}
+
+			if ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_TRACKINGCOMPUTER
+			{
+				This:ChooseAndLoadTrackingComputerScript[${newTarget}, ${Ship.ModuleList_Weapon.OptimalRange.Int}]
+			}
 		}
 
         if ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_PRECURSORWEAPON && ${Entity[${newTarget}].Distance} > ${Ship.CurrentOptimal}
@@ -326,11 +365,6 @@ objectdef obj_ModuleBase inherits obj_StateQueue
         }
 
         This:QueueState["WaitTillInactive"]
-        if ${DoDeactivate}
-        {
-            CurrentTarget:Set[${newTarget}]
-			Activated:Set[TRUE]
-        }
     }
 
 	member:bool LoadMiningCrystal(string OreType)
@@ -358,7 +392,7 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 				if ${OreType.Find[${Crystal.Value.Name.Token[1, " "]}](exists)}
 				{
 					UI:Update["obj_Module", "Switching Crystal to ${Crystal.Value.Name}"]
-					MyShip.Module[${ModuleID}]:ChangeAmmo[${Crystal.Value.ID},1]
+					MyShip.Module[${ModuleID}]:ChangeAmmo[${Crystal.Value.ID}, 1]
 					return TRUE
 				}
 			}
@@ -415,7 +449,6 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 		return FALSE
 	}
 
-
 	member:bool ActivateOn(int64 newTarget)
 	{
 		if ${newTarget} == -1 || ${newTarget} == 0
@@ -457,10 +490,10 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 		{
 			return TRUE
 		}
-		if  ${Math.Calc[((${EVETime.AsInt64} - ${MyShip.Module[${ModuleID}].TimeLastClicked.AsInt64}) / ${MyShip.Module[${ModuleID}].ActivationTime}) * 100]} > ${Percent}
+		if ${Math.Calc[((${EVETime.AsInt64} - ${MyShip.Module[${ModuleID}].TimeLastClicked.AsInt64}) / ${MyShip.Module[${ModuleID}].ActivationTime}) * 100]} > ${Percent}
 		{
 			MyShip.Module[${ModuleID}]:Deactivate
-			Deactivated:Set[TRUE]
+			Deactivating:Set[TRUE]
 			This:Clear
 			This:InsertState["WaitTillInactive", 50, 0]
 			return TRUE
@@ -483,10 +516,15 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 				This:InsertState["WaitTillInactive", 50, ${Count:Inc}]
 				return TRUE
 			}
-			return FALSE
+			else
+			{
+				; Waiting infinitely
+				Deactivating:Set[FALSE]
+				return FALSE
+			}
 		}
 		Activated:Set[FALSE]
-		Deactivated:Set[FALSE]
+		Deactivating:Set[FALSE]
 		CurrentTarget:Set[-1]
 		return TRUE
 	}
@@ -504,13 +542,18 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 		if ${MyShip.Module[${ModuleID}].OptimalRange(exists)}
 		{
 			if ${MyShip.Module[${ModuleID}].AccuracyFalloff(exists)}
-				return ${Math.Calc[${MyShip.Module[${ModuleID}].OptimalRange}+${MyShip.Module[${ModuleID}].AccuracyFalloff}]}
+				return ${Math.Calc[${MyShip.Module[${ModuleID}].OptimalRange} + ${MyShip.Module[${ModuleID}].AccuracyFalloff}]}
 			return ${MyShip.Module[${ModuleID}].OptimalRange}
 		}
 		else
 		{
 			return ${Math.Calc[${MyShip.Module[${ModuleID}].Charge.MaxFlightTime} * ${MyShip.Module[${ModuleID}].Charge.MaxVelocity}]}
 		}
+	}
+
+	member:float OptimalRange()
+	{
+		return ${MyShip.Module[${ModuleID}].OptimalRange}
 	}
 
 	member:string GetFallthroughObject()
