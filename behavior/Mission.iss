@@ -864,7 +864,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		ActiveNPC.MinLockCount:Set[${MaxTarget}]
 		ActiveNPC.AutoLock:Set[TRUE]
 
-	; Picked target not locked.
+		; finalized target not locked.
 		if !${Entity[${currentTarget}]} || ${Entity[${currentTarget}].IsMoribund} || !(${Entity[${currentTarget}].IsLockedTarget} || ${Entity[${currentTarget}].BeingTargeted})
 		{
 			currentTarget:Set[0]
@@ -872,9 +872,13 @@ objectdef obj_Mission inherits obj_StateQueue
 
 		variable iterator lockedTargetIterator
 		variable iterator activateJammerIterator
+		This:BuildActivateJammerList
+
 		if ${currentTarget} != 0
 		{
-			This:BuildActivateJammerList
+			; Finalized decision
+			variable bool finalized
+			finalized:Set[FALSE]
 			if ${ActivateJammerList.Used}
 			{
 				if !${ActivateJammerSet.Contains[${currentTarget}]}
@@ -887,13 +891,19 @@ objectdef obj_Mission inherits obj_StateQueue
 						{
 							currentTarget:Set[${activateJammerIterator.Value}]
 							UI:Update["Mission", "Switching target to activate jammer \ar${Entity[${currentTarget}].Name}", "g"]
+							finalized:Set[TRUE]
 							break
 						}
 					}
 					while ${activateJammerIterator:Next(exists)}
 				}
+				else
+				{
+					finalized:Set[TRUE]
+				}
 			}
-			elseif ${This.IsHardToDealWithTarget[${currentTarget}]} && ${ActiveNPC.LockedTargetList.Used}
+
+			if !${finalized} && ${This.IsHardToDealWithTarget[${currentTarget}]} && ${ActiveNPC.LockedTargetList.Used}
 			{
 				; Switch to easier target
 				ActiveNPC.LockedTargetList:GetIterator[lockedTargetIterator]
@@ -903,7 +913,7 @@ objectdef obj_Mission inherits obj_StateQueue
 					(${This.IsHardToDealWithTarget[${currentTarget}]} || ${Entity[${currentTarget}].Distance} > ${Entity[${lockedTargetIterator.Value}].Distance})
 					{
 						currentTarget:Set[${lockedTargetIterator.Value}]
-						UI:Update["Mission", "Switch to easier target: \ar${Entity[${currentTarget}].Name}", "g"]
+						UI:Update["Mission", "Switching to easier target: \ar${Entity[${currentTarget}].Name}", "g"]
 					}
 				}
 				while ${lockedTargetIterator:Next(exists)}
@@ -912,7 +922,6 @@ objectdef obj_Mission inherits obj_StateQueue
 		elseif ${ActiveNPC.LockedTargetList.Used}
 		{
 			; Need to re-pick from locked target
-			This:BuildActivateJammerList
 			if ${ActivateJammerList.Used}
 			{
 				ActivateJammerList:GetIterator[activateJammerIterator]
