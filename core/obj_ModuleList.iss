@@ -39,11 +39,11 @@ objectdef obj_ModuleList
 		{
 			do
 			{
-				if !${ModuleIterator.Value.IsActiveOn[${target}]}
-				{
+				; if !${ModuleIterator.Value.IsActiveOn[${target}]}
+				; {
 					ModuleIterator.Value:Activate[${target}, ${DoDeactivate}, ${DeactivatePercent}]
 					activatedCount:Inc
-				}
+				; }
 				if ${activatedCount} >= ${count}
 				{
 					return
@@ -61,11 +61,11 @@ objectdef obj_ModuleList
 		{
 			do
 			{
-				if !${ModuleIterator.Value.IsActiveOn[${target}]}
-				{
+				; if !${ModuleIterator.Value.IsActiveOn[${target}]}
+				; {
 					ModuleIterator.Value:Activate[${target}, ${DoDeactivate}, ${DeactivatePercent}]
 					activatedCount:Inc
-				}
+				; }
 			}
 			while ${ModuleIterator:Next(exists)}
 		}
