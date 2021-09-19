@@ -168,6 +168,9 @@ objectdef obj_Drones inherits obj_StateQueue
 	variable set ActiveTypes
 	variable collection:queue TypeQueues
 
+	; No other methods to get HP of drones in bay.
+	variable collection:int DroneHealth
+
 	method Initialize()
 	{
 		This[parent]:Initialize
@@ -199,31 +202,83 @@ objectdef obj_Drones inherits obj_StateQueue
 
 	method Deploy(string TypeQuery, int Count=-1)
 	{
-		variable index:item DroneBayDrones
-		variable index:int64 DronesToLaunch
+		if ${Count} <= 0
+			return
+
+		variable index:item DronesInBay
+		variable set DronesToLaunchSet
+		variable index:int64 DronesToLaunchList
 		variable iterator DroneIterator
 		variable int Selected = 0
 
-
-		MyShip:GetDrones[DroneBayDrones]
-		DroneBayDrones:RemoveByQuery[${LavishScript.CreateQuery[${TypeQuery}]}, FALSE]
-		DroneBayDrones:Collapse[]
-		DroneBayDrones:GetIterator[DroneIterator]
-		if ${DroneIterator:First(exists)}
+		DronesToLaunchSet:Clear
+		MyShip:GetDrones[DronesInBay]
+		DronesInBay:RemoveByQuery[${LavishScript.CreateQuery[${TypeQuery}]}, FALSE]
+		DronesInBay:Collapse
+		echo ${DronesInBay.Used}
+		if ${DronesInBay.Used} <= ${Count}
 		{
-			do
+			; echo Launch all
+			DronesInBay:GetIterator[DroneIterator]
+			if ${DroneIterator:First(exists)}
 			{
-				if ${Selected} >= ${Count} && ${Count} > 0
+				do
 				{
-					break
+					; if ${Selected} >= ${Count} && ${Count} > 0
+					; {
+					; 	break
+					; }
+					ActiveTypes:Add[${DroneIterator.Value.TypeID}]
+					DronesToLaunchList:Insert[${DroneIterator.Value.ID}]
+					Selected:Inc
 				}
-				ActiveTypes:Add[${DroneIterator.Value.TypeID}]
-				DronesToLaunch:Insert[${DroneIterator.Value.ID}]
-				Selected:Inc
+				while ${DroneIterator:Next(exists)}
 			}
-			while ${DroneIterator:Next(exists)}
 		}
-		EVE:LaunchDrones[DronesToLaunch]
+		else
+		{
+			; echo Launch top ${Count} healthest
+			while ${Selected} < ${Count}
+			{
+				DronesInBay:GetIterator[DroneIterator]
+				variable float healthestDroneHealth = 0
+				variable int64 healthestDroneID = 0
+				variable int healthestDroneTypeID = 0
+				if ${DroneIterator:First(exists)}
+				{
+					do
+					{
+						variable int currentDroneHealth = -1
+						; if ${DroneHealth.Element[${DroneIterator.Value.ID}](exists)}
+						; {
+						; 	echo cahced drone health ${DroneHealth.Element[${DroneIterator.Value.ID}]}
+						; 	currentDroneHealth:Set[${DroneHealth.Element[${DroneIterator.Value.ID}]}]
+						; }
+
+						if !${DronesToLaunchSet.Contains[${DroneIterator.Value.ID}]} && \
+						   (${currentDroneHealth} > ${healthestDroneHealth} || ${currentDroneHealth} == -1)
+						{
+							healthestDroneID:Set[${DroneIterator.Value.ID}]
+							healthestDroneHealth:Set[${currentDroneHealth}]
+							healthestDroneTypeID:Set[${DroneIterator.Value.TypeID}]
+							; echo current drone id ${healthestDroneID}
+						}
+					}
+					while ${DroneIterator:Next(exists)}
+
+					; if ${healthestDroneID.Equal[0]}
+					; {
+					; 	echo fail to pick health drone
+					; }
+					ActiveTypes:Add[${healthestDroneTypeID}]
+					DronesToLaunchSet:Add[${healthestDroneID}]
+					DronesToLaunchList:Insert[${healthestDroneID}]
+					Selected:Inc
+				}
+			}
+		}
+		if ${DronesToLaunchList.Used}
+			EVE:LaunchDrones[DronesToLaunchList]
 	}
 
 	method Recall(string TypeQuery, int Count=-1)
@@ -284,11 +339,11 @@ objectdef obj_Drones inherits obj_StateQueue
 
 	member:int InactiveDroneCount(string TypeQuery)
 	{
-		variable index:item DroneBayDrones
-		MyShip:GetDrones[DroneBayDrones]
-		DroneBayDrones:RemoveByQuery[${LavishScript.CreateQuery[${TypeQuery}]}, FALSE]
-		DroneBayDrones:Collapse[]
-		return ${DroneBayDrones.Used}
+		variable index:item DronesInBay
+		MyShip:GetDrones[DronesInBay]
+		DronesInBay:RemoveByQuery[${LavishScript.CreateQuery[${TypeQuery}]}, FALSE]
+		DronesInBay:Collapse[]
+		return ${DronesInBay.Used}
 	}
 
 	member:int ActiveDroneCount(string TypeQuery)
@@ -368,6 +423,21 @@ objectdef obj_Drones inherits obj_StateQueue
 		return ${Drones.Used}
 	}
 
-
+	method RefreshDroneHealthCache()
+	{
+		variable index:activedrone ActiveDrones
+		variable iterator DroneIterator
+		Me:GetActiveDrones[ActiveDrones]
+		ActiveDrones:GetIterator[DroneIterator]
+		if ${DroneIterator:First(exists)}
+		{
+			do
+			{
+				variable int currentDroneHealth = ${Math.Calc[${DroneIterator.Value.ToEntity.ShieldPct} + ${DroneIterator.Value.ToEntity.ArmorPct} + ${DroneIterator.Value.ToEntity.StructurePct}]}
+				Drones.DroneHealth:Set[${DroneIterator.Value.ID}, ${currentDroneHealth}]
+			}
+			while ${DroneIterator:Next(exists)}
+		}
+	}
 
 }

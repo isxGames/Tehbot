@@ -14,22 +14,16 @@ objectdef obj_Configuration_DroneControl inherits obj_Base_Configuration
 		This.CommonRef:AddSetting[LockCount, 2]
 		This.CommonRef:AddSetting[UseIPC, TRUE]
 		This.CommonRef:AddSetting[Aggressive, FALSE]
-
-
-
 	}
 
-Setting(bool, Sentries, SetSentries)
-Setting(int, SentryRange, SetSentryRange)
-Setting(int, OutDelay, SetOutDelay)
-Setting(int, DroneCount, SetDroneCount)
-Setting(int, LockCount, SetLockCount)
-Setting(bool, UseIPC, SetUseIPC)
-Setting(bool, Aggressive, SetAggressive)
-
+	Setting(bool, Sentries, SetSentries)
+	Setting(int, SentryRange, SetSentryRange)
+	Setting(int, OutDelay, SetOutDelay)
+	Setting(int, DroneCount, SetDroneCount)
+	Setting(int, LockCount, SetLockCount)
+	Setting(bool, UseIPC, SetUseIPC)
+	Setting(bool, Aggressive, SetAggressive)
 }
-
-
 
 objectdef obj_DroneControl inherits obj_StateQueue
 {
@@ -39,7 +33,6 @@ objectdef obj_DroneControl inherits obj_StateQueue
 	variable int EngageDelay
 	variable int64 CurrentTarget = -1
 	variable bool IsBusy
-	variable collection:float DroneHealth
 
 	variable bool CurAggressive
 	variable bool CurIPC
@@ -61,7 +54,6 @@ objectdef obj_DroneControl inherits obj_StateQueue
 		variable string seperator = ""
 
 		DroneTargets:ClearQueryString
-
 
 		if ${Config.Aggressive}
 		{
@@ -364,8 +356,8 @@ objectdef obj_DroneControl inherits obj_StateQueue
 	member:bool DroneControl()
 	{
 		variable index:activedrone ActiveDrones
-		variable iterator DroneIter
-		variable float CurDroneHealth
+		variable iterator DroneIterator
+		variable float CurrentDroneHealth
 		variable iterator DroneTypesIter
 		variable int DroneCount = ${Config.DroneCount}
 		if ${DroneCount} > ${Me.MaxActiveDrones}
@@ -375,10 +367,12 @@ objectdef obj_DroneControl inherits obj_StateQueue
 
 		DroneTargets.MinLockCount:Set[${Config.LockCount}]
 		variable iterator TargetIterator
+
 		if !${Client.InSpace}
 		{
 			return FALSE
 		}
+
 		if ${Me.ToEntity.Mode} == 3
 		{
 			if ${Drones.ActiveCount["ToEntity.GroupID == 100 || ToEntity.GroupID == 549"]} > 0
@@ -387,12 +381,13 @@ objectdef obj_DroneControl inherits obj_StateQueue
 			}
 			return FALSE
 		}
-		DroneTargets:RequestUpdate
+
 		if ${Drones.DronesInBay.Equal[0]} && ${Drones.DronesInSpace.Equal[0]}
 		{
 			Busy:UnsetBusy["DroneControl"]
 			return FALSE
 		}
+
 		if ${IsBusy}
 		{
 			if ${Drones.DronesInSpace.Equal[0]}
@@ -407,33 +402,28 @@ objectdef obj_DroneControl inherits obj_StateQueue
 			This:SetAggressiveState[]
 		}
 
-
 		Me:GetActiveDrones[ActiveDrones]
-		ActiveDrones:GetIterator[DroneIter]
-		if ${DroneIter:First(exists)}
+		ActiveDrones:GetIterator[DroneIterator]
+		if ${DroneIterator:First(exists)}
 		{
 			do
 			{
-				CurDroneHealth:Set[${Math.Calc[${DroneIter.Value.ToEntity.ShieldPct} + ${DroneIter.Value.ToEntity.ArmorPct} + ${DroneIter.Value.ToEntity.StructurePct}]}]
+				CurrentDroneHealth:Set[${Math.Calc[${DroneIterator.Value.ToEntity.ShieldPct} + ${DroneIterator.Value.ToEntity.ArmorPct} + ${DroneIterator.Value.ToEntity.StructurePct}]}]
 
-				if ${CurDroneHealth} < 275 && ${CurDroneHealth} < ${DroneHealth.Element[${DroneIter.Value.ID}]} && ${DroneIter.Value.State} != 4 && ${DroneIter.Value.State} != 5
+				if ${CurrentDroneHealth} < ${Drones.DroneHealth.Element[${DroneIterator.Value.ID}]} && ${DroneIterator.Value.State} != 4 && ${DroneIterator.Value.State} != 5
 				{
-					Drones:Recall["ID = ${DroneIter.Value.ID}", 1]
+					Drones:Recall["ID = ${DroneIterator.Value.ID}", 1]
 				}
 
-				DroneHealth:Set[${DroneIter.Value.ID}, ${CurDroneHealth}]
+				Drones.DroneHealth:Set[${DroneIterator.Value.ID}, ${CurrentDroneHealth}]
 			}
-			while ${DroneIter:Next(exists)}
+			while ${DroneIterator:Next(exists)}
 		}
 
-
-
-
-
-
+		DroneTargets:RequestUpdate
 		DroneTargets.LockedAndLockingTargetList:GetIterator[TargetIterator]
 
-		if !${Entity[${CurrentTarget}](exists)} || (!${Entity[${CurrentTarget}].IsLockedTarget} && !${Entity[${CurrentTarget}].BeingTargeted}) || ${Entity[${CurrentTarget}].Distance} > 150000
+		if !${Entity[${CurrentTarget}](exists)} || (!${Entity[${CurrentTarget}].IsLockedTarget} && !${Entity[${CurrentTarget}].BeingTargeted}) || ${Entity[${CurrentTarget}].Distance} > 300000
 		{
 			CurrentTarget:Set[-1]
 		}
@@ -474,9 +464,7 @@ objectdef obj_DroneControl inherits obj_StateQueue
 			}
 
 			Drones:RefreshActiveTypes
-
-
-
+			Drones:RefreshDroneHealthCache
 		}
 
 		if ${TargetIterator:First(exists)}
