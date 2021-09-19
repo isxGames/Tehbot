@@ -903,14 +903,14 @@ objectdef obj_Mission inherits obj_StateQueue
 				}
 			}
 
-			if !${finalized} && ${This.IsHardToDealWithTarget[${currentTarget}]} && ${ActiveNPC.LockedTargetList.Used}
+			if !${finalized} && ${Ship.IsHardToDealWithTarget[${currentTarget}]} && ${ActiveNPC.LockedTargetList.Used}
 			{
 				; Switch to easier target
 				ActiveNPC.LockedTargetList:GetIterator[lockedTargetIterator]
 				do
 				{
-					if !${This.IsHardToDealWithTarget[${lockedTargetIterator.Value}]} && \
-					(${This.IsHardToDealWithTarget[${currentTarget}]} || ${Entity[${currentTarget}].Distance} > ${Entity[${lockedTargetIterator.Value}].Distance})
+					if !${Ship.IsHardToDealWithTarget[${lockedTargetIterator.Value}]} && \
+					(${Ship.IsHardToDealWithTarget[${currentTarget}]} || ${Entity[${currentTarget}].Distance} > ${Entity[${lockedTargetIterator.Value}].Distance})
 					{
 						currentTarget:Set[${lockedTargetIterator.Value}]
 						UI:Update["Mission", "Switching to easier target: \ar${Entity[${currentTarget}].Name}", "g"]
@@ -945,7 +945,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				ActiveNPC.LockedTargetList:GetIterator[lockedTargetIterator]
 				do
 				{
-					if ${This.IsHardToDealWithTarget[${lockedTargetIterator.Value}]}
+					if ${Ship.IsHardToDealWithTarget[${lockedTargetIterator.Value}]}
 					{
 						HardToDealWithTarget:Set[${lockedTargetIterator.Value}]
 					}
@@ -988,7 +988,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			Ship.ModuleList_Siege:Activate
 			if ${Ship.ModuleList_Weapon.Range} > ${Entity[${currentTarget}].Distance} || !${Config.RangeLimit}
 			{
-				Ship.ModuleList_Weapon:Activate[${currentTarget}]
+				Ship.ModuleList_Weapon:ActivateAll[${currentTarget}]
 				Ship.ModuleList_Weapon:DeactivateNotOn[${currentTarget}]
 				if ${AutoModule.Config.TrackingComputers}
 				{
@@ -1989,25 +1989,6 @@ objectdef obj_Mission inherits obj_StateQueue
 			}
 			while ${i:Next(exists)}
 		}
-	}
-
-	member:bool IsClosebyFrigate(int64 targetID)
-	{
-		if (${Entity[${targetID}].Group.Find[Frigate]} && ${Entity[${targetID}].Distance} < 15000) || \
-		   (${Entity[${targetID}].Group.Find[Destroyer]} && ${Entity[${targetID}].Distance} < 10000)
-		{
-			return TRUE
-		}
-		else
-		{
-			return FALSE
-		}
-	}
-
-	member:bool IsHardToDealWithTarget(int64 targetID)
-	{
-		; TODO Add issile judgement
-		return ${This.IsClosebyFrigate[${targetID}]}
 	}
 
 }

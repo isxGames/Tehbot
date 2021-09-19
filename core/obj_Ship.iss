@@ -188,4 +188,23 @@ objectdef obj_Ship inherits obj_StateQueue
 		return FALSE
 	}
 
+	member:bool IsClosebyFrigate(int64 targetID)
+	{
+		if (${Entity[${targetID}].Group.Find[Frigate]} && ${Entity[${targetID}].Distance} < 15000) || \
+		   (${Entity[${targetID}].Group.Find[Destroyer]} && ${Entity[${targetID}].Distance} < 10000)
+		{
+			return TRUE
+		}
+		else
+		{
+			return FALSE
+		}
+	}
+
+	member:bool IsHardToDealWithTarget(int64 targetID)
+	{
+		; TODO Add issile judgement
+		return ${This.IsClosebyFrigate[${targetID}]}
+	}
+
 }
