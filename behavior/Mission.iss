@@ -1281,6 +1281,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		}
 		halt:Set[FALSE]
 		This:InsertState["UnloadAmmoAndDrones"]
+		This:InsertState["Cleanup"]
 		return TRUE
 	}
 
