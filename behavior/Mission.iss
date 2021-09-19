@@ -58,6 +58,10 @@ objectdef obj_Mission inherits obj_StateQueue
 	variable string missionItemRequired
 	variable int useDroneRace = 0
 
+	; If a target can't be killed within 2 minutes, something is going wrong.
+	variable int maxAttackTime
+	variable int switchTargetAfter = 120
+
 	variable collection:string ValidMissions
 	variable collection:string AttackTarget
 	variable collection:string LootContainers
@@ -71,9 +75,6 @@ objectdef obj_Mission inherits obj_StateQueue
 
 	variable obj_TargetList NPC
 	variable obj_TargetList ActiveNPC
-	variable set ActivateJammerSet
-	; A Set doesn't keep the order of inserted key so we need another container
-	variable index:string ActivateJammerList
 	variable obj_TargetList Wrecks
 
 	variable obj_Configuration_Mission Config
@@ -429,106 +430,6 @@ objectdef obj_Mission inherits obj_StateQueue
 		return TRUE
 	}
 
-	method BuildActivateJammerList()
-	{
-		ActivateJammerSet:Clear
-		ActivateJammerList:Clear
-
-		variable index:jammer attackers
-		variable iterator attackerIterator
-		Me:GetJammers[attackers]
-		attackers:GetIterator[attackerIterator]
-		if ${attackerIterator:First(exists)}
-		do
-		{
-			variable index:string jams
-			variable iterator jamsIterator
-			attackerIterator.Value:GetJams[jams]
-			jams:GetIterator[jamsIterator]
-			if ${jamsIterator:First(exists)}
-			{
-				do
-				{
-					if ${jamsIterator.Value.Lower.Find["warp"]}
-					{
-						; Both scramble and disrupt ew warpScramblerMWD
-						if !${ActivateJammerSet.Contains[${attackerIterator.Value.ID}]}
-						{
-							ActivateJammerSet:Add[${attackerIterator.Value.ID}]
-							ActivateJammerList:Insert[${attackerIterator.Value.ID}]
-						}
-					}
-					elseif ${jamsIterator.Value.Lower.Find["trackingdisrupt"]}
-					{
-						; ewTrackingDisrupt
-						if !${ActivateJammerSet.Contains[${attackerIterator.Value.ID}]}
-						{
-							ActivateJammerSet:Add[${attackerIterator.Value.ID}]
-							ActivateJammerList:Insert[${attackerIterator.Value.ID}]
-						}
-					}
-					elseif ${jamsIterator.Value.Lower.Find["electronic"]}
-					{
-						; electronic
-						if !${ActivateJammerSet.Contains[${attackerIterator.Value.ID}]}
-						{
-							ActivateJammerSet:Add[${attackerIterator.Value.ID}]
-							ActivateJammerList:Insert[${attackerIterator.Value.ID}]
-						}
-					}
-					elseif ${jamsIterator.Value.Lower.Find["energy"]}
-					{
-						; Energy vampire and neutralizer
-						; ewEnergyNeut
-						if !${ActivateJammerSet.Contains[${attackerIterator.Value.ID}]}
-						{
-							ActivateJammerSet:Add[${attackerIterator.Value.ID}]
-							ActivateJammerList:Insert[${attackerIterator.Value.ID}]
-						}
-					}
-					elseif ${jamsIterator.Value.Lower.Find["remotesensordamp"]}
-					{
-						; RemoteSensorDamp
-						if !${ActivateJammerSet.Contains[${attackerIterator.Value.ID}]}
-						{
-							ActivateJammerSet:Add[${attackerIterator.Value.ID}]
-							ActivateJammerList:Insert[${attackerIterator.Value.ID}]
-						}
-					}
-					elseif ${jamsIterator.Value.Lower.Find["webify"]}
-					{
-						; Webify
-						if !${ActivateJammerSet.Contains[${attackerIterator.Value.ID}]}
-						{
-							ActivateJammerSet:Add[${attackerIterator.Value.ID}]
-							ActivateJammerList:Insert[${attackerIterator.Value.ID}]
-						}
-					}
-					elseif ${jamsIterator.Value.Lower.Find["targetpaint"]}
-					{
-						; TargetPaint
-						if !${ActivateJammerSet.Contains[${attackerIterator.Value.ID}]}
-						{
-							ActivateJammerSet:Add[${attackerIterator.Value.ID}]
-							ActivateJammerList:Insert[${attackerIterator.Value.ID}]
-						}
-					}
-					else
-					{
-						UI:Update["Mission", "unknown EW ${jamsIterator.Value}", "r"]
-					}
-				}
-				while ${jamsIterator:Next(exists)}
-			}
-		}
-		while ${attackerIterator:Next(exists)}
-
-		if !${ActivateJammerSet.Used} != !${ActivateJammerList.Used}
-		{
-			UI:Update["Mission", "not equal!", "r"]
-		}
-	}
-
 	method BuildActiveNPC()
 	{
 		variable iterator classIterator
@@ -648,8 +549,6 @@ objectdef obj_Mission inherits obj_StateQueue
 			while ${groupIterator:Next(exists)}
 		}
 		ActiveNPC:AddQueryString["IsNPC && IsTargetingMe && !IsMoribund && (${groups})"]
-
-
 
 		NPCData.BaseRef:GetSetIterator[classIterator]
 		if ${classIterator:First(exists)}
@@ -864,32 +763,36 @@ objectdef obj_Mission inherits obj_StateQueue
 		ActiveNPC.MinLockCount:Set[${MaxTarget}]
 		ActiveNPC.AutoLock:Set[TRUE]
 
+		; ActiveNPC:RequestUpdate
+		; echo list is ${ActiveNPC.LockedTargetList.Used}
 		; finalized target not locked.
-		if !${Entity[${currentTarget}]} || ${Entity[${currentTarget}].IsMoribund} || !(${Entity[${currentTarget}].IsLockedTarget} || ${Entity[${currentTarget}].BeingTargeted})
+		if !${Entity[${currentTarget}]} || ${Entity[${currentTarget}].IsMoribund} || !(${Entity[${currentTarget}].IsLockedTarget} || ${Entity[${currentTarget}].BeingTargeted}) || (${maxAttackTime} > 0 && ${LavishScript.RunningTime} > ${maxAttackTime})
 		{
 			currentTarget:Set[0]
+			maxAttackTime:Set[0]
 		}
 
 		variable iterator lockedTargetIterator
 		variable iterator activateJammerIterator
-		This:BuildActivateJammerList
+		Ship:BuildActivateJammerList
 
 		if ${currentTarget} != 0
 		{
 			; Finalized decision
 			variable bool finalized
 			finalized:Set[FALSE]
-			if ${ActivateJammerList.Used}
+			if ${Ship.ActivateJammerList.Used}
 			{
-				if !${ActivateJammerSet.Contains[${currentTarget}]}
+				if !${Ship.ActivateJammerSet.Contains[${currentTarget}]}
 				{
 					; Being jammed but the jammer is not the current target
-					ActivateJammerList:GetIterator[activateJammerIterator]
+					Ship.ActivateJammerList:GetIterator[activateJammerIterator]
 					do
 					{
 						if ${Entity[${activateJammerIterator.Value}].IsLockedTarget}
 						{
 							currentTarget:Set[${activateJammerIterator.Value}]
+							maxAttackTime:Set[${Math.Calc[${LavishScript.RunningTime} + (${switchTargetAfter} * 1000)]}]
 							UI:Update["Mission", "Switching target to activate jammer \ar${Entity[${currentTarget}].Name}", "g"]
 							finalized:Set[TRUE]
 							break
@@ -913,6 +816,7 @@ objectdef obj_Mission inherits obj_StateQueue
 					(${Ship.IsHardToDealWithTarget[${currentTarget}]} || ${Entity[${currentTarget}].Distance} > ${Entity[${lockedTargetIterator.Value}].Distance})
 					{
 						currentTarget:Set[${lockedTargetIterator.Value}]
+						maxAttackTime:Set[${Math.Calc[${LavishScript.RunningTime} + (${switchTargetAfter} * 1000)]}]
 						UI:Update["Mission", "Switching to easier target: \ar${Entity[${currentTarget}].Name}", "g"]
 					}
 				}
@@ -922,14 +826,15 @@ objectdef obj_Mission inherits obj_StateQueue
 		elseif ${ActiveNPC.LockedTargetList.Used}
 		{
 			; Need to re-pick from locked target
-			if ${ActivateJammerList.Used}
+			if ${Ship.ActivateJammerList.Used}
 			{
-				ActivateJammerList:GetIterator[activateJammerIterator]
+				Ship.ActivateJammerList:GetIterator[activateJammerIterator]
 				do
 				{
 					if ${Entity[${activateJammerIterator.Value}].IsLockedTarget}
 					{
 						currentTarget:Set[${activateJammerIterator.Value}]
+						maxAttackTime:Set[${Math.Calc[${LavishScript.RunningTime} + (${switchTargetAfter} * 1000)]}]
 						UI:Update["Mission", "Targeting activate jammer \ar${Entity[${currentTarget}].Name}", "g"]
 						break
 					}
@@ -954,6 +859,7 @@ objectdef obj_Mission inherits obj_StateQueue
 						; if ${currentTarget} != 0
 						; 	UI:Update["Mission", "there is something closer ${Entity[${lockedTargetIterator.Value}].Name}"]
 						currentTarget:Set[${lockedTargetIterator.Value}]
+						maxAttackTime:Set[${Math.Calc[${LavishScript.RunningTime} + (${switchTargetAfter} * 1000)]}]
 					}
 				}
 				while ${lockedTargetIterator:Next(exists)}
@@ -962,6 +868,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				{
 					; UI:Update["Mission", "no easy target"]
 					currentTarget:Set[${HardToDealWithTarget}]
+					maxAttackTime:Set[${Math.Calc[${LavishScript.RunningTime} + (${switchTargetAfter} * 1000)]}]
 				}
 			}
 			UI:Update["Mission", "Primary target: \ar${Entity[${currentTarget}].Name}", "g"]
