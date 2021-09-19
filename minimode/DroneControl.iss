@@ -9,8 +9,7 @@ objectdef obj_Configuration_DroneControl inherits obj_Base_Configuration
 	{
 		This.CommonRef:AddSetting[Sentries, FALSE]
 		This.CommonRef:AddSetting[SentryRange, 30]
-		This.CommonRef:AddSetting[OutDelay, 0]
-		This.CommonRef:AddSetting[DroneCount, 5]
+		This.CommonRef:AddSetting[MaxDroneCount, 5]
 		This.CommonRef:AddSetting[LockCount, 2]
 		This.CommonRef:AddSetting[UseIPC, TRUE]
 		This.CommonRef:AddSetting[Aggressive, FALSE]
@@ -18,8 +17,7 @@ objectdef obj_Configuration_DroneControl inherits obj_Base_Configuration
 
 	Setting(bool, Sentries, SetSentries)
 	Setting(int, SentryRange, SetSentryRange)
-	Setting(int, OutDelay, SetOutDelay)
-	Setting(int, DroneCount, SetDroneCount)
+	Setting(int, MaxDroneCount, SetDroneCount)
 	Setting(int, LockCount, SetLockCount)
 	Setting(bool, UseIPC, SetUseIPC)
 	Setting(bool, Aggressive, SetAggressive)
@@ -29,8 +27,6 @@ objectdef obj_DroneControl inherits obj_StateQueue
 {
 	variable obj_TargetList DroneTargets
 	variable obj_Configuration_DroneControl Config
-	variable int RecallDelay
-	variable int EngageDelay
 	variable int64 CurrentTarget = -1
 	variable bool IsBusy
 
@@ -359,10 +355,10 @@ objectdef obj_DroneControl inherits obj_StateQueue
 		variable iterator DroneIterator
 		variable float CurrentDroneHealth
 		variable iterator DroneTypesIter
-		variable int DroneCount = ${Config.DroneCount}
-		if ${DroneCount} > ${Me.MaxActiveDrones}
+		variable int MaxDroneCount = ${Config.MaxDroneCount}
+		if ${MaxDroneCount} > ${Me.MaxActiveDrones}
 		{
-			DroneCount:Set[${Me.MaxActiveDrones}]
+			MaxDroneCount:Set[${Me.MaxActiveDrones}]
 		}
 
 		DroneTargets.MinLockCount:Set[${Config.LockCount}]
@@ -409,13 +405,14 @@ objectdef obj_DroneControl inherits obj_StateQueue
 			do
 			{
 				CurrentDroneHealth:Set[${Math.Calc[${DroneIterator.Value.ToEntity.ShieldPct} + ${DroneIterator.Value.ToEntity.ArmorPct} + ${DroneIterator.Value.ToEntity.StructurePct}]}]
-
-				if ${CurrentDroneHealth} < ${Drones.DroneHealth.Element[${DroneIterator.Value.ID}]} && ${DroneIterator.Value.State} != 4 && ${DroneIterator.Value.State} != 5
+				if ${Drones.DroneHealth.Element[${DroneIterator.Value.ID}]} && ${CurrentDroneHealth} < ${Drones.DroneHealth.Element[${DroneIterator.Value.ID}]}
 				{
+					; echo recalling ID ${DroneIterator.Value.ID}
 					Drones:Recall["ID = ${DroneIterator.Value.ID}", 1]
+					Drones.ReturningDrones:Add[${DroneIterator.Value.ID}]
 				}
-
 				Drones.DroneHealth:Set[${DroneIterator.Value.ID}, ${CurrentDroneHealth}]
+				; echo drone refreshed cached health ${Drones.DroneHealth.Element[${DroneIterator.Value.ID}]}
 			}
 			while ${DroneIterator:Next(exists)}
 		}
@@ -429,42 +426,33 @@ objectdef obj_DroneControl inherits obj_StateQueue
 		}
 		else
 		{
-			RecallDelay:Set[${Math.Calc[${LavishScript.RunningTime} + (${Config.OutDelay} * 1000)]}]
-
-			if ${Drones.ActiveDroneCount["ToEntity.GroupID == 549"]} > 0
+			if ${Drones.ActiveDroneCount["ToEntity.GroupID == 100 || ToEntity.GroupID == 549"]} > 0 &&\
+					${Entity[${CurrentTarget}].Distance} < ${Me.DroneControlDistance}
 			{
-				Drones:Engage["ToEntity.GroupID == 549", ${CurrentTarget}, ${DroneCount}]
-			}
-			elseif ${Drones.ActiveDroneCount["ToEntity.GroupID == 100"]} > 0 &&\
-					${Entity[${CurrentTarget}].Distance} < ${Me.DroneControlDistance} &&\
-					${LavishScript.RunningTime} > ${EngageDelay}
-			{
-				Drones:Engage["ToEntity.GroupID == 100", ${CurrentTarget}, ${DroneCount}]
-				EngageDelay:Set[${Math.Calc[${LavishScript.RunningTime} + 5000]}]
+				Drones:Engage["ToEntity.GroupID == 100 || ToEntity.GroupID == 549", ${CurrentTarget}, ${MaxDroneCount}]
 			}
 
-			echo Launch ${DroneCount} > ${Drones.ActiveDroneCount["ToEntity.GroupID == 100"]}
-			if ${DroneCount} > ${Drones.ActiveDroneCount["ToEntity.GroupID == 100"]}
+			if ${MaxDroneCount} > ${Drones.ActiveDroneCount}
 			{
 				if ${Entity[${CurrentTarget}].Distance} > ${Me.DroneControlDistance}
 				{
-					Drones:Deploy["TypeID = ${Drones.Data.FindType[Fighters]}", ${Math.Calc[${DroneCount} - ${Drones.ActiveDroneCount["ToEntity.GroupID == 100"]}]}]
+					Drones:Deploy["TypeID = ${Drones.Data.FindType[Fighters]}", ${Math.Calc[${MaxDroneCount} - ${Drones.ActiveDroneCount}]}]
 				}
 				elseif ${Entity[${CurrentTarget}].Distance} > (${Config.SentryRange} * 1000) && ${Config.Sentries}
 				{
-					Drones:Deploy["TypeID = ${Drones.Data.FindType[Sentry Drones]}", ${Math.Calc[${DroneCount} - ${Drones.ActiveDroneCount["ToEntity.GroupID == 100"]}]}]
+					Drones:Deploy["TypeID = ${Drones.Data.FindType[Sentry Drones]}", ${Math.Calc[${MaxDroneCount} - ${Drones.ActiveDroneCount}]}]
 				}
 				else
 				{
-					echo Drones:Deploy["TypeID = ${This.FindBestType[${Entity[${CurrentTarget}].GroupID}]}", ${Math.Calc[${DroneCount} - ${Drones.ActiveDroneCount["ToEntity.GroupID == 100"]}]}]
-					Drones:Deploy["TypeID = ${This.FindBestType[${Entity[${CurrentTarget}].GroupID}]}", ${Math.Calc[${DroneCount} - ${Drones.ActiveDroneCount["ToEntity.GroupID == 100"]}]}]
+					; echo Drones:Deploy["TypeID = ${This.FindBestType[${Entity[${CurrentTarget}].GroupID}]}", ${Math.Calc[${MaxDroneCount} - ${Drones.ActiveDroneCount}]}]
+					Drones:Deploy["TypeID = ${This.FindBestType[${Entity[${CurrentTarget}].GroupID}]}", ${Math.Calc[${MaxDroneCount} - ${Drones.ActiveDroneCount}]}]
 				}
 				IsBusy:Set[TRUE]
 				Busy:SetBusy["DroneControl"]
 			}
 
 			Drones:RefreshActiveTypes
-			Drones:RefreshDroneHealthCache
+			; Drones:RefreshDroneHealthCache
 		}
 
 		if ${TargetIterator:First(exists)}
@@ -482,7 +470,7 @@ objectdef obj_DroneControl inherits obj_StateQueue
 		}
 		else
 		{
-			if ${Drones.ActiveDroneCount["ToEntity.GroupID = 100 || ToEntity.GroupID == 549"]} > 0 && ${LavishScript.RunningTime} > ${RecallDelay}
+			if ${Drones.ActiveDroneCount["ToEntity.GroupID = 100 || ToEntity.GroupID == 549"]} > 0
 			{
 				Drones:Recall["ToEntity.GroupID = 100 || ToEntity.GroupID == 549"]
 				This:QueueState["Idle", 5000]
@@ -492,4 +480,5 @@ objectdef obj_DroneControl inherits obj_StateQueue
 		}
 		return FALSE
 	}
+
 }
