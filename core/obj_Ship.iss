@@ -26,6 +26,11 @@ objectdef obj_Ship inherits obj_StateQueue
 	variable index:string ModuleLists
 	variable collection:uint ModuleQueries
 
+	variable set ActivateJammerSet
+
+	; A Set doesn't keep the order of inserted key so we need another container
+	variable index:string ActivateJammerList
+
 	method Initialize(int64 ID)
 	{
 		This[parent]:Initialize
@@ -205,6 +210,106 @@ objectdef obj_Ship inherits obj_StateQueue
 	{
 		; TODO Add issile judgement
 		return ${This.IsClosebyFrigate[${targetID}]}
+	}
+
+	method BuildActivateJammerList()
+	{
+		ActivateJammerSet:Clear
+		ActivateJammerList:Clear
+
+		variable index:jammer attackers
+		variable iterator attackerIterator
+		Me:GetJammers[attackers]
+		attackers:GetIterator[attackerIterator]
+		if ${attackerIterator:First(exists)}
+		do
+		{
+			variable index:string jams
+			variable iterator jamsIterator
+			attackerIterator.Value:GetJams[jams]
+			jams:GetIterator[jamsIterator]
+			if ${jamsIterator:First(exists)}
+			{
+				do
+				{
+					if ${jamsIterator.Value.Lower.Find["warp"]}
+					{
+						; Both scramble and disrupt ew warpScramblerMWD
+						if !${ActivateJammerSet.Contains[${attackerIterator.Value.ID}]}
+						{
+							ActivateJammerSet:Add[${attackerIterator.Value.ID}]
+							ActivateJammerList:Insert[${attackerIterator.Value.ID}]
+						}
+					}
+					elseif ${jamsIterator.Value.Lower.Find["trackingdisrupt"]}
+					{
+						; ewTrackingDisrupt
+						if !${ActivateJammerSet.Contains[${attackerIterator.Value.ID}]}
+						{
+							ActivateJammerSet:Add[${attackerIterator.Value.ID}]
+							ActivateJammerList:Insert[${attackerIterator.Value.ID}]
+						}
+					}
+					elseif ${jamsIterator.Value.Lower.Find["electronic"]}
+					{
+						; electronic
+						if !${ActivateJammerSet.Contains[${attackerIterator.Value.ID}]}
+						{
+							ActivateJammerSet:Add[${attackerIterator.Value.ID}]
+							ActivateJammerList:Insert[${attackerIterator.Value.ID}]
+						}
+					}
+					elseif ${jamsIterator.Value.Lower.Find["energy"]}
+					{
+						; Energy vampire and neutralizer
+						; ewEnergyNeut
+						if !${ActivateJammerSet.Contains[${attackerIterator.Value.ID}]}
+						{
+							ActivateJammerSet:Add[${attackerIterator.Value.ID}]
+							ActivateJammerList:Insert[${attackerIterator.Value.ID}]
+						}
+					}
+					elseif ${jamsIterator.Value.Lower.Find["remotesensordamp"]}
+					{
+						; RemoteSensorDamp
+						if !${ActivateJammerSet.Contains[${attackerIterator.Value.ID}]}
+						{
+							ActivateJammerSet:Add[${attackerIterator.Value.ID}]
+							ActivateJammerList:Insert[${attackerIterator.Value.ID}]
+						}
+					}
+					elseif ${jamsIterator.Value.Lower.Find["webify"]}
+					{
+						; Webify
+						if !${ActivateJammerSet.Contains[${attackerIterator.Value.ID}]}
+						{
+							ActivateJammerSet:Add[${attackerIterator.Value.ID}]
+							ActivateJammerList:Insert[${attackerIterator.Value.ID}]
+						}
+					}
+					elseif ${jamsIterator.Value.Lower.Find["targetpaint"]}
+					{
+						; TargetPaint
+						if !${ActivateJammerSet.Contains[${attackerIterator.Value.ID}]}
+						{
+							ActivateJammerSet:Add[${attackerIterator.Value.ID}]
+							ActivateJammerList:Insert[${attackerIterator.Value.ID}]
+						}
+					}
+					else
+					{
+						UI:Update["Mission", "unknown EW ${jamsIterator.Value}", "r"]
+					}
+				}
+				while ${jamsIterator:Next(exists)}
+			}
+		}
+		while ${attackerIterator:Next(exists)}
+
+		if !${ActivateJammerSet.Used} != !${ActivateJammerList.Used}
+		{
+			UI:Update["Mission", "not equal!", "r"]
+		}
 	}
 
 }
