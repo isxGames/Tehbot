@@ -39,11 +39,11 @@ objectdef obj_ModuleList
 		{
 			do
 			{
-				; if !${ModuleIterator.Value.IsActiveOn[${target}]}
-				; {
+				if !${ModuleIterator.Value.IsActiveOn[${target}]}
+				{
 					ModuleIterator.Value:Activate[${target}, ${DoDeactivate}, ${DeactivatePercent}]
 					activatedCount:Inc
-				; }
+				}
 				if ${activatedCount} >= ${count}
 				{
 					return
@@ -61,11 +61,11 @@ objectdef obj_ModuleList
 		{
 			do
 			{
-				; if !${ModuleIterator.Value.IsActiveOn[${target}]}
-				; {
+				if !${ModuleIterator.Value.IsActiveOn[${target}]}
+				{
 					ModuleIterator.Value:Activate[${target}, ${DoDeactivate}, ${DeactivatePercent}]
 					activatedCount:Inc
-				; }
+				}
 			}
 			while ${ModuleIterator:Next(exists)}
 		}
@@ -121,7 +121,7 @@ objectdef obj_ModuleList
 	{
 		This:DeactivateNotOnCount[1, ${target}]
 	}
-	
+
 	method DeactivateNotOnCount(int count, int64 target=-1)
 	{
 		variable int deactivatedCount = 0
@@ -144,6 +144,34 @@ objectdef obj_ModuleList
 			while ${ModuleIterator:Next(exists)}
 		}
 	}	
+
+	method DeactivateOn(int64 target=-1)
+	{
+		This:DeactivateNotOnCount[1, ${target}]
+	}
+
+	method DeactivateOnCount(int count, int64 target=-1)
+	{
+		variable int deactivatedCount = 0
+		variable iterator ModuleIterator
+		Modules:GetIterator[ModuleIterator]
+		if ${ModuleIterator:First(exists)}
+		{
+			do
+			{
+				if ${ModuleIterator.Value.IsActiveOn[${target}]}
+				{
+					ModuleIterator.Value:Deactivate
+					deactivatedCount:Inc
+				}
+				if ${deactivatedCount} >= ${count}
+				{
+					return
+				}
+			}
+			while ${ModuleIterator:Next(exists)}
+		}
+	}
 
 	method Reactivate(int ModuleID, int64 target=-1)
 	{

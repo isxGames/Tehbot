@@ -61,11 +61,11 @@ objectdef obj_Salvage inherits obj_StateQueue
 		if ${Config.SalvageYellow}
 		{
 			echo SalvageYellow
-			Wrecks:AddQueryString["(Group = \"Wreck\" || Group = \"Cargo Container\") && !IsMoribund ${Size}"]
+			Wrecks:AddQueryString["(Group = \"Wreck\" || Group = \"Cargo Container\") && !IsAbandoned && !IsMoribund ${Size}"]
 		}
 		else
 		{
-			Wrecks:AddQueryString["(Group = \"Wreck\" || Group = \"Cargo Container\") && HaveLootRights && !IsMoribund ${Size}"]
+			Wrecks:AddQueryString["(Group = \"Wreck\" || Group = \"Cargo Container\") && HaveLootRights && !IsAbandoned && !IsMoribund ${Size}"]
 		}
 
 		Wrecks:RequestUpdate
@@ -88,7 +88,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 
 	member:bool Salvage()
 	{
-		if !${Client.InSpace}
+		if !${Client.InSpace} ||!${Client.InSpace}
 		{
 			return FALSE
 		}
@@ -98,8 +98,6 @@ objectdef obj_Salvage inherits obj_StateQueue
 		variable int MaxTarget = ${MyShip.MaxLockedTargets}
 		variable int ClosestTractorKey
 		variable bool ReactivateTractor = FALSE
-		variable int64 SalvageMultiTarget = -1
-
 
 		if ${Me.MaxLockedTargets} < ${MyShip.MaxLockedTargets}
 		{
@@ -128,67 +126,52 @@ objectdef obj_Salvage inherits obj_StateQueue
 			LootCans:Enable
 			do
 			{
-				if ${TargetIterator.Value.ID(exists)}
+				if ${TargetIterator.Value.ID(exists)} && ${TargetIterator.Value.IsLockedTarget}
 				{
-					if 	${TargetIterator.Value.IsLockedTarget} &&\
-						${TargetIterator.Value.Distance} > ${Ship.ModuleList_TractorBeams.Range}
+					; Abandon targets of no value
+					if ${TargetIterator.Value.IsAbandoned} || \
+						!${TargetIterator.Value.HaveLootRights} || \
+						(${TargetIterator.Value.IsWreckEmpty} && ${Ship.ModuleList_Salvagers.Count} == 0)
 					{
+						TargetIterator.Value:Abandon
 						TargetIterator.Value:UnlockTarget
 						return FALSE
 					}
 
-					if  !${Ship.ModuleList_TractorBeams.IsActiveOn[${TargetIterator.Value.ID}]} &&\
-						${TargetIterator.Value.Distance} < ${Ship.ModuleList_TractorBeams.Range} &&\
-						${TargetIterator.Value.Distance} > 2500 &&\
-						${Ship.ModuleList_TractorBeams.InactiveCount} > 0 &&\
-						${TargetIterator.Value.IsLockedTarget} &&\
-						${TargetIterator.Value.HaveLootRights}
+					; Salvage
+					if !${Ship.ModuleList_Salvagers.IsActiveOn[${TargetIterator.Value.ID}]} && \
+						${TargetIterator.Value.Distance} < ${Ship.ModuleList_Salvagers.Range} && \
+						${Ship.ModuleList_Salvagers.Count} > 0 && \
+						${Ship.ModuleList_Salvagers.InactiveCount} > 0 && \
+						${TargetIterator.Value.Group.Equal["Wreck"]}
 					{
-						UI:Update["Salvage", "Activating tractor beam - ${TargetIterator.Value.Name}", "g"]
-						Ship.ModuleList_TractorBeams:Activate[${TargetIterator.Value.ID}]
-						return FALSE
-					}
-					if  !${Ship.ModuleList_TractorBeams.IsActiveOn[${TargetIterator.Value.ID}]} &&\
-						${TargetIterator.Value.Distance} < ${Ship.ModuleList_TractorBeams.Range} &&\
-						${TargetIterator.Value.Distance} > 2500 &&\
-						${TargetIterator.Value.IsLockedTarget} &&\
-						${ReactivateTractor} &&\
-						${TargetIterator.Value.HaveLootRights}
-					{
-						UI:Update["Salvage", "Reactivating tractor beam - ${TargetIterator.Value.Name}", "g"]
-						Ship.ModuleList_TractorBeams:Reactivate[${ClosestTractorKey}, ${TargetIterator.Value.ID}]
-						return FALSE
-					}
-					if  ${Ship.ModuleList_TractorBeams.IsActiveOn[${TargetIterator.Value.ID}]} &&\
-						${TargetIterator.Value.Distance} < 2500 &&\
-						!${ReactivateTractor}
-					{
-						ClosestTractorKey:Set[${Ship.ModuleList_TractorBeams.GetActiveOn[${TargetIterator.Value.ID}]}]
-						ReactivateTractor:Set[TRUE]
-					}
-					if  !${Ship.ModuleList_Salvagers.IsActiveOn[${TargetIterator.Value.ID}]} &&\
-						${TargetIterator.Value.Distance} < ${Ship.ModuleList_Salvagers.Range} &&\
-						${Ship.ModuleList_Salvagers.InactiveCount} > 0 &&\
-						${TargetIterator.Value.IsLockedTarget} && ${Ship.ModuleList_Salvagers.Count} > 0 &&\
-						!${TargetIterator.Value.Group.Equal[Cargo Container]}
-					{
-						UI:Update["obj_Salvage", "Activating salvager - ${TargetIterator.Value.Name}", "g"]
+						UI:Update["Salvage", "Activating salvager - \ap${TargetIterator.Value.Name}"]
 						Ship.ModuleList_Salvagers:Activate[${TargetIterator.Value.ID}]
 						return FALSE
 					}
-					if  !${Ship.ModuleList_Salvagers.IsActiveOn[${TargetIterator.Value.ID}]} &&\
-						${TargetIterator.Value.IsWreckEmpty} &&\
-						${TargetIterator.Value.IsLockedTarget} && ${Ship.ModuleList_Salvagers.Count} == 0
+
+					; Tractor beam
+					if ${TargetIterator.Value.Distance} >= ${Ship.ModuleList_TractorBeams.Range}
 					{
-						TargetIterator.Value:Abandon
 						TargetIterator.Value:UnlockTarget
+						return FALSE
 					}
-					if  ${TargetIterator.Value.Distance} < ${Ship.ModuleList_Salvagers.Range} &&\
-						${Ship.ModuleList_Salvagers.InactiveCount} > 0 &&\
-						${TargetIterator.Value.IsLockedTarget} &&\
-						!${TargetIterator.Value.Group.Equal[Cargo Container]}
+					elseif ${TargetIterator.Value.Distance} < ${Ship.ModuleList_TractorBeams.Range} && \
+							${TargetIterator.Value.Distance} >= 2500
 					{
-						SalvageMultiTarget:Set[${TargetIterator.Value.ID}]
+						if !${Ship.ModuleList_TractorBeams.IsActiveOn[${TargetIterator.Value.ID}]} && \
+						   ${Ship.ModuleList_TractorBeams.InactiveCount} > 0
+						{
+							UI:Update["Salvage", "Activating tractor beam - \ap${TargetIterator.Value.Name}"]
+							Ship.ModuleList_TractorBeams:Activate[${TargetIterator.Value.ID}]
+							return FALSE
+						}
+					}
+					elseif ${Ship.ModuleList_TractorBeams.IsActiveOn[${TargetIterator.Value.ID}]}
+					; Within 2500
+					{
+						Ship.ModuleList_TractorBeams:DeactivateOn[${TargetIterator.Value.ID}]
+						return FALSE
 					}
 				}
 			}
@@ -210,10 +193,6 @@ objectdef obj_Salvage inherits obj_StateQueue
 				return FALSE
 			}
 		}
-		if !${SalvageMultiTarget.Equal[-1]} && ${Ship.ModuleList_Salvagers.InactiveCount} > 0
-		{
-			Ship.ModuleList_Salvagers:Activate[${SalvageMultiTarget}]
-		}
 		return FALSE
 	}
 
@@ -230,7 +209,7 @@ objectdef obj_LootCans inherits obj_StateQueue
 
 	method Enable()
 	{
-		This:QueueState["Loot", 3000]
+		This:QueueState["Loot", 2000]
 	}
 
 	method Disable()
@@ -244,63 +223,60 @@ objectdef obj_LootCans inherits obj_StateQueue
 		variable index:item TargetCargo
 		variable iterator CargoIterator
 
-
-		if !${Client.InSpace}
+		if !${Client.InSpace} || ${Me.ToEntity.Mode} == 3
 		{
 			return FALSE
 		}
 
-		if ${Me.ToEntity.Mode} == 3
+		if !${EVEWindow[Inventory](exists)}
 		{
+			EVE:Execute[OpenInventory]
 			return FALSE
 		}
 
 		Salvage.Wrecks.TargetList:GetIterator[TargetIterator]
-		if ${TargetIterator:First(exists)} && ${EVEWindow[Inventory](exists)}
+		if ${TargetIterator:First(exists)}
 		{
 			do
 			{
-				if 	${TargetIterator.Value.Distance} > 2500 ||\
-					${TargetIterator.Value.IsWreckEmpty} ||\
+				if ${TargetIterator.Value.Distance} > 2500 || \
+					${TargetIterator.Value.IsWreckEmpty} || \
+					${TargetIterator.Value.IsWreckViewed} || \
+					${TargetIterator.Value.IsAbandoned} || \
 					!${Entity[${TargetIterator.Value.ID}](exists)}
 				{
 					continue
 				}
-				if ${EVEWindow[Inventory].ChildWindow[${TargetIterator.Value}](exists)}
-				{
-					if !${EVEWindow[ByItemID, ${TargetIterator.Value}](exists)}
-					{
-						EVEWindow[Inventory].ChildWindow[${TargetIterator.Value}]:MakeActive
-						return FALSE
-					}
 
-					Entity[${TargetIterator.Value}]:GetCargo[TargetCargo]
-					TargetCargo:GetIterator[CargoIterator]
-					if ${CargoIterator:First(exists)}
-					{
-						do
-						{
-							if ${CargoIterator.Value.IsContraband}
-							{
-								Salvage.Wrecks:AddTargetException[${TargetIterator.Value.ID}]
-								return FALSE
-							}
-						}
-						while ${CargoIterator:Next(exists)}
-					}
-
-					UI:Update["Salvage", "Looting - ${TargetIterator.Value.Name}", "g"]
-					EVEWindow[Inventory]:LootAll
-					This:InsertState["Loot"]
-					This:InsertState["Stack"]
-					return TRUE
-				}
 				if !${EVEWindow[Inventory].ChildWindow[${TargetIterator.Value}](exists)}
 				{
-					UI:Update["Salvage", "Opening - ${TargetIterator.Value.Name}", "g"]
+					UI:Update["Salvage", "Opening - \ap${TargetIterator.Value.Name}", "y"]
 					TargetIterator.Value:Open
 					return FALSE
 				}
+
+				Entity[${TargetIterator.Value}]:GetCargo[TargetCargo]
+				TargetCargo:GetIterator[CargoIterator]
+				if ${CargoIterator:First(exists)}
+				{
+					do
+					{
+						if ${CargoIterator.Value.IsContraband} || ${CargoIterator.Value.Volume} > 0.5
+						{
+							continue
+						}
+						CargoIterator.Value:MoveTo[${MyShip.ID}, CargoHold]
+						return FALSE
+					}
+					while ${CargoIterator:Next(exists)}
+				}
+				; EVEWindow[Inventory]:LootAll
+				TargetIterator.Value:Abandon
+				if ${Entity[${currentLootContainer}].Group.Equal["Cargo Container"]}
+					Entity[${TargetIterator.Value.ID}]:UnlockTarget
+				This:InsertState["Loot"]
+				This:InsertState["Stack"]
+				return TRUE
 			}
 			while ${TargetIterator:Next(exists)}
 		}
