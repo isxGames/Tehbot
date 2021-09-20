@@ -201,90 +201,6 @@ objectdef obj_Drones inherits obj_StateQueue
 		}
 	}
 
-	; method Deploy(string TypeQuery, int Count=-1)
-	; {
-	; 	if ${Count} <= 0
-	; 		return
-
-	; 	variable index:item DronesInBay
-	; 	variable index:int64 DronesToLaunchList
-	; 	variable iterator DroneIterator
-	; 	variable int Launched = 0
-
-	; 	MyShip:GetDrones[DronesInBay]
-	; 	DronesInBay:RemoveByQuery[${LavishScript.CreateQuery[${TypeQuery}]}, FALSE]
-	; 	DronesInBay:Collapse
-	; 	if ${DronesInBay.Used} <= ${Count}
-	; 	{
-	; 		; echo Launch all
-	; 		DronesInBay:GetIterator[DroneIterator]
-	; 		if ${DroneIterator:First(exists)}
-	; 		{
-	; 			do
-	; 			{
-	; 				ActiveTypes:Add[${DroneIterator.Value.TypeID}]
-	; 				DronesToLaunchList:Insert[${DroneIterator.Value.ID}]
-	; 				ReturningDrones:Remove[${DroneIterator.Value.ID}]
-	; 			}
-	; 			while ${DroneIterator:Next(exists)}
-	; 			EVE:LaunchDrones[DronesToLaunchList]
-	; 		}
-	; 	}
-	; 	else
-	; 	{
-	; 		; echo Launch top ${Count} healthest
-	; 		while ${Launched} < ${Count}
-	; 		{
-	; 			This:DeployHealthestOne
-	; 			Launched:Inc
-	; 		}
-	; 	}
-	; }
-
-	; method DeployHealthestOne(string TypeQuery)
-	; {
-	; 	variable index:item DronesInBay
-	; 	variable index:int64 DronesToLaunchList
-	; 	variable iterator DroneIterator
-
-	; 	MyShip:GetDrones[DronesInBay]
-	; 	DronesInBay:RemoveByQuery[${LavishScript.CreateQuery[${TypeQuery}]}, FALSE]
-	; 	DronesInBay:Collapse
-
-	; 	; echo Launch healthest 1
-	; 	DronesInBay:GetIterator[DroneIterator]
-	; 	variable float healthestDroneHealth = 0
-	; 	variable int64 healthestDroneID = 0
-	; 	variable int healthestDroneTypeID = 0
-	; 	if ${DroneIterator:First(exists)}
-	; 	{
-	; 		do
-	; 		{
-	; 			; Treat drone with unknown health as full health
-	; 			variable int currentDroneHealth = 300
-	; 			if ${DroneHealth.Element[${DroneIterator.Value.ID}](exists)}
-	; 			{
-	; 				currentDroneHealth:Set[${DroneHealth.Element[${DroneIterator.Value.ID}]}]
-	; 			}
-
-	; 			if ${currentDroneHealth} > ${healthestDroneHealth} || ${ReturningDrones.Contains[${healthestDroneID}]}
-	; 			{
-	; 				healthestDroneID:Set[${DroneIterator.Value.ID}]
-	; 				healthestDroneHealth:Set[${currentDroneHealth}]
-	; 				healthestDroneTypeID:Set[${DroneIterator.Value.TypeID}]
-	; 			}
-	; 		}
-	; 		while ${DroneIterator:Next(exists)}
-	; 		; echo launching drone id ${healthestDroneID}
-	; 		ReturningDrones:Remove[${healthestDroneID}]
-	; 		ActiveTypes:Add[${healthestDroneTypeID}]
-	; 		DronesToLaunchList:Insert[${healthestDroneID}]
-	; 	}
-
-	; 	if ${DronesToLaunchList.Used}
-	; 		EVE:LaunchDrones[DronesToLaunchList]
-	; }
-
 	method Deploy(string TypeQuery, int Count=-1)
 	{
 		if ${Count} <= 0
@@ -409,15 +325,9 @@ objectdef obj_Drones inherits obj_StateQueue
 
 	method Engage(string TypeQuery, int64 TargetID, bool Force=FALSE, int Count = -1)
 	{
-		if ${Entity[${TargetID}].IsLockedTarget}
-		{
-			if !${Entity[${TargetID}].IsActiveTarget}
-			{
-				ActivateTargetCache:Set[${TargetID}]
-				This:QueueState["SwitchActiveTarget", -1]
-			}
-			This:QueueState["EngageActiveTarget", -1, "${TypeQuery.Escape}, ${Force}, ${Count}"]
-		}
+		ActivateTargetCache:Set[${TargetID}]
+		if ${This.IsIdle}
+			This:QueueState["SwitchActiveTarget", -1, "${TypeQuery}, ${Force}, ${Count}"]
 	}
 
 	member:int InactiveDroneCount(string TypeQuery)
@@ -442,58 +352,65 @@ objectdef obj_Drones inherits obj_StateQueue
 	{
 		variable index:activedrone ActiveDrones
 		Me:GetActiveDrones[ActiveDrones]
-		ActiveDrones:RemoveByQuery[${LavishScript.CreateQuery["State == 0"]}, FALSE]
+		ActiveDrones:RemoveByQuery[${LavishScript.CreateQuery["State = 0"]}, FALSE]
 		ActiveDrones:Collapse[]
 		return ${ActiveDrones.Used}
 	}
 
-	member:bool SwitchActiveTarget()
+	member:bool SwitchActiveTarget(string TypeQuery, bool Force = FALSE, int Count = -1)
 	{
-		echo switching
-		if ${Entity[${ActivateTargetCache}].IsLockedTarget} && !${Entity[${ActivateTargetCache}].IsActiveTarget}
+		if !${Entity[${ActivateTargetCache}].IsLockedTarget}
 		{
+			return FALSE
+		}
+		elseif ${Entity[${ActivateTargetCache}].IsActiveTarget}
+		{
+			This:QueueState["EngageActiveTarget", -1, "${TypeQuery}, ${Force}, ${Count}"]
+		}
+		else
+		{
+			; echo switching
 			Entity[${ActivateTargetCache}]:MakeActiveTarget
-			This:InsertState["SwitchActiveTarget", -1]
-			This:InsertState["Idle", -1]
+			This:InsertState["SwitchActiveTarget", -1, "${TypeQuery}, ${Force}, ${Count}"]
+			This:InsertState["Idle"]
 		}
 		return TRUE
 	}
 
-	member:bool EngageActiveTarget(string TypeQuery, bool Force, int Count = -1)
+	member:bool EngageActiveTarget(string TypeQuery, bool Force = FALSE, int Count = -1)
 	{
-		echo engaging
-		if ${Entity[${ActivateTargetCache}].IsLockedTarget} && ${Entity[${ActivateTargetCache}].IsActiveTarget}
+		; echo engaging
+		variable index:activedrone ActiveDrones
+		variable index:int64 DronesToEngage
+		variable iterator DroneIterator
+		variable int Selected = 0
+
+		Me:GetActiveDrones[ActiveDrones]
+		; echo ${ActiveDrones.Used} ${TypeQuery}
+		ActiveDrones:RemoveByQuery[${LavishScript.CreateQuery[${TypeQuery}]}, FALSE]
+		ActiveDrones:Collapse
+		ActiveDrones:GetIterator[DroneIterator]
+		; echo ${ActiveDrones.Used}
+		if ${DroneIterator:First(exists)}
 		{
-			variable index:activedrone ActiveDrones
-			variable index:int64 DronesToEngage
-			variable iterator DroneIterator
-			variable int Selected = 0
-
-			Me:GetActiveDrones[ActiveDrones]
-			ActiveDrones:RemoveByQuery[${LavishScript.CreateQuery[${TypeQuery}]}, FALSE]
-			ActiveDrones:Collapse
-			ActiveDrones:GetIterator[DroneIterator]
-
-			if ${DroneIterator:First(exists)}
+			do
 			{
-				do
+				if ${Selected} >= ${Count} && ${Count} > 0
 				{
-					if ${Selected} >= ${Count} && ${Count} > 0
-					{
-						break
-					}
-
-					if !${ReturningDrones.Contains[${DroneIterator.Value.ID}]}
-					{
-						echo ${DroneIterator.Value.ID} engaging ${Entity[${ActivateTargetCache}].Name}
-						DronesToEngage:Insert[${DroneIterator.Value.ID}]
-						Selected:Inc
-					}
+					break
 				}
-				while ${DroneIterator:Next(exists)}
+
+				if !${ReturningDrones.Contains[${DroneIterator.Value.ID}]}
+				{
+					; echo ${DroneIterator.Value.ID} engaging ${Entity[${ActivateTargetCache}].Name}
+					DronesToEngage:Insert[${DroneIterator.Value.ID}]
+					Selected:Inc
+				}
 			}
-			EVE:DronesEngageMyTarget[DronesToEngage]
+			while ${DroneIterator:Next(exists)}
 		}
+		EVE:DronesEngageMyTarget[DronesToEngage]
+		This:QueueState["SwitchActiveTarget"]
 		return TRUE
 	}
 

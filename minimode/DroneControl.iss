@@ -165,7 +165,7 @@ objectdef obj_DroneControl inherits obj_StateQueue
 			}
 			while ${typeIterator:Next(exists)}
 		}
-		return ${Drones.ActiveDroneCount["(ToEntity.GroupID = 100 || ToEntity.GroupID == 549) && (${types})"]}
+		return ${Drones.ActiveDroneCount["(ToEntity.GroupID = GROUP_SCOUT_DRONE || ToEntity.GroupID = GROUP_COMBAT_DRONE) && (${types})"]}
 	}
 
 	method RecallAllNonSentry()
@@ -186,7 +186,7 @@ objectdef obj_DroneControl inherits obj_StateQueue
 			}
 			while ${typeIterator:Next(exists)}
 		}
-		Drones:Recall["(ToEntity.GroupID = 100 || ToEntity.GroupID == 549) && (${types})", ${Drones.ActiveDroneCount["ToEntity.GroupID == 100 && (${types})"]}]
+		Drones:Recall["(ToEntity.GroupID = GROUP_SCOUT_DRONE || ToEntity.GroupID = GROUP_COMBAT_DRONE) && (${types})", ${Drones.ActiveDroneCount["ToEntity.GroupID = GROUP_SCOUT_DRONE && (${types})"]}]
 	}
 
 	method Start()
@@ -433,9 +433,9 @@ objectdef obj_DroneControl inherits obj_StateQueue
 
 		if ${Me.ToEntity.Mode} == 3
 		{
-			if ${Drones.ActiveCount["ToEntity.GroupID == 100 || ToEntity.GroupID == 549"]} > 0
+			if ${Drones.ActiveCount["ToEntity.GroupID = GROUP_SCOUT_DRONE || ToEntity.GroupID = GROUP_COMBAT_DRONE"]} > 0
 			{
-				Drones:Recall["ToEntity.GroupID = 100 || ToEntity.GroupID == 549"]
+				Drones:Recall["ToEntity.GroupID = GROUP_SCOUT_DRONE || ToEntity.GroupID = GROUP_COMBAT_DRONE"]
 			}
 			return FALSE
 		}
@@ -568,11 +568,11 @@ objectdef obj_DroneControl inherits obj_StateQueue
 
 		if ${currentTarget} != 0
 		{
-			if ${Drones.ActiveDroneCount["ToEntity.GroupID == 100 || ToEntity.GroupID == 549"]} > 0 && \
+			if ${Drones.ActiveDroneCount["ToEntity.GroupID = GROUP_SCOUT_DRONE || ToEntity.GroupID = GROUP_COMBAT_DRONE"]} > 0 && \
 			   ${Entity[${currentTarget}].Distance} < ${Me.DroneControlDistance}
 			{
 				; echo ${MaxDroneCount} drones engaging
-				Drones:Engage["ToEntity.GroupID == 100 || ToEntity.GroupID == 549", ${currentTarget}, ${MaxDroneCount}]
+				Drones:Engage["ToEntity.GroupID = GROUP_SCOUT_DRONE || ToEntity.GroupID = GROUP_COMBAT_DRONE", ${currentTarget}]
 			}
 
 			if ${MaxDroneCount} > ${Drones.ActiveDroneCount}
@@ -596,9 +596,9 @@ objectdef obj_DroneControl inherits obj_StateQueue
 			Drones:RefreshActiveTypes
 		}
 
-		if ${currentTarget} == 0 && ${Drones.ActiveDroneCount["ToEntity.GroupID = 100 || ToEntity.GroupID == 549"]} > 0
+		if ${currentTarget} == 0 && ${Drones.ActiveDroneCount["ToEntity.GroupID = GROUP_SCOUT_DRONE || ToEntity.GroupID = GROUP_COMBAT_DRONE"]} > 0
 		{
-			Drones:Recall["ToEntity.GroupID = 100 || ToEntity.GroupID == 549"]
+			Drones:Recall["ToEntity.GroupID = GROUP_SCOUT_DRONE || ToEntity.GroupID = GROUP_COMBAT_DRONE"]
 			This:QueueState["Idle", 5000]
 			This:QueueState["DroneControl"]
 			return TRUE

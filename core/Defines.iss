@@ -63,3 +63,5 @@
 #define GROUP_CARGOCONTAINER 																					12
 #define GROUP_WARPGATE 																							366
 #define GROUP_SUN 																								6
+#define GROUP_SCOUT_DRONE 																						100
+#define GROUP_COMBAT_DRONE 																						549
