@@ -8,10 +8,7 @@ objectdef obj_Configuration_Salvage inherits obj_Base_Configuration
 	method Set_Default_Values()
 	{
 		This.CommonRef:AddSetting[LockCount, 2]
-		This.CommonRef:AddSetting[Size,"Small"]
-
-
-
+		This.CommonRef:AddSetting[Size, "Small"]
 	}
 
 	Setting(int, LockCount, SetLockCount)
@@ -19,7 +16,6 @@ objectdef obj_Configuration_Salvage inherits obj_Base_Configuration
 	Setting(bool, SalvageYellow, SetSalvageYellow)
 
 }
-
 
 
 objectdef obj_Salvage inherits obj_StateQueue
@@ -30,14 +26,12 @@ objectdef obj_Salvage inherits obj_StateQueue
 	variable obj_TargetList Wrecks
 	variable bool IsBusy
 
-
 	method Initialize()
 	{
 		This[parent]:Initialize
 		DynamicAddMiniMode("Salvage", "Salvage")
 		PulseFrequency:Set[500]
 	}
-
 
 	method Start()
 	{
@@ -61,16 +55,17 @@ objectdef obj_Salvage inherits obj_StateQueue
 		if ${Config.SalvageYellow}
 		{
 			echo SalvageYellow
-			Wrecks:AddQueryString["(Group = \"Wreck\" || Group = \"Cargo Container\") && !IsAbandoned && !IsMoribund ${Size}"]
+			Wrecks:AddQueryString["(Group = \"Wreck\" || (Group = \"Cargo Container\")) && !IsWreckViewed && !IsMoribund ${Size}"]
 		}
 		else
 		{
-			Wrecks:AddQueryString["(Group = \"Wreck\" || Group = \"Cargo Container\") && HaveLootRights && !IsAbandoned && !IsMoribund ${Size}"]
+			Wrecks:AddQueryString["(Group = \"Wreck\" || (Group = \"Cargo Container\")) && !IsWreckViewed && HaveLootRights && !IsMoribund ${Size}"]
 		}
 
 		Wrecks:RequestUpdate
 		This:QueueState["Updated"]
 		This:QueueState["Salvage"]
+		LootCans:Enable
 	}
 
 	method Stop()
@@ -78,6 +73,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 		This.IsBusy:Set[FALSE]
 		Busy:UnsetBusy["Salvage"]
 		Wrecks.AutoLock:Set[FALSE]
+		LootCans:Disable
 		This:Clear
 	}
 
@@ -123,17 +119,14 @@ objectdef obj_Salvage inherits obj_StateQueue
 		{
 			This.IsBusy:Set[TRUE]
 			Busy:SetBusy["Salvage"]
-			LootCans:Enable
 			do
 			{
 				if ${TargetIterator.Value.ID(exists)} && ${TargetIterator.Value.IsLockedTarget}
 				{
 					; Abandon targets of no value
-					if ${TargetIterator.Value.IsAbandoned} || \
-						!${TargetIterator.Value.HaveLootRights} || \
+					if !${TargetIterator.Value.HaveLootRights} || \
 						(${TargetIterator.Value.IsWreckEmpty} && ${Ship.ModuleList_Salvagers.Count} == 0)
 					{
-						TargetIterator.Value:Abandon
 						TargetIterator.Value:UnlockTarget
 						return FALSE
 					}
@@ -143,8 +136,13 @@ objectdef obj_Salvage inherits obj_StateQueue
 						${TargetIterator.Value.Distance} < ${Ship.ModuleList_Salvagers.Range} && \
 						${Ship.ModuleList_Salvagers.Count} > 0 && \
 						${Ship.ModuleList_Salvagers.InactiveCount} > 0 && \
-						${TargetIterator.Value.Group.Equal["Wreck"]}
+						${TargetIterator.Value.GroupID} == GROUP_WRECK
 					{
+						if ${TargetIterator.Value.IsWreckEmpty} && ${Ship.ModuleList_TractorBeams.IsActiveOn[${TargetIterator.Value.ID}]}
+						{
+							Ship.ModuleList_TractorBeams:DeactivateOn[${TargetIterator.Value.ID}]
+						}
+
 						UI:Update["Salvage", "Activating salvager - \ap${TargetIterator.Value.Name}"]
 						Ship.ModuleList_Salvagers:Activate[${TargetIterator.Value.ID}]
 						return FALSE
@@ -186,7 +184,6 @@ objectdef obj_Salvage inherits obj_StateQueue
 			}
 			else
 			{
-				LootCans:Disable
 				This.IsBusy:Set[FALSE]
 				Busy:UnsetBusy["Salvage"]
 				Wrecks.AutoLock:Set[FALSE]
@@ -234,46 +231,52 @@ objectdef obj_LootCans inherits obj_StateQueue
 			return FALSE
 		}
 
+		Salvage.Wrecks:RequestUpdate
 		Salvage.Wrecks.TargetList:GetIterator[TargetIterator]
 		if ${TargetIterator:First(exists)}
 		{
 			do
 			{
-				if ${TargetIterator.Value.Distance} > 2500 || \
+				if !${TargetIterator.Value(exists)} || \
+					${TargetIterator.Value.Distance} >= 2500 || \
 					${TargetIterator.Value.IsWreckEmpty} || \
-					${TargetIterator.Value.IsWreckViewed} || \
-					${TargetIterator.Value.IsAbandoned} || \
-					!${Entity[${TargetIterator.Value.ID}](exists)}
+					${TargetIterator.Value.IsWreckViewed}
 				{
 					continue
 				}
 
 				if !${EVEWindow[Inventory].ChildWindow[${TargetIterator.Value}](exists)}
 				{
-					UI:Update["Salvage", "Opening - \ap${TargetIterator.Value.Name}", "y"]
+					UI:Update["Salvage", "Opening - \ap${TargetIterator.Value.Name}"]
 					TargetIterator.Value:Open
 					return FALSE
 				}
 
-				Entity[${TargetIterator.Value}]:GetCargo[TargetCargo]
+				if !${EVEWindow[ByItemID, ${TargetIterator.Value}](exists)}
+				{
+					EVEWindow[Inventory].ChildWindow[${TargetIterator.Value}]:MakeActive
+					return FALSE
+				}
+
+				TargetIterator.Value:GetCargo[TargetCargo]
 				TargetCargo:GetIterator[CargoIterator]
 				if ${CargoIterator:First(exists)}
 				{
 					do
 					{
-						if ${CargoIterator.Value.IsContraband} || ${CargoIterator.Value.Volume} > 0.5
+						if ${CargoIterator.Value.IsContraband}
 						{
-							continue
+							Salvage.Wrecks:AddTargetException[${TargetIterator.Value.ID}]
+							return FALSE
 						}
-						CargoIterator.Value:MoveTo[${MyShip.ID}, CargoHold]
-						return FALSE
 					}
 					while ${CargoIterator:Next(exists)}
 				}
-				; EVEWindow[Inventory]:LootAll
-				TargetIterator.Value:Abandon
-				if ${Entity[${currentLootContainer}].Group.Equal["Cargo Container"]}
-					Entity[${TargetIterator.Value.ID}]:UnlockTarget
+				EVEWindow[Inventory]:LootAll
+				if ${TargetIterator.Value.GroupID} == GROUP_CARGOCONTAINER || ${Ship.ModuleList_Salvagers.Count} == 0
+				{
+					TargetIterator.Value:UnlockTarget
+				}
 				This:InsertState["Loot"]
 				This:InsertState["Stack"]
 				return TRUE

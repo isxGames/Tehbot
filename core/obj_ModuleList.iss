@@ -147,7 +147,7 @@ objectdef obj_ModuleList
 
 	method DeactivateOn(int64 target=-1)
 	{
-		This:DeactivateNotOnCount[1, ${target}]
+		This:DeactivateOnCount[1, ${target}]
 	}
 
 	method DeactivateOnCount(int count, int64 target=-1)
