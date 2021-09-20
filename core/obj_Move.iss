@@ -15,9 +15,9 @@ objectdef obj_Move inherits obj_StateQueue
 	{
 		if ${Me.Fleet.IsMember[${Me.CharID}]}
 		{
-			if 	(${Me.ToFleetMember.IsFleetCommander} ||\
-				${Me.ToFleetMember.IsWingCommander} ||\
-				${Me.ToFleetMember.IsSquadCommander}) &&\
+			if (${Me.ToFleetMember.IsFleetCommander} || \
+				${Me.ToFleetMember.IsWingCommander} || \
+				${Me.ToFleetMember.IsSquadCommander}) && \
 				${FleetWarp}
 			{
 				Entity[${ID}]:WarpFleetTo[${Dist}]
@@ -449,7 +449,7 @@ objectdef obj_Move inherits obj_StateQueue
 
 		if ${EVE.Bookmark[${Bookmark}](exists)}
 		{
-			if  ${EVE.Bookmark[${Bookmark}].SolarSystemID} != ${Me.SolarSystemID}
+			if ${EVE.Bookmark[${Bookmark}].SolarSystemID} != ${Me.SolarSystemID}
 			{
 				This:TravelToSystem[${EVE.Bookmark[${Bookmark}].SolarSystemID}]
 				return FALSE
@@ -476,9 +476,9 @@ objectdef obj_Move inherits obj_StateQueue
 				UI:Update["Move", " ${Bookmark}", "-g"]
 				if ${Me.Fleet.IsMember[${Me.CharID}]}
 				{
-					if 	(${Me.ToFleetMember.IsFleetCommander} ||\
-						${Me.ToFleetMember.IsWingCommander} ||\
-						${Me.ToFleetMember.IsSquadCommander}) &&\
+					if (${Me.ToFleetMember.IsFleetCommander} || \
+						${Me.ToFleetMember.IsWingCommander} || \
+						${Me.ToFleetMember.IsSquadCommander}) && \
 						${FleetWarp}
 					{
 						EVE.Bookmark[${Bookmark}]:WarpFleetTo[${Distance}]
@@ -518,9 +518,9 @@ objectdef obj_Move inherits obj_StateQueue
 					UI:Update["Move", " ${Bookmark}", "-g"]
 					if ${Me.Fleet.IsMember[${Me.CharID}]}
 					{
-						if 	(${Me.ToFleetMember.IsFleetCommander} ||\
-							${Me.ToFleetMember.IsWingCommander} ||\
-							${Me.ToFleetMember.IsSquadCommander}) &&\
+						if (${Me.ToFleetMember.IsFleetCommander} || \
+							${Me.ToFleetMember.IsWingCommander} || \
+							${Me.ToFleetMember.IsSquadCommander}) && \
 							${FleetWarp}
 						{
 							EVE.Bookmark[${Bookmark}].ToEntity:WarpFleetTo[${Distance}]
@@ -556,9 +556,9 @@ objectdef obj_Move inherits obj_StateQueue
 					UI:Update["Move", " ${Bookmark}", "-g"]
 					if ${Me.Fleet.IsMember[${Me.CharID}]}
 					{
-						if 	(${Me.ToFleetMember.IsFleetCommander} ||\
-							${Me.ToFleetMember.IsWingCommander} ||\
-							${Me.ToFleetMember.IsSquadCommander}) &&\
+						if (${Me.ToFleetMember.IsFleetCommander} || \
+							${Me.ToFleetMember.IsWingCommander} || \
+							${Me.ToFleetMember.IsSquadCommander}) && \
 							${FleetWarp}
 						{
 							EVE.Bookmark[${Bookmark}]:WarpFleetTo[${Distance}]
@@ -628,7 +628,7 @@ objectdef obj_Move inherits obj_StateQueue
 						}
 						if !${Client.InSpace} || ${Me.ToEntity.Mode} == 3
 							return FALSE
-						if  ${b.Value.SolarSystemID} != ${Me.SolarSystemID}
+						if ${b.Value.SolarSystemID} != ${Me.SolarSystemID}
 						{
 							This:TravelToSystem[${b.Value.SolarSystemID}]
 							return FALSE
@@ -746,7 +746,7 @@ objectdef obj_Move inherits obj_StateQueue
 			return FALSE
 		}
 
-		if  ${EVE.Agent[${ID}].Solarsystem.ID} != ${Me.SolarSystemID}
+		if ${EVE.Agent[${ID}].Solarsystem.ID} != ${Me.SolarSystemID}
 		{
 			This:TravelToSystem[${EVE.Agent[${ID}].Solarsystem.ID}]
 			return FALSE
@@ -802,7 +802,7 @@ objectdef obj_Move inherits obj_StateQueue
 			return FALSE
 		}
 
-		if  ${ID} != ${Me.SolarSystemID}
+		if ${ID} != ${Me.SolarSystemID}
 		{
 			This:TravelToSystem[${ID}]
 			return FALSE
@@ -843,7 +843,7 @@ objectdef obj_Move inherits obj_StateQueue
 			UI:Update["Move", "Attempted to warp to object ${ID} which does not exist", "r"]
 		}
 
-		if  ${Entity[${ID}].Distance} > 150000
+		if ${Entity[${ID}].Distance} > 150000
 		{
 			Entity[${ID}]:AlignTo
 			This:Warp[${ID}, ${Distance}, ${FleetWarp}]

@@ -2,13 +2,13 @@ objectdef obj_Client
 {
 	variable int PulseIntervalInMilliseconds = 500
 	variable int NextPulse
-	
+
 	variable bool Ready=TRUE
 	variable bool Undock=FALSE
 	variable int64 SystemID=${Me.SolarSystemID}
-	
+
 	variable uint UndockBookmarFilterQuery
-	
+
 	method Initialize()
 	{
 		Event[ISXEVE_onFrame]:AttachAtom[This:Pulse]
@@ -31,8 +31,8 @@ objectdef obj_Client
 		if !${EVE.IsTextureLoadingOn}
 		{
 			EVE:ToggleTextureLoading
-		}		
-	}	
+		}
+	}
 
 	method Pulse()
 	{
@@ -44,11 +44,11 @@ objectdef obj_Client
 				This:Wait[5000]
 				return
 			}
-			
+
 			This.NextPulse:Set[${Math.Calc[${LavishScript.RunningTime} + ${PulseIntervalInMilliseconds} + ${Math.Rand[500]}]}]
 
 			This:ManageGraphics
-			
+
 			if ${EVEWindow[rewardsWnd](exists)}
 			{
 				if ${EVEWindow[rewardsWnd].Button[DarkStyleButtonPrimary](exists)}
@@ -60,13 +60,13 @@ objectdef obj_Client
 					EVEWindow[rewardsWnd]:Close
 				}
 				return
-			}			
+			}
 			if ${EVEWindow[ByName, NewFeatureNotifyWnd](exists)}
 			{
 				EVEWindow[ByName, NewFeatureNotifyWnd]:Close
 				return
-			}			
-			
+			}
+
 			;  Implement menu/config for this
 			if ${Me.Fleet.Invited}
 			{
@@ -86,12 +86,12 @@ objectdef obj_Client
 					}
 					while ${c:Next(exists)}
 			}
-			
+
 			if ${Me.InStation}
 			{
 				Undock:Set[TRUE]
 			}
-			
+
 			if ${This.Undock} && ${This.InSpace}
 			{
 				This:Undock
@@ -100,12 +100,12 @@ objectdef obj_Client
 			if ${ComBot.Paused}
 			{
 				return
-			}			
-			
+			}
+
 			This.Ready:Set[TRUE]
 		}
 	}
-	
+
 	member:bool InSpace()
 	{
 		if ${Me.InStation}
@@ -121,7 +121,7 @@ objectdef obj_Client
 		}
 		return FALSE
 	}
-	
+
 	method ManageGraphics()
 	{
 		if ${Config.Common.Disable3D} && ${EVE.Is3DDisplayOn}
@@ -149,7 +149,7 @@ objectdef obj_Client
 			EVE:ToggleTextureLoading
 		}
 	}
-	
+
 	method Undock()
 	{
 		variable index:bookmark BookmarkIndex
@@ -158,7 +158,7 @@ objectdef obj_Client
 		EVE:GetBookmarks[BookmarkIndex]
 		BookmarkIndex:RemoveByQuery[${UndockBookmarFilterQuery}, FALSE]
 		BookmarkIndex:Collapse
-		
+
 		if ${BookmarkIndex.Used}
 		{
 			UI:Update["Client", "Undock warping to ${BookmarkIndex.Get[1].Label}", "g"]
@@ -174,7 +174,7 @@ objectdef obj_Client
 		This.Ready:Set[FALSE]
 		This.NextPulse:Set[${Math.Calc[${LavishScript.RunningTime} + ${delay}]}]
 	}
-	
+
 	variable bool cycleCargoHold = FALSE
 	member:bool Inventory()
 	{
@@ -183,7 +183,7 @@ objectdef obj_Client
 			EVE:Execute[OpenInventory]
 			return FALSE
 		}
-		variable index:item cargo		
+		variable index:item cargo
 		if !${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo]:GetItems[cargo](exists)}
 		{
 			UI:Update["Client", "Cargo hold information invalid, activating", "g"]
@@ -192,7 +192,7 @@ objectdef obj_Client
 		}
 		if ${MyShip.HasOreHold}
 		{
-			if 	${EVEWindow[Inventory].ChildWindow[${MyShip.ID}, ShipOreHold].UsedCapacity} == -1 || \
+			if ${EVEWindow[Inventory].ChildWindow[${MyShip.ID}, ShipOreHold].UsedCapacity} == -1 || \
 				${EVEWindow[Inventory].ChildWindow[${MyShip.ID}, ShipOreHold].Capacity} <= 0
 			{
 				if !${cycleCargoHold}
@@ -212,7 +212,7 @@ objectdef obj_Client
 		}
 		if ${EVEWindow[Inventory].ChildWindow[${MyShip.ID}, ShipFleetHangar](exists)}
 		{
-			if 	${EVEWindow[Inventory].ChildWindow[${MyShip.ID}, ShipFleetHangar].UsedCapacity} == -1 || \
+			if ${EVEWindow[Inventory].ChildWindow[${MyShip.ID}, ShipFleetHangar].UsedCapacity} == -1 || \
 				${EVEWindow[Inventory].ChildWindow[${MyShip.ID}, ShipFleetHangar].Capacity} <= 0
 			{
 				UI:Update["Client", "Fleet Hangar information invalid, activating", "g"]
@@ -220,7 +220,7 @@ objectdef obj_Client
 				return FALSE
 			}
 		}
-		
+
 		return TRUE
 	}
 }

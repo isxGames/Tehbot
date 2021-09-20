@@ -501,7 +501,7 @@ objectdef obj_Cargo inherits obj_StateQueue
 
 	method Load(string arg_Query = "", int arg_Quantity = 0, string arg_Source = "Ship")
 	{
-		if 	${This.BuildAction.Bookmark.Length} == 0 || \
+		if ${This.BuildAction.Bookmark.Length} == 0 || \
 			${This.BuildAction.LocationType.Length} == 0
 		{
 			UI:Update["obj_Cargo", "Attempted to queue an incomplete Load cargo action", "r"]
@@ -517,7 +517,7 @@ objectdef obj_Cargo inherits obj_StateQueue
 	}
 	method Unload(string arg_Query, int arg_Quantity = 0, string arg_Source = "Ship")
 	{
-		if 	${This.BuildAction.Bookmark.Length} == 0 || \
+		if ${This.BuildAction.Bookmark.Length} == 0 || \
 			${This.BuildAction.LocationType.Length} == 0
 		{
 			UI:Update["obj_Cargo", "Attempted to queue an incomplete Unload cargo action", "r"]
@@ -533,7 +533,7 @@ objectdef obj_Cargo inherits obj_StateQueue
 	}
 	method Move()
 	{
-		if 	${This.BuildAction.Bookmark.Length} == 0
+		if ${This.BuildAction.Bookmark.Length} == 0
 		{
 			UI:Update["obj_Cargo", "Attempted to queue an incomplete Move cargo action", "r"]
 			return
@@ -681,7 +681,7 @@ objectdef obj_Cargo inherits obj_StateQueue
 						Entity[${Container}]:Open
 						return FALSE
 					}
-					if 	${EVEWindow[Inventory].ChildWindow[${Container}].UsedCapacity} == -1 || \
+					if ${EVEWindow[Inventory].ChildWindow[${Container}].UsedCapacity} == -1 || \
 						${EVEWindow[Inventory].ChildWindow[${Container}].Capacity} <= 0
 					{
 						UI:Update["obj_Cargo", "Container information invalid, activating", "g"]
@@ -761,7 +761,7 @@ objectdef obj_Cargo inherits obj_StateQueue
 						Entity[${Container}]:Open
 						return FALSE
 					}
-					if 	${EVEWindow[Inventory].ChildWindow[${Container}].UsedCapacity} == -1 || \
+					if ${EVEWindow[Inventory].ChildWindow[${Container}].UsedCapacity} == -1 || \
 						${EVEWindow[Inventory].ChildWindow[${Container}].Capacity} <= 0
 					{
 						UI:Update["obj_Cargo", "Container information invalid, activating", "g"]
@@ -821,7 +821,7 @@ objectdef obj_Cargo inherits obj_StateQueue
 						Entity[${Container}]:Open
 						return FALSE
 					}
-					if 	${EVEWindow[Inventory].ChildWindow[${Container}].UsedCapacity} == -1 || \
+					if ${EVEWindow[Inventory].ChildWindow[${Container}].UsedCapacity} == -1 || \
 						${EVEWindow[Inventory].ChildWindow[${Container}].Capacity} <= 0
 					{
 						UI:Update["obj_Cargo", "Container information invalid, activating", "g"]

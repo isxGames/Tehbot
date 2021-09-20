@@ -90,7 +90,7 @@ objectdef obj_Login inherits obj_StateQueue
 			return TRUE
 		}
 
-		if  ${EVEWindow[ByName,modal].Text.Find["The daily downtime will begin in"](exists)} || \
+		if ${EVEWindow[ByName,modal].Text.Find["The daily downtime will begin in"](exists)} || \
 			${EVEWindow[ByName,modal].Text.Find["local session information is corrupt"](exists)}
 		{
 			EVEWindow[ByName,modal]:ClickButtonOK
