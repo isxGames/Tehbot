@@ -477,7 +477,7 @@ objectdef obj_Salvager inherits obj_StateQueue
 		variable index:bookmark Bookmarks
 		variable iterator BookmarkIterator
 		variable bool UseJumpGate=FALSE
-		if ${Entity[GroupID == GROUP_WARPGATE](exists)}
+		if ${Entity["GroupID = GROUP_WARPGATE"](exists)}
 		{
 			HoldOffPlayer:Insert[${BookmarkCreator}]
 			HoldOffTimer:Insert[${Math.Calc[${LavishScript.RunningTime} + 600000]}]

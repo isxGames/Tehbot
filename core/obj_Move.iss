@@ -379,10 +379,10 @@ objectdef obj_Move inherits obj_StateQueue
 		}
 		else
 		{
-				if ${Entity[GroupID == GROUP_WARPGATE](exists)} && !${IgnoreGate}
+				if ${Entity["GroupID = GROUP_WARPGATE"](exists)} && !${IgnoreGate}
 				{
 					UI:Update["Move", "Gate found, activating", "g"]
-					This:Gate[${Entity[GroupID == GROUP_WARPGATE].ID}, TRUE]
+					This:Gate[${Entity["GroupID = GROUP_WARPGATE"].ID}, TRUE]
 					This:QueueState["FleetmemberMove", 2000, ${ID}]
 					return TRUE
 				}
@@ -464,10 +464,10 @@ objectdef obj_Move inherits obj_StateQueue
 		{
 			if ${EVE.Bookmark[${Bookmark}].Distance} > 150000
 			{
-				if ${Entity[GroupID == GROUP_WARPGATE](exists)} && !${IgnoreGate}
+				if ${Entity["GroupID = GROUP_WARPGATE"](exists)} && !${IgnoreGate}
 				{
 					UI:Update["Move", "Gate found, activating", "g"]
-					This:Gate[${Entity[GroupID == GROUP_WARPGATE].ID}, TRUE]
+					This:Gate[${Entity["GroupID = GROUP_WARPGATE"].ID}, TRUE]
 					This:QueueState["BookmarkMove", 2000, ${Bookmark}]
 					return TRUE
 				}

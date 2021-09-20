@@ -123,7 +123,7 @@ objectdef obj_Automate inherits obj_StateQueue
 		{
 			variable int Logout=${Math.Rand[${Config.LogoutDelta} + 1]}
 			UI:Update["Automate", "Logout will proceed in \ao${Logout}\ag minutes", "g"]
-			This:QueueState["Idle", ${Math.Calc[${Logout} * 60000].Int}
+			This:QueueState["Idle", ${Math.Calc[${Logout} * 60000].Int}]
 			if ${Config.Questor}
 			{
 				This:QueueState["LogoutQuestor"]

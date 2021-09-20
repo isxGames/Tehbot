@@ -61,7 +61,7 @@ objectdef obj_TargetList inherits obj_StateQueue
 
 	method AddNotTargetingMe()
 	{
-		This:AddQueryString["Distance < 150000 && !IsTargetingMe && IsNPC && CategoryID == 11 && !IsMoribund"]
+		This:AddQueryString["Distance < 150000 && !IsTargetingMe && IsNPC && CategoryID = 11 && !IsMoribund"]
 		NeedUpdate:Set[TRUE]
 	}
 
