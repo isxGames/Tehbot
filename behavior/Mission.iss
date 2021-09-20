@@ -95,7 +95,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 		NPC:AddAllNPCs
 		ActiveNPC:AddTargetingMe
-		Wrecks:AddQueryString["(GroupID==GROUP_WRECK || GroupID==GROUP_CARGOCONTAINER) && !IsMoribund"]
+		Wrecks:AddQueryString["(GroupID = GROUP_WRECK || GroupID = GROUP_CARGOCONTAINER) && !IsMoribund"]
 	}
 
 	method ScheduleHalt()
@@ -619,7 +619,10 @@ objectdef obj_Mission inherits obj_StateQueue
 			}
 			else
 			{
-				if !${Entity[${currentLootContainer}](exists)} || ${Entity[${currentLootContainer}].IsWreckEmpty} || ${Entity[${currentLootContainer}].IsMoribund}
+				if !${Entity[${currentLootContainer}](exists)} || \
+					${Entity[${currentLootContainer}].IsWreckEmpty} || \
+					${Entity[${currentLootContainer}].IsWreckViewed} || \
+					${Entity[${currentLootContainer}].IsMoribund}
 				{
 					currentLootContainer:Set[0]
 				}
@@ -639,7 +642,8 @@ objectdef obj_Mission inherits obj_StateQueue
 							approachTimer:Set[${Math.Calc[${LavishScript.RunningTime} + 10000]}]
 							return TRUE
 						}
-						if ${Ship.ModuleList_TractorBeams.Count}
+						if ${Ship.ModuleList_TractorBeams.Count} && \
+						   (${Entity[${currentLootContainer}].GroupID} == GROUP_WRECK || ${Entity[${currentLootContainer}].GroupID} == GROUP_CARGOCONTAINER)
 						{
 							if !${Entity[${currentLootContainer}].IsLockedTarget}
 							{
@@ -648,12 +652,13 @@ objectdef obj_Mission inherits obj_StateQueue
 									Entity[${currentLootContainer}]:LockTarget
 									This:InsertState["PerformMission"]
 									return TRUE
-
 								}
 							}
 							else
 							{
-								if ${Ship.ModuleList_TractorBeams.GetActiveOn[${currentLootContainer}]} < 1 && ${Entity[${currentLootContainer}].Distance} < ${Ship.ModuleList_TractorBeams.Range}
+								if ${Ship.ModuleList_TractorBeams.GetActiveOn[${currentLootContainer}]} < 1 && \
+								${Entity[${currentLootContainer}].Distance} < ${Ship.ModuleList_TractorBeams.Range} && \
+								(${Entity[${currentLootContainer}].GroupID} == GROUP_WRECK || ${Entity[${currentLootContainer}].GroupID} == GROUP_CARGOCONTAINER)
 								{
 									Ship.ModuleList_TractorBeams:Activate[${currentLootContainer}]
 									Ship.ModuleList_TractorBeams:DeactivateNotOn[${currentLootContainer}]
