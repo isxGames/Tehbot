@@ -430,7 +430,7 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 			{
 				if ${AmmoName.Find[${AvailableAmmoIterator.Value.Name}](exists)}
 				{
-					UI:Update["obj_Module", "Switching Ammo to ${AvailableAmmoIterator.Value.Name}"]
+					UI:Update["obj_Module", "Switching Ammo to \ay${AvailableAmmoIterator.Value.Name}"]
 
 					variable int ChargeAmountToLoad = ${MyShip.Cargo[${AmmoName}].Quantity}
 
