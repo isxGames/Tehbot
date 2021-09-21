@@ -1133,10 +1133,14 @@ objectdef obj_Mission inherits obj_StateQueue
 
 	member:bool CompleteMission()
 	{
-		if ${Me.InSpace} && ${Ship.ModuleList_Siege.ActiveCount}
+		if ${Me.InSpace}
 		{
-			; UI:Update["Mission", "Deactivate siege module due to mission complete"]
-			Ship.ModuleList_Siege:Deactivate
+			DroneControl:Recall
+			if ${Ship.ModuleList_Siege.ActiveCount}
+			{
+				; UI:Update["Mission", "Deactivate siege module due to mission complete"]
+				Ship.ModuleList_Siege:Deactivate
+			}
 		}
 
 		if ${Me.StationID} != ${EVE.Agent[${agentIndex}].StationID}
@@ -1387,7 +1391,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				   ${itemIterator.Value.Name.Equal[${Config.KineticAmmoSecondary}]} || \
 				   ${itemIterator.Value.Name.Equal[${Config.ThermalAmmoSecondary}]} || \
 				   ${itemIterator.Value.Name.Equal[${Config.EMAmmoSecondary}]} || \
-				   ${itemIterator.Value.Name.Equal[${Config.ExplosiveAmmoSecondary}]}
+				  ${itemIterator.Value.Name.Equal[${Config.ExplosiveAmmoSecondary}]}
 				{
 					if ${Config.DropoffType.Equal[Corporation Hangar]}
 					{
