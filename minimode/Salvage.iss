@@ -38,30 +38,33 @@ objectdef obj_Salvage inherits obj_StateQueue
 		variable string Size
 		if ${Config.Size.Equal[Small]}
 		{
-			Size:Set[&& (Type =- \"Small\" || Type =- \"Medium\" || Type =- \"Large\" || Type =- \"Cargo Container\")]
+			Size:Set["&& (Type =- \"Small\" || Type =- \"Medium\" || Type =- \"Large\" || Type =- \"Cargo Container\")"]
 		}
 		elseif ${Config.Size.Equal[Medium]}
 		{
-			Size:Set[&& (Type =- \"Medium\" || Type =- \"Large\" || Type =- \"Cargo Container\")]
+			Size:Set["&& (Type =- \"Medium\" || Type =- \"Large\" || Type =- \"Cargo Container\")"]
 		}
 		else
 		{
-			Size:Set[&& (Type =- \"Large\" || Type =- \"Cargo Container\")]
+			Size:Set["&& (Type =- \"Large\" || Type =- \"Cargo Container\")"]
 		}
 
 		Wrecks:ClearTargetExceptions
 		Wrecks:ClearQueryString
 
+		variable string lootYellow = "&& HaveLootRights"
 		if ${Config.SalvageYellow}
 		{
-			echo SalvageYellow
-			Wrecks:AddQueryString["(Group = \"Wreck\" || (Group = \"Cargo Container\")) && !IsWreckViewed && !IsMoribund ${Size}"]
-		}
-		else
-		{
-			Wrecks:AddQueryString["(Group = \"Wreck\" || (Group = \"Cargo Container\")) && !IsWreckViewed && HaveLootRights && !IsMoribund ${Size}"]
+			lootYellow:Set[""]
 		}
 
+		variable string canLoot = "&& !IsWreckEmpty && !IsWreckViewed"
+		if ${Ship.ModuleList_Salvagers.Count} > 0
+		{
+			canLoot:Set[""]
+		}
+
+		Wrecks:AddQueryString["(Group = \"Wreck\" || (Group = \"Cargo Container\")) ${canLoot} ${lootYellow} && !IsMoribund ${Size}"]
 		Wrecks:RequestUpdate
 		This:QueueState["Updated"]
 		This:QueueState["Salvage"]
@@ -84,7 +87,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 
 	member:bool Salvage()
 	{
-		if !${Client.InSpace} ||!${Client.InSpace}
+		if !${Client.InSpace} || ${Me.ToEntity.Mode} == 3
 		{
 			return FALSE
 		}
@@ -124,8 +127,8 @@ objectdef obj_Salvage inherits obj_StateQueue
 				if ${TargetIterator.Value.ID(exists)} && ${TargetIterator.Value.IsLockedTarget}
 				{
 					; Abandon targets of no value
-					if !${TargetIterator.Value.HaveLootRights} || \
-						(${TargetIterator.Value.IsWreckEmpty} && ${Ship.ModuleList_Salvagers.Count} == 0)
+					if !${Config.SalvageYellow} && !${TargetIterator.Value.HaveLootRights} || \
+						((${TargetIterator.Value.IsWreckEmpty} || ${TargetIterator.Value.IsWreckViewed}) && ${Ship.ModuleList_Salvagers.Count} == 0)
 					{
 						TargetIterator.Value:UnlockTarget
 						return FALSE
@@ -134,7 +137,6 @@ objectdef obj_Salvage inherits obj_StateQueue
 					; Salvage
 					if !${Ship.ModuleList_Salvagers.IsActiveOn[${TargetIterator.Value.ID}]} && \
 						${TargetIterator.Value.Distance} < ${Ship.ModuleList_Salvagers.Range} && \
-						${Ship.ModuleList_Salvagers.Count} > 0 && \
 						${Ship.ModuleList_Salvagers.InactiveCount} > 0 && \
 						${TargetIterator.Value.GroupID} == GROUP_WRECK
 					{
