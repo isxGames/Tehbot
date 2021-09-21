@@ -467,7 +467,7 @@ objectdef obj_DroneControl inherits obj_StateQueue
 					; echo recalling ID ${DroneIterator.Value.ID}
 					Drones:Recall["ID = ${DroneIterator.Value.ID}", 1]
 				}
-				Drones.DroneHealth:Set[${DroneIterator.Value.ID}, ${CurrentDroneHealth}]
+				Drones.DroneHealth:Set[${DroneIterator.Value.ID}, ${CurrentDroneHealth.Int}]
 				; echo drone refreshed cached health ${Drones.DroneHealth.Element[${DroneIterator.Value.ID}]}
 			}
 			while ${DroneIterator:Next(exists)}

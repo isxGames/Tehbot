@@ -238,7 +238,8 @@ objectdef obj_Drones inherits obj_StateQueue
 			while ${Launched} < ${Count}
 			{
 				DronesInBay:GetIterator[DroneIterator]
-				variable float healthestDroneHealth = 0
+				variable int healthestDroneHealth = 0
+				healthestDroneHealth:Set[0]
 				variable int64 healthestDroneID = 0
 				variable int healthestDroneTypeID = 0
 				if ${DroneIterator:First(exists)}
@@ -247,13 +248,13 @@ objectdef obj_Drones inherits obj_StateQueue
 					{
 						; Treat drone with unknown health as full health
 						variable int currentDroneHealth = 300
+						currentDroneHealth:Set[300]
 						if ${DroneHealth.Element[${DroneIterator.Value.ID}](exists)}
 						{
 							currentDroneHealth:Set[${DroneHealth.Element[${DroneIterator.Value.ID}]}]
 						}
 
-						if !${DronesToLaunchSet.Contains[${DroneIterator.Value.ID}]} && \
-						   (${currentDroneHealth} > ${healthestDroneHealth} || ${ReturningDrones.Contains[${healthestDroneID}]})
+						if !${DronesToLaunchSet.Contains[${DroneIterator.Value.ID}]} && ${currentDroneHealth} > ${healthestDroneHealth}
 						{
 							healthestDroneID:Set[${DroneIterator.Value.ID}]
 							healthestDroneHealth:Set[${currentDroneHealth}]
