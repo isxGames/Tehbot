@@ -177,9 +177,8 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 				}
 				elseif ${MyShip.Module[${ModuleID}].Charge.Type.Find["Tracking Speed Script"]}
 				{
-					UI:Update["obj_Module", "Unloading Tracking Speed Script"]
 					This:Deactivate
-					MyShip.Module[${ModuleID}]:UnloadToCargo
+					This:QueueState["UnloadAmmoToCargo", 50]
 				}
 			}
 		}
@@ -197,7 +196,7 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 				{
 					UI:Update["obj_Module", "Unloading Optimal Range Script"]
 					This:Deactivate
-					MyShip.Module[${ModuleID}]:UnloadToCargo
+					This:QueueState["UnloadAmmoToCargo", 50]
 				}
 			}
 		}
@@ -447,6 +446,19 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 		}
 
 		return FALSE
+	}
+
+	member:bool UnloadAmmoToCargo()
+	{
+		if ${MyShip.Module[${ModuleID}].IsReloading}
+			return FALSE
+		if !${MyShip.Module[${ModuleID}].Charge(exists)}
+		{
+			return TRUE
+		}
+		UI:Update["obj_Module", "Unloading \ay${MyShip.Module[${ModuleID}].Charge.Type}"]
+		MyShip.Module[${ModuleID}]:UnloadToCargo
+		return TRUE
 	}
 
 	member:bool ActivateOn(int64 newTarget)

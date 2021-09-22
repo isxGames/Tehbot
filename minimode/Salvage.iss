@@ -127,7 +127,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 				if ${TargetIterator.Value.ID(exists)} && ${TargetIterator.Value.IsLockedTarget}
 				{
 					; Abandon targets of no value
-					if !${Config.SalvageYellow} && !${TargetIterator.Value.HaveLootRights} || \
+					if (!${Config.SalvageYellow} && !${TargetIterator.Value.HaveLootRights}) || \
 						((${TargetIterator.Value.IsWreckEmpty} || ${TargetIterator.Value.IsWreckViewed}) && ${Ship.ModuleList_Salvagers.Count} == 0)
 					{
 						TargetIterator.Value:UnlockTarget
