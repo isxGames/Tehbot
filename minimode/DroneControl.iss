@@ -553,9 +553,8 @@ objectdef obj_DroneControl inherits obj_StateQueue
 				do
 				{
 					if ${Entity[${lockedTargetIterator.Value}].Distance} < ${droneEngageRange} && \
-					   (${currentTarget} == 0 || \
-					   (!${Ship.IsHardToDealWithTarget[${currentTarget}]} && (${Ship.IsHardToDealWithTarget[${lockedTargetIterator.Value}]} || ${Entity[${currentTarget}].Distance} > ${Entity[${lockedTargetIterator.Value}].Distance})) || \
-					   (${Ship.IsHardToDealWithTarget[${lockedTargetIterator.Value}]} && ${Entity[${currentTarget}].Distance} > ${Entity[${lockedTargetIterator.Value}].Distance}))
+					   (!${Entity[${currentTarget}](exists)} || \
+					   (!${Ship.IsHardToDealWithTarget[${currentTarget}]} && (${Ship.IsHardToDealWithTarget[${lockedTargetIterator.Value}]} || ${Entity[${currentTarget}].Distance} > ${Entity[${lockedTargetIterator.Value}].Distance})))
 					{
 						currentTarget:Set[${lockedTargetIterator.Value}]
 					}
