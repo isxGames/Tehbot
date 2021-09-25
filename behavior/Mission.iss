@@ -296,8 +296,11 @@ objectdef obj_Mission inherits obj_StateQueue
 						do
 						{
 							variable string checkmarkIcon = "icon:38_193"
+							variable string circlemarkIcon = "icon:38_195"
 							if ${missionJournalText.Find[${ValidMissions.CurrentKey} Objectives Complete]} || \
-							${Math.Calc[${missionJournalText.Length} - ${missionJournalText.ReplaceSubstring[${checkmarkIcon}, ""].Length}].Int} >= ${Math.Calc[${checkmarkIcon.Length} * 2].Int}
+							(${Math.Calc[${missionJournalText.Length} - ${missionJournalText.ReplaceSubstring[${checkmarkIcon}, ""].Length}].Int} >= ${Math.Calc[${checkmarkIcon.Length} * 2].Int} && \
+							; No unfinished targets(circle) or the circle appears before the first check which means the ship is not docked at the dropoff station
+							(!${missionJournalText.Find[${circlemarkIcon}]} || ${missionJournalText.Find[${circlemarkIcon}]} < ${missionJournalText.Find[${checkmarkIcon}]}))
 							{
 								UI:Update["Mission", "Mission Complete", "g"]
 								UI:Update["Mission", " ${missionIterator.Value.Name}", "o"]
@@ -1032,8 +1035,11 @@ objectdef obj_Mission inherits obj_StateQueue
 						do
 						{
 							variable string checkmarkIcon = "icon:38_193"
+							variable string circlemarkIcon = "icon:38_195"
 							if ${missionJournalText.Find[${ValidMissions.CurrentKey} Objectives Complete]} || \
-							${Math.Calc[${missionJournalText.Length} - ${missionJournalText.ReplaceSubstring[${checkmarkIcon}, ""].Length}].Int} >= ${Math.Calc[${checkmarkIcon.Length} * 2].Int}
+							(${Math.Calc[${missionJournalText.Length} - ${missionJournalText.ReplaceSubstring[${checkmarkIcon}, ""].Length}].Int} >= ${Math.Calc[${checkmarkIcon.Length} * 2].Int} && \
+							; No unfinished targets(circle) or the circle appears before the first check which means the ship is not docked at the dropoff station
+							(!${missionJournalText.Find[${circlemarkIcon}]} || ${missionJournalText.Find[${circlemarkIcon}]} < ${missionJournalText.Find[${checkmarkIcon}]}))
 							{
 								UI:Update["Mission", "Mission Complete", "g"]
 								UI:Update["Mission", " ${missionIterator.Value.Name}", "o"]
@@ -1415,7 +1421,7 @@ objectdef obj_Mission inherits obj_StateQueue
 						}
 
 						itemIterator.Value:MoveTo[MyStationCorporateHangar, StationCorporateHangar, ${itemIterator.Value.Quantity}, ${This.CorporationFolder}]
-						return FALSE
+						; return FALSE
 					}
 					else
 					{
@@ -1425,7 +1431,7 @@ objectdef obj_Mission inherits obj_StateQueue
 							return FALSE
 						}
 						itemIterator.Value:MoveTo[MyStationHangar, Hangar, ${itemIterator.Value.Quantity}]
-						return FALSE
+						; return FALSE
 					}
 				}
 			}
