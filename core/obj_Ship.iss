@@ -312,4 +312,15 @@ objectdef obj_Ship inherits obj_StateQueue
 		}
 	}
 
+	; TODO: update for other ships
+	member:string FallbackAmmo()
+	{
+		return "Conflagration L"
+	}
+
+	member:string FallbackSecondaryAmmo()
+	{
+		return "Scorch L"
+	}
+
 }

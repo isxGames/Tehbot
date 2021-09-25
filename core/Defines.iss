@@ -65,3 +65,8 @@
 #define GROUP_SUN 																								6
 #define GROUP_SCOUT_DRONE 																						100
 #define GROUP_COMBAT_DRONE 																						549
+
+#define DRONE_RACE_CALDARI 																						1
+#define DRONE_RACE_MINMATAR 																					2
+#define DRONE_RACE_AMARR 																						4
+#define DRONE_RACE_GALLENTE 																					8
