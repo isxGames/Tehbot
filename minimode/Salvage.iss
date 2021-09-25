@@ -14,7 +14,6 @@ objectdef obj_Configuration_Salvage inherits obj_Base_Configuration
 	Setting(int, LockCount, SetLockCount)
 	Setting(string, Size, SetSize)
 	Setting(bool, SalvageYellow, SetSalvageYellow)
-
 }
 
 
@@ -38,6 +37,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 		variable string Size
 		if ${Config.Size.Equal[Small]}
 		{
+			; BUG of ISXEVE: Type is just 'Wreck' for all wrecks. Should contain more info.
 			Size:Set["&& (Type =- \"Small\" || Type =- \"Medium\" || Type =- \"Large\" || Type =- \"Cargo Container\")"]
 		}
 		elseif ${Config.Size.Equal[Medium]}
@@ -247,16 +247,12 @@ objectdef obj_LootCans inherits obj_StateQueue
 					continue
 				}
 
+
+				; BUG of ISXEVE: Finding windows, getting items and looting all are not working for Wrecks, only for cargos.
 				if !${EVEWindow[Inventory].ChildWindow[${TargetIterator.Value}](exists)}
 				{
 					UI:Update["Salvage", "Opening - \ap${TargetIterator.Value.Name}"]
 					TargetIterator.Value:Open
-					return FALSE
-				}
-
-				if !${EVEWindow[ByItemID, ${TargetIterator.Value}](exists)}
-				{
-					EVEWindow[Inventory].ChildWindow[${TargetIterator.Value}]:MakeActive
 					return FALSE
 				}
 
