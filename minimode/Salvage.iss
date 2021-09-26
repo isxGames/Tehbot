@@ -34,6 +34,23 @@ objectdef obj_Salvage inherits obj_StateQueue
 
 	method Start()
 	{
+		This:UpdateWreckQuery
+		This:QueueState["Updated"]
+		This:QueueState["Salvage"]
+		LootCans:Enable
+	}
+
+	method Stop()
+	{
+		This.IsBusy:Set[FALSE]
+		Busy:UnsetBusy["Salvage"]
+		Wrecks.AutoLock:Set[FALSE]
+		LootCans:Disable
+		This:Clear
+	}
+
+	method UpdateWreckQuery()
+	{
 		variable string Size
 		if ${Config.Size.Equal[Small]}
 		{
@@ -58,6 +75,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 			lootYellow:Set[""]
 		}
 
+		; Ship.ModuleList_Salvagers.Count is NULL at early stage
 		variable string canLoot = "&& !IsWreckEmpty && !IsWreckViewed"
 		if ${Ship.ModuleList_Salvagers.Count} > 0
 		{
@@ -66,18 +84,6 @@ objectdef obj_Salvage inherits obj_StateQueue
 
 		Wrecks:AddQueryString["(Group = \"Wreck\" || (Group = \"Cargo Container\")) ${canLoot} ${lootYellow} && !IsMoribund ${Size}"]
 		Wrecks:RequestUpdate
-		This:QueueState["Updated"]
-		This:QueueState["Salvage"]
-		LootCans:Enable
-	}
-
-	method Stop()
-	{
-		This.IsBusy:Set[FALSE]
-		Busy:UnsetBusy["Salvage"]
-		Wrecks.AutoLock:Set[FALSE]
-		LootCans:Disable
-		This:Clear
 	}
 
 	member:bool Updated()
@@ -102,15 +108,18 @@ objectdef obj_Salvage inherits obj_StateQueue
 		{
 			MaxTarget:Set[${Me.MaxLockedTargets}]
 		}
+
 		if ${Config.LockCount} < ${MaxTarget}
 		{
 			MaxTarget:Set[${Config.LockCount}]
 		}
+
 		variable float MaxRange = ${Ship.ModuleList_TractorBeams.Range}
 		if ${MaxRange} > ${MyShip.MaxTargetRange}
 		{
 			MaxRange:Set[${MyShip.MaxTargetRange}]
 		}
+
 		Wrecks.MaxRange:Set[${MaxRange}]
 		Wrecks.MinLockCount:Set[${MaxTarget}]
 		Wrecks.LockOutOfRange:Set[FALSE]
@@ -177,24 +186,23 @@ objectdef obj_Salvage inherits obj_StateQueue
 			}
 			while ${TargetIterator:Next(exists)}
 		}
+		elseif ${Wrecks.TargetList.Used}
+		{
+			This.IsBusy:Set[FALSE]
+			Busy:UnsetBusy["Salvage"]
+			return FALSE
+		}
 		else
 		{
-			if ${Wrecks.TargetList.Used} > 0
-			{
-				This.IsBusy:Set[FALSE]
-				Busy:UnsetBusy["Salvage"]
-			}
-			else
-			{
-				This.IsBusy:Set[FALSE]
-				Busy:UnsetBusy["Salvage"]
-				Wrecks.AutoLock:Set[FALSE]
-				return FALSE
-			}
+			This.IsBusy:Set[FALSE]
+			Busy:UnsetBusy["Salvage"]
+			Wrecks.AutoLock:Set[FALSE]
+			This:UpdateWreckQuery
+			This:QueueState["Updated"]
+			This:QueueState["Salvage"]
+			return TRUE
 		}
-		return FALSE
 	}
-
 }
 
 
