@@ -134,6 +134,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			UI:Update["obj_Mission", "Started", "g"]
 			This:QueueState["UpdateTargets"]
 			This:QueueState["ReportMissionConfigs"]
+			This:QueueState["Cleanup"]
 			This:QueueState["CheckForWork"]
 			EVE:RefreshBookmarks
 		}
@@ -231,7 +232,6 @@ objectdef obj_Mission inherits obj_StateQueue
 
 				if !${missionJournalText.NotNULLOrEmpty} || ${missionJournalText.Length} < 1000
 				{
-					; echo case1${missionJournalText.Length}
 					missionIterator.Value:GetDetails
 					return FALSE
 				}
@@ -255,8 +255,7 @@ objectdef obj_Mission inherits obj_StateQueue
 						{
 							if ${missionJournalText.Find[${ValidMissions.CurrentKey} Objectives]}
 							{
-								UI:Update["Mission", "Accepting mission", "g"]
-								UI:Update["Mission", " ${missionIterator.Value.Name}", "o"]
+								UI:Update["Mission", "Accepting mission \ao${missionIterator.Value.Name}", "g"]
 								This:InsertState["Cleanup"]
 								This:InsertState["CheckForWork"]
 								This:InsertState["InteractAgent", 1500, "ACCEPT"]
@@ -273,8 +272,7 @@ objectdef obj_Mission inherits obj_StateQueue
 						{
 							if ${missionJournalText.Find[${InvalidMissions.CurrentKey} Objectives]}
 							{
-								UI:Update["Mission", "Declining mission", "g"]
-								UI:Update["Mission", " ${missionIterator.Value.Name}", "o"]
+								UI:Update["Mission", "Declining mission \ao${missionIterator.Value.Name}", "g"]
 								This:InsertState["Cleanup"]
 								This:InsertState["CheckForWork"]
 								This:InsertState["InteractAgent", 1500, "DECLINE"]
@@ -284,7 +282,15 @@ objectdef obj_Mission inherits obj_StateQueue
 						while ${InvalidMissions.NextKey(exists)}
 					}
 
-					UI:Update["Mission", "Unknown mission", "g"]
+					UI:Update["Mission", "Unknown mission \ao${missionIterator.Value.Name}", "g"]
+					if ${Me.StationID} != ${EVE.Agent[${agentIndex}].StationID}
+					{
+						UI:Update["Mission", "Going to the agent station anyway", "g"]								This:InsertState["Cleanup"]
+						This:InsertState["CheckForWork"]
+						This:InsertState["InteractAgent", 1500, "OFFER"]
+						return TRUE
+					}
+
 					This:InsertState["CheckForWork"]
 					return TRUE
 				}
@@ -1213,7 +1219,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		if ${Me.StationID} != ${EVE.Agent[${agentIndex}].StationID}
 		{
 			Move:Bookmark[${EVE.Agent[${agentIndex}].StationID}]
-			This:InsertState["InteractAgent", 1500, ${agentIndex}, ${Action}]
+			This:InsertState["InteractAgent", 1500, ${Action}]
 			This:InsertState["Traveling"]
 			return TRUE
 		}
