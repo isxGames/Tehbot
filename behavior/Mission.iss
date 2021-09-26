@@ -915,7 +915,8 @@ objectdef obj_Mission inherits obj_StateQueue
 				Ship.ModuleList_TargetPainter:Activate[${currentTarget}]
 				Ship.ModuleList_TargetPainter:DeactivateNotOn[${currentTarget}]
 			}
-			if ${Entity[${currentTarget}].Distance} <= ${Ship.ModuleList_StasisGrap.Range}
+			; 'Effectiveness Falloff' is not read by ISXEVE, but 20km is a generally reasonable range to activate the module
+			if ${Entity[${currentTarget}].Distance} <= ${Math.Calc[${Ship.ModuleList_StasisGrap.Range} + 20000]} 
 			{
 				Ship.ModuleList_StasisGrap:Activate[${currentTarget}]
 				Ship.ModuleList_StasisGrap:DeactivateNotOn[${currentTarget}]
