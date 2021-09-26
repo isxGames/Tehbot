@@ -70,7 +70,7 @@ objectdef obj_Mission inherits obj_StateQueue
 	variable set InvalidMissions
 
 	variable bool reload = TRUE
-	variable collection:int FWStatus
+	variable bool loadingFallBackDrones
 	variable bool halt = FALSE
 
 	variable obj_TargetList NPC
@@ -403,6 +403,7 @@ objectdef obj_Mission inherits obj_StateQueue
 							UI:Update["Mission", " ${secondaryAmmo}", "o"]
 						reload:Set[FALSE]
 						This:InsertState["CheckForWork"]
+						loadingFallBackDrones:Set[FALSE]
 						This:InsertState["ReloadAmmoAndDrones"]
 						This:InsertState["PrepHangars"]
 						return TRUE
@@ -1518,8 +1519,8 @@ objectdef obj_Mission inherits obj_StateQueue
 							EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:MakeActive
 							return FALSE
 						}
-
-						if !${itemIterator.Value.Name.Equal[${preferredDroneType}]}
+						if !${itemIterator.Value.Name.Equal[${preferredDroneType}]} && \
+							(!${itemIterator.Value.Name.Equal[${fallbackDroneType}]} || !${loadingFallBackDrones})
 						{
 							itemIterator.Value:MoveTo[MyStationHangar, Hangar, ${itemIterator.Value.Quantity}]
 							return FALSE
@@ -1722,6 +1723,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		; Out of preferred type of drones, load fallback(configured) type
 		if ${droneAmountToLoad} > 0 && ${fallbackDroneType.NotNULLOrEmpty}
 		{
+			loadingFallBackDrones:Set[TRUE]
 			items:GetIterator[itemIterator]
 			if ${itemIterator:First(exists)}
 			{
