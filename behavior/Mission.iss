@@ -1146,11 +1146,16 @@ objectdef obj_Mission inherits obj_StateQueue
 	{
 		if ${Me.InSpace}
 		{
-			DroneControl:Recall
 			if ${Ship.ModuleList_Siege.ActiveCount}
 			{
 				; UI:Update["Mission", "Deactivate siege module due to mission complete"]
 				Ship.ModuleList_Siege:Deactivate
+			}
+
+			if ${DroneControl.ActiveDrones.Used} > 0
+			{
+				DroneControl:Recall
+				return FALSE
 			}
 		}
 
