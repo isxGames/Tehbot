@@ -203,10 +203,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 	member:bool CheckForWork()
 	{
-		if ${agentIndex} == 0
-		{
-			agentIndex:Set[${EVE.Agent[${Config.Agent}].Index}]
-		}
+		agentIndex:Set[${EVE.Agent[${Config.Agent}].Index}]
 
 		variable index:agentmission missions
 		variable iterator missionIterator
