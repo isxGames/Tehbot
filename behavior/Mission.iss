@@ -70,7 +70,7 @@ objectdef obj_Mission inherits obj_StateQueue
 	variable set InvalidMissions
 
 	variable bool reload = TRUE
-	variable bool loadingFallBackDrones
+	variable bool isLoadingFallbackDrones
 	variable bool halt = FALSE
 
 	variable obj_TargetList NPC
@@ -400,7 +400,7 @@ objectdef obj_Mission inherits obj_StateQueue
 							UI:Update["Mission", " ${secondaryAmmo}", "o"]
 						reload:Set[FALSE]
 						This:InsertState["CheckForWork"]
-						loadingFallBackDrones:Set[FALSE]
+						isLoadingFallbackDrones:Set[FALSE]
 						This:InsertState["ReloadAmmoAndDrones"]
 						This:InsertState["PrepHangars"]
 						return TRUE
@@ -650,7 +650,9 @@ objectdef obj_Mission inherits obj_StateQueue
 							return TRUE
 						}
 						if ${Ship.ModuleList_TractorBeams.Count} && \
-						   (${Entity[${currentLootContainer}].GroupID} == GROUP_WRECK || ${Entity[${currentLootContainer}].GroupID} == GROUP_CARGOCONTAINER)
+							${Entity[${currentLootContainer}].Distance} < ${Ship.ModuleList_TractorBeams.Range} && \
+							${Entity[${currentLootContainer}].Distance} < ${MyShip.MaxTargetRange} && \
+							(${Entity[${currentLootContainer}].GroupID} == GROUP_WRECK || ${Entity[${currentLootContainer}].GroupID} == GROUP_CARGOCONTAINER)
 						{
 							if !${Entity[${currentLootContainer}].IsLockedTarget}
 							{
@@ -980,7 +982,9 @@ objectdef obj_Mission inherits obj_StateQueue
 				}
 				Entity[${missionAttackTarget}]:Approach
 			}
-			if !${Entity[${missionAttackTarget}].IsLockedTarget} && !${Entity[${missionAttackTarget}].BeingTargeted}
+
+			if !${Entity[${missionAttackTarget}].IsLockedTarget} && !${Entity[${missionAttackTarget}].BeingTargeted} && \
+				${Entity[${missionAttackTarget}].Distance} < ${MyShip.MaxTargetRange}
 			{
 				UI:Update["Mission", "Locking Mission Target", "g"]
 				UI:Update["Mission", " ${Entity[${missionAttackTarget}].Name}", "o"]
@@ -1522,7 +1526,7 @@ objectdef obj_Mission inherits obj_StateQueue
 							return FALSE
 						}
 						if !${itemIterator.Value.Name.Equal[${preferredDroneType}]} && \
-							(!${itemIterator.Value.Name.Equal[${fallbackDroneType}]} || !${loadingFallBackDrones})
+							(!${itemIterator.Value.Name.Equal[${fallbackDroneType}]} || !${isLoadingFallbackDrones})
 						{
 							itemIterator.Value:MoveTo[MyStationHangar, Hangar, ${itemIterator.Value.Quantity}]
 							return FALSE
@@ -1725,7 +1729,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		; Out of preferred type of drones, load fallback(configured) type
 		if ${droneAmountToLoad} > 0 && ${fallbackDroneType.NotNULLOrEmpty}
 		{
-			loadingFallBackDrones:Set[TRUE]
+			isLoadingFallbackDrones:Set[TRUE]
 			items:GetIterator[itemIterator]
 			if ${itemIterator:First(exists)}
 			{
