@@ -83,22 +83,6 @@ objectdef obj_Salvage inherits obj_StateQueue
 		}
 
 		Wrecks:AddQueryString["(Group = \"Wreck\" || (Group = \"Cargo Container\")) ${canLoot} ${lootYellow} && !IsMoribund ${Size}"]
-		Wrecks:RequestUpdate
-	}
-
-	member:bool Updated()
-	{
-		return ${Wrecks.Updated}
-	}
-
-	member:bool Salvage()
-	{
-		if !${Client.InSpace} || ${Me.ToEntity.Mode} == 3
-		{
-			return FALSE
-		}
-
-		variable iterator wreckIterator
 		variable int maxLockTarget = ${MyShip.MaxLockedTargets}
 
 		if ${Me.MaxLockedTargets} < ${MyShip.MaxLockedTargets}
@@ -122,7 +106,22 @@ objectdef obj_Salvage inherits obj_StateQueue
 		Wrecks.LockOutOfRange:Set[FALSE]
 		Wrecks.AutoLock:Set[TRUE]
 		Wrecks:RequestUpdate
+	}
 
+	member:bool Updated()
+	{
+		return ${Wrecks.Updated}
+	}
+
+	member:bool Salvage()
+	{
+		if !${Client.InSpace} || ${Me.ToEntity.Mode} == 3
+		{
+			return FALSE
+		}
+
+		variable iterator wreckIterator
+		Wrecks:RequestUpdate
 		Wrecks.LockedTargetList:GetIterator[wreckIterator]
 		if ${wreckIterator:First(exists)}
 		{
@@ -193,7 +192,6 @@ objectdef obj_Salvage inherits obj_StateQueue
 		{
 			This.IsBusy:Set[FALSE]
 			Busy:UnsetBusy["Salvage"]
-			Wrecks.AutoLock:Set[FALSE]
 			This:UpdateWreckQuery
 			This:QueueState["Updated"]
 			This:QueueState["Salvage"]
