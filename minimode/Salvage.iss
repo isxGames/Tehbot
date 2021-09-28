@@ -99,9 +99,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 		}
 
 		variable iterator wreckIterator
-		; variable queue:int LootRangeAndTractored
 		variable int maxLockTarget = ${MyShip.MaxLockedTargets}
-		; variable int ClosestTractorKey
 
 		if ${Me.MaxLockedTargets} < ${MyShip.MaxLockedTargets}
 		{
@@ -119,7 +117,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 			maxLockRange:Set[${MyShip.MaxTargetRange}]
 		}
 
-		Wrecks.maxLockRange:Set[${maxLockRange}]
+		Wrecks.MaxRange:Set[${maxLockRange}]
 		Wrecks.MinLockCount:Set[${maxLockTarget}]
 		Wrecks.LockOutOfRange:Set[FALSE]
 		Wrecks.AutoLock:Set[TRUE]
