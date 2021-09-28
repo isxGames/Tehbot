@@ -73,9 +73,9 @@ objectdef obj_Mission inherits obj_StateQueue
 	variable bool isLoadingFallbackDrones
 	variable bool halt = FALSE
 
-	variable obj_TargetList NPC
-	variable obj_TargetList ActiveNPC
-	variable obj_TargetList Wrecks
+	variable obj_TargetList NPCs
+	variable obj_TargetList ActiveNPCs
+	variable obj_TargetList Lootables
 
 	variable obj_Configuration_Mission Config
 	variable obj_MissionUI LocalUI
@@ -93,9 +93,9 @@ objectdef obj_Mission inherits obj_StateQueue
 		LavishScript:RegisterEvent[Tehbot_ScheduleResume]
 		Event[Tehbot_ScheduleResume]:AttachAtom[This:ScheduleResume]
 
-		NPC:AddAllNPCs
-		ActiveNPC:AddTargetingMe
-		Wrecks:AddQueryString["(GroupID = GROUP_WRECK || GroupID = GROUP_CARGOCONTAINER) && !IsMoribund"]
+		NPCs:AddAllNPCs
+		ActiveNPCs:AddTargetingMe
+		Lootables:AddQueryString["(GroupID = GROUP_WRECK || GroupID = GROUP_CARGOCONTAINER) && !IsMoribund"]
 	}
 
 	method ScheduleHalt()
@@ -152,7 +152,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 	member:bool UpdateTargets()
 	{
-		NPC:RequestUpdate
+		NPCs:RequestUpdate
 		return TRUE
 	}
 
@@ -444,7 +444,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		variable string groups = ""
 		variable string seperator = ""
 
-		ActiveNPC:ClearQueryString
+		ActiveNPCs:ClearQueryString
 
 		variable int range = ${Math.Calc[${MyShip.MaxTargetRange} * .95]}
 
@@ -511,8 +511,8 @@ objectdef obj_Mission inherits obj_StateQueue
 		}
 		while ${attackerIterator:Next(exists)}
 
-		ActiveNPC:AddQueryString["IsNPC && !IsMoribund && (${groups})"]
-		ActiveNPC:AddQueryString["IsNPC && !IsMoribund && IsWarpScramblingMe"]
+		ActiveNPCs:AddQueryString["IsNPC && !IsMoribund && (${groups})"]
+		ActiveNPCs:AddQueryString["IsNPC && !IsMoribund && IsWarpScramblingMe"]
 
 		; Add potential jammers.
 		seperator:Set[""]
@@ -527,7 +527,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			}
 			while ${groupIterator:Next(exists)}
 		}
-		ActiveNPC:AddQueryString["IsNPC && IsTargetingMe && !IsMoribund && (${groups})"]
+		ActiveNPCs:AddQueryString["IsNPC && IsTargetingMe && !IsMoribund && (${groups})"]
 
 		seperator:Set[""]
 		groups:Set[""]
@@ -541,7 +541,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			}
 			while ${groupIterator:Next(exists)}
 		}
-		ActiveNPC:AddQueryString["IsNPC && IsTargetingMe && !IsMoribund && (${groups})"]
+		ActiveNPCs:AddQueryString["IsNPC && IsTargetingMe && !IsMoribund && (${groups})"]
 
 		seperator:Set[""]
 		groups:Set[""]
@@ -555,7 +555,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			}
 			while ${groupIterator:Next(exists)}
 		}
-		ActiveNPC:AddQueryString["IsNPC && IsTargetingMe && !IsMoribund && (${groups})"]
+		ActiveNPCs:AddQueryString["IsNPC && IsTargetingMe && !IsMoribund && (${groups})"]
 
 		NPCData.BaseRef:GetSetIterator[classIterator]
 		if ${classIterator:First(exists)}
@@ -574,12 +574,12 @@ objectdef obj_Mission inherits obj_StateQueue
 					}
 					while ${groupIterator:Next(exists)}
 				}
-				ActiveNPC:AddQueryString["IsNPC && IsTargetingMe && !IsMoribund && (${groups})"]
+				ActiveNPCs:AddQueryString["IsNPC && IsTargetingMe && !IsMoribund && (${groups})"]
 			}
 			while ${classIterator:Next(exists)}
 		}
 
-		ActiveNPC:AddTargetingMe
+		ActiveNPCs:AddTargetingMe
 	}
 
 	variable bool looted = FALSE
@@ -592,9 +592,9 @@ objectdef obj_Mission inherits obj_StateQueue
 	{
 		variable iterator itemIterator
 		This:BuildActiveNPC
-		Wrecks:RequestUpdate
-		ActiveNPC:RequestUpdate
-		NPC:RequestUpdate
+		Lootables:RequestUpdate
+		ActiveNPCs:RequestUpdate
+		NPCs:RequestUpdate
 		Ship.ModuleList_ActiveResists:Activate
 		variable index:bookmark BookmarkIndex
 
@@ -678,7 +678,7 @@ objectdef obj_Mission inherits obj_StateQueue
 						}
 						notDone:Set[TRUE]
 					}
-					elseif !${NPC.TargetList.Used}
+					elseif !${NPCs.TargetList.Used}
 					{
 						variable index:item items
 						if !${EVEWindow[Inventory].ChildWindow[${currentLootContainer}](exists)}
@@ -774,11 +774,11 @@ objectdef obj_Mission inherits obj_StateQueue
 			MaxTarget:Set[${Me.MaxLockedTargets}]
 		MaxTarget:Dec[2]
 
-		ActiveNPC.MinLockCount:Set[${MaxTarget}]
-		ActiveNPC.AutoLock:Set[TRUE]
+		ActiveNPCs.MinLockCount:Set[${MaxTarget}]
+		ActiveNPCs.AutoLock:Set[TRUE]
 
-		; ActiveNPC:RequestUpdate
-		; echo list is ${ActiveNPC.LockedTargetList.Used}
+		; ActiveNPCs:RequestUpdate
+		; echo list is ${ActiveNPCs.LockedTargetList.Used}
 		; finalized target not locked.
 		if !${Entity[${currentTarget}]} || ${Entity[${currentTarget}].IsMoribund} || !(${Entity[${currentTarget}].IsLockedTarget} || ${Entity[${currentTarget}].BeingTargeted}) || (${maxAttackTime} > 0 && ${LavishScript.RunningTime} > ${maxAttackTime})
 		{
@@ -820,10 +820,10 @@ objectdef obj_Mission inherits obj_StateQueue
 				}
 			}
 
-			if !${finalized} && ${Ship.IsHardToDealWithTarget[${currentTarget}]} && ${ActiveNPC.LockedTargetList.Used}
+			if !${finalized} && ${Ship.IsHardToDealWithTarget[${currentTarget}]} && ${ActiveNPCs.LockedTargetList.Used}
 			{
 				; Switch to easier target
-				ActiveNPC.LockedTargetList:GetIterator[lockedTargetIterator]
+				ActiveNPCs.LockedTargetList:GetIterator[lockedTargetIterator]
 				do
 				{
 					if !${Ship.IsHardToDealWithTarget[${lockedTargetIterator.Value}]} && \
@@ -837,7 +837,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				while ${lockedTargetIterator:Next(exists)}
 			}
 		}
-		elseif ${ActiveNPC.LockedTargetList.Used}
+		elseif ${ActiveNPCs.LockedTargetList.Used}
 		{
 			; Need to re-pick from locked target
 			if ${Ship.ActivateJammerList.Used}
@@ -861,7 +861,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				; Priortize the closest target which is not hard to deal with to
 				; reduce the frequency of switching ammo.
 				variable int64 HardToDealWithTarget = 0
-				ActiveNPC.LockedTargetList:GetIterator[lockedTargetIterator]
+				ActiveNPCs.LockedTargetList:GetIterator[lockedTargetIterator]
 				do
 				{
 					if ${Ship.IsHardToDealWithTarget[${lockedTargetIterator.Value}]}
@@ -889,8 +889,8 @@ objectdef obj_Mission inherits obj_StateQueue
 		}
 
 		; Nothing locked
-		if (${currentTarget} == 0 || ${currentTarget} == ${ActiveNPC.TargetList.Get[1].ID}) && \
-		   ${ActiveNPC.TargetList.Get[1].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * .95]} && \
+		if (${currentTarget} == 0 || ${currentTarget} == ${ActiveNPCs.TargetList.Get[1].ID}) && \
+		   ${ActiveNPCs.TargetList.Get[1].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * .95]} && \
 		   ${MyShip.ToEntity.Mode} != 1
 		{
 			if ${Ship.ModuleList_Siege.ActiveCount}
@@ -898,8 +898,8 @@ objectdef obj_Mission inherits obj_StateQueue
 				; UI:Update["Mission", "Deactivate siege module due to no target"]
 				Ship.ModuleList_Siege:Deactivate
 			}
-			UI:Update["Mission", "Approaching distanced target: \ar${ActiveNPC.TargetList.Get[1].Name}", "g"]
-			ActiveNPC.TargetList.Get[1]:Approach
+			UI:Update["Mission", "Approaching distanced target: \ar${ActiveNPCs.TargetList.Get[1].Name}", "g"]
+			ActiveNPCs.TargetList.Get[1]:Approach
 			This:InsertState["PerformMission"]
 			return TRUE
 		}
@@ -934,7 +934,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			}
 		}
 
-		if ${ActiveNPC.TargetList.Used} || ${nextwaitcomplete} == 0
+		if ${ActiveNPCs.TargetList.Used} || ${nextwaitcomplete} == 0
 		{
 			This:InsertState["PerformMission", 500, ${Math.Calc[${LavishScript.RunningTime} + 10000]}]
 			return TRUE
@@ -943,25 +943,25 @@ objectdef obj_Mission inherits obj_StateQueue
 		if ${LavishScript.RunningTime} < ${nextwaitcomplete}
 			return FALSE
 
-		NPC.MinLockCount:Set[1]
-		NPC.AutoLock:Set[TRUE]
+		NPCs.MinLockCount:Set[1]
+		NPCs.AutoLock:Set[TRUE]
 
-		if ${NPC.TargetList.Used}
+		if ${NPCs.TargetList.Used}
 		{
-			if ${NPC.TargetList.Get[1].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * .95]} && ${MyShip.ToEntity.Mode} != 1
+			if ${NPCs.TargetList.Get[1].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * .95]} && ${MyShip.ToEntity.Mode} != 1
 			{
 				if ${Ship.ModuleList_Siege.ActiveCount}
 				{
 					; UI:Update["Mission", "Deactivate siege module due to approaching"]
 					Ship.ModuleList_Siege:Deactivate
 				}
-				NPC.TargetList.Get[1]:Approach
+				NPCs.TargetList.Get[1]:Approach
 			}
 
 			if ${currentTarget} == 0 || ${Entity[${currentTarget}].IsMoribund} || !${Entity[${currentTarget}]}
 			{
-				if ${NPC.LockedTargetList.Used}
-					currentTarget:Set[${NPC.LockedTargetList.Get[1]}]
+				if ${NPCs.LockedTargetList.Used}
+					currentTarget:Set[${NPCs.LockedTargetList.Get[1]}]
 				else
 					currentTarget:Set[0]
 			}
@@ -1072,7 +1072,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				Ship.ModuleList_Siege:Deactivate
 			}
 
-			if ${Wrecks.TargetList.Used} && ${Config.SalvagePrefix.NotNULLOrEmpty}
+			if ${Lootables.TargetList.Used} && ${Config.SalvagePrefix.NotNULLOrEmpty}
 			{
 				EVE:GetBookmarks[BookmarkIndex]
 				BookmarkIndex:RemoveByQuery[${LavishScript.CreateQuery[SolarSystemID == ${Me.SolarSystemID}]}, FALSE]
@@ -1080,7 +1080,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				BookmarkIndex:Collapse
 
 				if !${BookmarkIndex.Used}
-					Wrecks.TargetList.Get[1]:CreateBookmark["${Config.SalvagePrefix} ${Config.Agent} ${Me.Name} ${EVETime.Time.Left[5]}", "", "Corporation Locations", 1]
+					Lootables.TargetList.Get[1]:CreateBookmark["${Config.SalvagePrefix} ${Config.Agent} ${Me.Name} ${EVETime.Time.Left[5]}", "", "Corporation Locations", 1]
 			}
 
 			currentTarget:Set[0]
@@ -1093,7 +1093,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			return TRUE
 		}
 
-		if ${Wrecks.TargetList.Used} && ${Config.SalvagePrefix.NotNULLOrEmpty}
+		if ${Lootables.TargetList.Used} && ${Config.SalvagePrefix.NotNULLOrEmpty}
 		{
 			EVE:GetBookmarks[BookmarkIndex]
 			BookmarkIndex:RemoveByQuery[${LavishScript.CreateQuery[SolarSystemID == ${Me.SolarSystemID}]}, FALSE]
@@ -1101,7 +1101,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			BookmarkIndex:Collapse
 
 			if !${BookmarkIndex.Used}
-				Wrecks.TargetList.Get[1]:CreateBookmark["${Config.SalvagePrefix} ${Config.Agent} ${EVETime.Time.Left[5]}", "", "Corporation Locations", 1]
+				Lootables.TargetList.Get[1]:CreateBookmark["${Config.SalvagePrefix} ${Config.Agent} ${EVETime.Time.Left[5]}", "", "Corporation Locations", 1]
 		}
 
 		currentTarget:Set[0]
