@@ -98,93 +98,92 @@ objectdef obj_Salvage inherits obj_StateQueue
 			return FALSE
 		}
 
-		variable iterator TargetIterator
-		variable queue:int LootRangeAndTractored
-		variable int MaxTarget = ${MyShip.MaxLockedTargets}
-		variable int ClosestTractorKey
-		variable bool ReactivateTractor = FALSE
+		variable iterator wreckIterator
+		; variable queue:int LootRangeAndTractored
+		variable int maxLockTarget = ${MyShip.MaxLockedTargets}
+		; variable int ClosestTractorKey
 
 		if ${Me.MaxLockedTargets} < ${MyShip.MaxLockedTargets}
 		{
-			MaxTarget:Set[${Me.MaxLockedTargets}]
+			maxLockTarget:Set[${Me.MaxLockedTargets}]
 		}
 
-		if ${Config.LockCount} < ${MaxTarget}
+		if ${Config.LockCount} < ${maxLockTarget}
 		{
-			MaxTarget:Set[${Config.LockCount}]
+			maxLockTarget:Set[${Config.LockCount}]
 		}
 
-		variable float MaxRange = ${Ship.ModuleList_TractorBeams.Range}
-		if ${MaxRange} > ${MyShip.MaxTargetRange}
+		variable float maxLockRange = ${Ship.ModuleList_TractorBeams.Range}
+		if ${maxLockRange} > ${MyShip.MaxTargetRange}
 		{
-			MaxRange:Set[${MyShip.MaxTargetRange}]
+			maxLockRange:Set[${MyShip.MaxTargetRange}]
 		}
 
-		Wrecks.MaxRange:Set[${MaxRange}]
-		Wrecks.MinLockCount:Set[${MaxTarget}]
+		Wrecks.maxLockRange:Set[${maxLockRange}]
+		Wrecks.MinLockCount:Set[${maxLockTarget}]
 		Wrecks.LockOutOfRange:Set[FALSE]
 		Wrecks.AutoLock:Set[TRUE]
 		Wrecks:RequestUpdate
 
-		Wrecks.LockedTargetList:GetIterator[TargetIterator]
-		if ${TargetIterator:First(exists)}
+		Wrecks.LockedTargetList:GetIterator[wreckIterator]
+		if ${wreckIterator:First(exists)}
 		{
 			This.IsBusy:Set[TRUE]
 			Busy:SetBusy["Salvage"]
 			do
 			{
-				if ${TargetIterator.Value.ID(exists)} && ${TargetIterator.Value.IsLockedTarget}
+				if ${wreckIterator.Value.ID(exists)} && ${wreckIterator.Value.IsLockedTarget}
 				{
 					; Abandon targets of no value
-					if (!${Config.SalvageYellow} && !${TargetIterator.Value.HaveLootRights}) || \
-						((${TargetIterator.Value.IsWreckEmpty} || ${TargetIterator.Value.IsWreckViewed}) && ${Ship.ModuleList_Salvagers.Count} == 0)
+					if (!${Config.SalvageYellow} && !${wreckIterator.Value.HaveLootRights}) || \
+						((${wreckIterator.Value.IsWreckEmpty} || ${wreckIterator.Value.IsWreckViewed}) && ${Ship.ModuleList_Salvagers.Count} == 0)
 					{
-						TargetIterator.Value:UnlockTarget
+						wreckIterator.Value:UnlockTarget
 						return FALSE
 					}
 
 					; Salvage
-					if !${Ship.ModuleList_Salvagers.IsActiveOn[${TargetIterator.Value.ID}]} && \
-						${TargetIterator.Value.Distance} < ${Ship.ModuleList_Salvagers.Range} && \
+					if !${Ship.ModuleList_Salvagers.IsActiveOn[${wreckIterator.Value.ID}]} && \
+						${wreckIterator.Value.Distance} < ${Ship.ModuleList_Salvagers.Range} && \
 						${Ship.ModuleList_Salvagers.InactiveCount} > 0 && \
-						${TargetIterator.Value.GroupID} == GROUP_WRECK
+						${wreckIterator.Value.GroupID} == GROUP_WRECK
 					{
-						if ${TargetIterator.Value.IsWreckEmpty} && ${Ship.ModuleList_TractorBeams.IsActiveOn[${TargetIterator.Value.ID}]}
+						if ${wreckIterator.Value.IsWreckEmpty} && ${Ship.ModuleList_TractorBeams.IsActiveOn[${wreckIterator.Value.ID}]}
 						{
-							Ship.ModuleList_TractorBeams:DeactivateOn[${TargetIterator.Value.ID}]
+							Ship.ModuleList_TractorBeams:DeactivateOn[${wreckIterator.Value.ID}]
 						}
 
-						UI:Update["Salvage", "Activating salvager - \ap${TargetIterator.Value.Name}"]
-						Ship.ModuleList_Salvagers:Activate[${TargetIterator.Value.ID}]
+						UI:Update["Salvage", "Activating salvager - \ap${wreckIterator.Value.Name}"]
+						Ship.ModuleList_Salvagers:Activate[${wreckIterator.Value.ID}]
 						return FALSE
 					}
 
 					; Tractor beam
-					if ${TargetIterator.Value.Distance} >= ${Ship.ModuleList_TractorBeams.Range}
+					if ${wreckIterator.Value.Distance} >= ${Ship.ModuleList_TractorBeams.Range}
 					{
-						TargetIterator.Value:UnlockTarget
+						wreckIterator.Value:UnlockTarget
 						return FALSE
 					}
-					elseif ${TargetIterator.Value.Distance} < ${Ship.ModuleList_TractorBeams.Range} && \
-							${TargetIterator.Value.Distance} >= 2500
+					elseif ${wreckIterator.Value.Distance} < ${Ship.ModuleList_TractorBeams.Range} && \
+							${wreckIterator.Value.Distance} >= 2500
 					{
-						if !${Ship.ModuleList_TractorBeams.IsActiveOn[${TargetIterator.Value.ID}]} && \
+						if !${Ship.ModuleList_TractorBeams.IsActiveOn[${wreckIterator.Value.ID}]} && \
 						   ${Ship.ModuleList_TractorBeams.InactiveCount} > 0
 						{
-							UI:Update["Salvage", "Activating tractor beam - \ap${TargetIterator.Value.Name}"]
-							Ship.ModuleList_TractorBeams:Activate[${TargetIterator.Value.ID}]
+							UI:Update["Salvage", "Activating tractor beam - \ap${wreckIterator.Value.Name}"]
+							Ship.ModuleList_TractorBeams:Activate[${wreckIterator.Value.ID}]
 							return FALSE
 						}
 					}
-					elseif ${Ship.ModuleList_TractorBeams.IsActiveOn[${TargetIterator.Value.ID}]}
+					elseif ${Ship.ModuleList_TractorBeams.IsActiveOn[${wreckIterator.Value.ID}]}
 					; Within 2500
 					{
-						Ship.ModuleList_TractorBeams:DeactivateOn[${TargetIterator.Value.ID}]
+						Ship.ModuleList_TractorBeams:DeactivateOn[${wreckIterator.Value.ID}]
 						return FALSE
 					}
 				}
 			}
-			while ${TargetIterator:Next(exists)}
+			while ${wreckIterator:Next(exists)}
 		}
 		elseif ${Wrecks.TargetList.Used}
 		{
@@ -226,9 +225,9 @@ objectdef obj_LootCans inherits obj_StateQueue
 
 	member:bool Loot()
 	{
-		variable iterator TargetIterator
-		variable index:item TargetCargo
-		variable iterator CargoIterator
+		variable iterator wreckIterator
+		variable index:item cargo
+		variable iterator cargoIterator
 
 		if !${Client.InSpace} || ${Me.ToEntity.Mode} == 3
 		{
@@ -242,52 +241,51 @@ objectdef obj_LootCans inherits obj_StateQueue
 		}
 
 		Salvage.Wrecks:RequestUpdate
-		Salvage.Wrecks.TargetList:GetIterator[TargetIterator]
-		if ${TargetIterator:First(exists)}
+		Salvage.Wrecks.TargetList:GetIterator[wreckIterator]
+		if ${wreckIterator:First(exists)}
 		{
 			do
 			{
-				if !${TargetIterator.Value(exists)} || \
-					${TargetIterator.Value.Distance} >= 2500 || \
-					${TargetIterator.Value.IsWreckEmpty} || \
-					${TargetIterator.Value.IsWreckViewed}
+				if !${wreckIterator.Value(exists)} || \
+					${wreckIterator.Value.Distance} >= 2500 || \
+					${wreckIterator.Value.IsWreckEmpty} || \
+					${wreckIterator.Value.IsWreckViewed}
 				{
 					continue
 				}
 
-
 				; BUG of ISXEVE: Finding windows, getting items and looting all are not working for Wrecks, only for cargos.
-				if !${EVEWindow[Inventory].ChildWindow[${TargetIterator.Value}](exists)}
+				if !${EVEWindow[Inventory].ChildWindow[${wreckIterator.Value}](exists)}
 				{
-					UI:Update["Salvage", "Opening - \ap${TargetIterator.Value.Name}"]
-					TargetIterator.Value:Open
+					UI:Update["Salvage", "Opening - \ap${wreckIterator.Value.Name}"]
+					wreckIterator.Value:Open
 					return FALSE
 				}
 
-				TargetIterator.Value:GetCargo[TargetCargo]
-				TargetCargo:GetIterator[CargoIterator]
-				if ${CargoIterator:First(exists)}
+				wreckIterator.Value:GetCargo[cargo]
+				cargo:GetIterator[cargoIterator]
+				if ${cargoIterator:First(exists)}
 				{
 					do
 					{
-						if ${CargoIterator.Value.IsContraband}
+						if ${cargoIterator.Value.IsContraband}
 						{
-							Salvage.Wrecks:AddTargetException[${TargetIterator.Value.ID}]
+							Salvage.Wrecks:AddTargetException[${wreckIterator.Value.ID}]
 							return FALSE
 						}
 					}
-					while ${CargoIterator:Next(exists)}
+					while ${cargoIterator:Next(exists)}
 				}
 				EVEWindow[Inventory]:LootAll
-				if ${TargetIterator.Value.GroupID} == GROUP_CARGOCONTAINER || ${Ship.ModuleList_Salvagers.Count} == 0
+				if ${wreckIterator.Value.GroupID} == GROUP_CARGOCONTAINER || ${Ship.ModuleList_Salvagers.Count} == 0
 				{
-					TargetIterator.Value:UnlockTarget
+					wreckIterator.Value:UnlockTarget
 				}
 				This:InsertState["Loot"]
 				This:InsertState["Stack"]
 				return TRUE
 			}
-			while ${TargetIterator:Next(exists)}
+			while ${wreckIterator:Next(exists)}
 		}
 		return FALSE
 	}
