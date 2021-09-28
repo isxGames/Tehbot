@@ -132,7 +132,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		if ${This.IsIdle}
 		{
 			UI:Update["obj_Mission", "Started", "g"]
-			This:QueueState["UpdateTargets"]
+			This:QueueState["UpdateNPCs"]
 			This:QueueState["ReportMissionConfigs"]
 			This:QueueState["Cleanup"]
 			This:QueueState["CheckForWork"]
@@ -150,7 +150,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		echo ${Config.Halt}
 	}
 
-	member:bool UpdateTargets()
+	member:bool UpdateNPCs()
 	{
 		NPCs:RequestUpdate
 		return TRUE
@@ -592,9 +592,9 @@ objectdef obj_Mission inherits obj_StateQueue
 	{
 		variable iterator itemIterator
 		This:BuildActiveNPC
-		Lootables:RequestUpdate
 		ActiveNPCs:RequestUpdate
 		NPCs:RequestUpdate
+		Lootables:RequestUpdate
 		Ship.ModuleList_ActiveResists:Activate
 		variable index:bookmark BookmarkIndex
 
@@ -943,7 +943,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		if ${LavishScript.RunningTime} < ${nextwaitcomplete}
 			return FALSE
 
-		NPCs.MinLockCount:Set[1]
+		NPCs.MinLockCount:Set[${MaxTarget}]
 		NPCs.AutoLock:Set[TRUE]
 
 		if ${NPCs.TargetList.Used}
