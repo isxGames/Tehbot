@@ -1,52 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ISUI>
-	<template name='Console.Font'>	
-		<Name>Terminal</Name>
-		<Size>8</Size>
+	<template name='Console.Font'>
+		<Name>Segoe</Name>
+		<Size>24</Size>
 		<Color>FFFFFFFF</Color>
-	</template>	
+	</template>
 
-	<template name='Button.Font'>	
+	<template name='Button.Font'>
 		<Name>Verdana</Name>
-		<Size>12</Size>
+		<Size>24</Size>
 		<Color>FF000000</Color>
 		<Bold />
-	</template>	
+	</template>
 
-	<template name='Gauge.Font'>	
+	<template name='Gauge.Font'>
 		<Name>Verdana</Name>
-		<Size>16</Size>
+		<Size>32</Size>
 		<Color>FFFF0000</Color>
 		<Bold />
-	</template>	
-	
-	<template name='TitleBar.Font'>	
-		<Name>Verdana</Name>
-		<Size>16</Size>
-		<Color>FFFFFFFF</Color>
-		<Bold />
-	</template>	
+	</template>
 
-	<template name='Checkbox.Font'>	
+	<template name='TitleBar.Font'>
 		<Name>Verdana</Name>
-		<Size>12</Size>
+		<Size>32</Size>
 		<Color>FFFFFFFF</Color>
 		<Bold />
-	</template>	
+	</template>
 
-	<template name='Text.Font'>	
+	<template name='Checkbox.Font'>
 		<Name>Verdana</Name>
-		<Size>12</Size>
+		<Size>24</Size>
 		<Color>FFFFFFFF</Color>
 		<Bold />
-	</template>	
-	
-	<template name='Tabcontrol.Font'>	
+	</template>
+
+	<template name='Text.Font'>
 		<Name>Verdana</Name>
-		<Size>12</Size>
+		<Size>24</Size>
 		<Color>FFFFFFFF</Color>
 		<Bold />
-	</template>	
+	</template>
+
+	<template name='Tabcontrol.Font'>
+		<Name>Verdana</Name>
+		<Size>24</Size>
+		<Color>FFFFFFFF</Color>
+		<Bold />
+	</template>
 
 	<window name='Tehbot'>
 		<Visible>1</Visible>
@@ -54,29 +54,29 @@
 		<Border>0</Border>
 		<X>200</X>
 		<Y>300</Y>
-		<Width>550</Width>
-		<Height>320</Height>
+		<Width>1100</Width>
+		<Height>640</Height>
 		<TitleBar>
 			<Width>100%</Width>
-			<Height>20</Height>
+			<Height>40</Height>
 			<Border>0</Border>
 			<BackgroundColor>FF888888</BackgroundColor>
 			<Children>
 				<Text name='Tehbot_TitleBar_Title'>
 					<Alignment>Center</Alignment>
 					<X>0</X>
-					<Y>3</Y>
+					<Y>6</Y>
 					<Width>100%</Width>
-					<Height>20</Height>
+					<Height>40</Height>
 					<Text>Tehbot</Text>
 				</Text>
 				<button	Name='Close'>
 					<Font template='Button.Font' />
 					<BackgroundColor>FF000000</BackgroundColor>
-					<X>r40</X>
+					<X>r80</X>
 					<Y>0</Y>
-					<Width>40</Width>
-					<Height>20</Height>
+					<Width>80</Width>
+					<Height>40</Height>
 					<Text>Close</Text>
 					<OnLeftClick>
 						endscript Tehbot
@@ -85,10 +85,10 @@
 				<button	Name='Hide'>
 					<Font template='Button.Font' />
 					<BackgroundColor>FF000000</BackgroundColor>
-					<X>r80</X>
+					<X>r160</X>
 					<Y>0</Y>
-					<Width>40</Width>
-					<Height>20</Height>
+					<Width>80</Width>
+					<Height>40</Height>
 					<Text>Hide</Text>
 					<OnLoad>
 						if ${Script[Tehbot].VariableScope.Config.Common.Hidden}
@@ -122,8 +122,8 @@
 					<BackgroundColor>FF000000</BackgroundColor>
 					<X>0</X>
 					<Y>0</Y>
-					<Width>40</Width>
-					<Height>20</Height>
+					<Width>80</Width>
+					<Height>40</Height>
 					<Text>Run</Text>
 					<OnLeftClick>
 						if ${Script[Tehbot].VariableScope.Tehbot.Paused}
@@ -151,7 +151,7 @@
 		<Children name="Tehbot_Children">
 			<TabControl	Name='TehbotTab'>
 				<X>0</X>
-				<Y>5</Y>
+				<Y>30</Y>
 				<Width>100%</Width>
 				<Height>100%</Height>
 				<Tabs>
@@ -167,7 +167,7 @@
 							<OnLoad>
 								This:SetLeftClickThru[TRUE]
 							</OnLoad>
-						 </frame>					
+						 </frame>
 						<console Name="StatusConsole">
 							<Font template='Console.Font' />
 							<BackgroundColor>FF000000</BackgroundColor>
@@ -177,6 +177,7 @@
 							<Height>90%</Height>
 						</console>
 						<combobox Name="Tehbot_Mode">
+							<Font template='Text.Font' />
 							<BackgroundColor>FF000000</BackgroundColor>
 							<X>1%</X>
 							<Y>92%</Y>
@@ -217,8 +218,8 @@
 						<Checkbox name='AutoStart'>
 							<X>75%</X>
 							<Y>92%</Y>
-							<Width>48%</Width> 
-							<Height>6%</Height> 
+							<Width>48%</Width>
+							<Height>6%</Height>
 							<Text>Start automatically</Text>
 							<OnLoad>
 								if ${Script[Tehbot].VariableScope.Config.Common.AutoStart}
@@ -244,13 +245,13 @@
 							<OnLoad>
 								This:SetLeftClickThru[TRUE]
 							</OnLoad>
-						</frame>					
+						</frame>
 
 						<Checkbox name='Disable3D'>
 							<X>1%</X>
 							<Y>50%</Y>
-							<Width>48%</Width> 
-							<Height>6%</Height> 
+							<Width>48%</Width>
+							<Height>6%</Height>
 							<Text>Disable 3D Rendering</Text>
 							<OnLoad>
 								if ${Script[Tehbot].VariableScope.Config.Common.Disable3D}
@@ -267,8 +268,8 @@
 						<Checkbox name='CloseChatInvites'>
 							<X>51%</X>
 							<Y>50%</Y>
-							<Width>48%</Width> 
-							<Height>6%</Height> 
+							<Width>48%</Width>
+							<Height>6%</Height>
 							<Text>Auto-close Chat Invites</Text>
 							<OnLoad>
 								if ${Script[Tehbot].VariableScope.Config.Common.CloseChatInvites}
@@ -285,8 +286,8 @@
 						<Checkbox name='DisableUI'>
 							<X>1%</X>
 							<Y>58%</Y>
-							<Width>48%</Width> 
-							<Height>6%</Height> 
+							<Width>48%</Width>
+							<Height>6%</Height>
 							<Text>Disable User Interface</Text>
 							<OnLoad>
 								if ${Script[Tehbot].VariableScope.Config.Common.DisableUI}
@@ -303,8 +304,8 @@
 						<Checkbox name='DisableTexture'>
 							<X>1%</X>
 							<Y>66%</Y>
-							<Width>48%</Width> 
-							<Height>6%</Height> 
+							<Width>48%</Width>
+							<Height>6%</Height>
 							<Text>Disable Texture Loading</Text>
 							<OnLoad>
 								if ${Script[Tehbot].VariableScope.Config.Common.DisableTexture}
@@ -318,8 +319,8 @@
 								This:SetZOrder[movetop]
 							</OnLeftClick>
 						</Checkbox>
-					</Tab>					
-					
+					</Tab>
+
 					<Tab Name='MiniMode'>
 						<frame name='MiniModeFillerFrame'>
 							<BackgroundColor>FF000000</BackgroundColor>
@@ -332,8 +333,8 @@
 							<OnLoad>
 								This:SetLeftClickThru[TRUE]
 							</OnLoad>
-						</frame>	
-						
+						</frame>
+
 						<Text name='MiniMode_Inactive_Title'>
 							<X>1%</X>
 							<Y>2%</Y>
@@ -343,6 +344,7 @@
 							<Text>Disabled MiniModes</Text>
 						</Text>
 						<Listbox name="MiniMode_Inactive">
+							<Font template='Text.Font' />
 							<X>1%</X>
 							<Y>6%</Y>
 							<Width>39%</Width>
@@ -354,7 +356,7 @@
 								}
 							</OnSelect>
 						</Listbox>
-						
+
 						<Text name='MiniMode_Active_Title'>
 							<X>60%</X>
 							<Y>2%</Y>
@@ -364,6 +366,7 @@
 							<Text>Enabled MiniModes</Text>
 						</Text>
 						<Listbox name="MiniMode_Active">
+							<Font template='Text.Font' />
 							<X>60%</X>
 							<Y>6%</Y>
 							<Width>39%</Width>
@@ -375,7 +378,7 @@
 								}
 							</OnSelect>
 						</Listbox>
-						
+
 						<Button name="MiniMode_Activate">
 							<Font template='Button.Font' />
 							<BackgroundColor>FF000000</BackgroundColor>
@@ -405,8 +408,8 @@
 								echo Active ${UIElement[MiniMode_Active@MiniMode@TehbotTab@Tehbot].SelectedItems} Inactive ${UIElement[MiniMode_Inactive@MiniMode@TehbotTab@Tehbot].SelectedItems}
 							</OnLeftClick>
 						</Button>
-						
-					
+
+
 						<Button name="MiniMode_Configure">
 							<Font template='Button.Font' />
 							<BackgroundColor>FF000000</BackgroundColor>
@@ -426,7 +429,7 @@
 								}
 							</OnLeftClick>
 						</Button>
-					</Tab>	
+					</Tab>
 					<Tab Name='Donate'>
 						<frame name='DonateFillerFrame'>
 							<BackgroundColor>FF000000</BackgroundColor>
@@ -439,15 +442,15 @@
 							<OnLoad>
 								This:SetLeftClickThru[TRUE]
 							</OnLoad>
-						</frame>	
-						
+						</frame>
+
 						<Text name='DonateTitle'>
 							<X>0%</X>
 							<Y>2%</Y>
 							<Width>100%</Width>
 							<Height>10%</Height>
 							<Font>
-								<Size>20</Size>
+								<Size>40</Size>
 							</Font>
 							<Alignment>Center</Alignment>
 							<Text>Consider Donating!</Text>
@@ -479,7 +482,7 @@
 								timedcommand 0 "OSExecute bitcoin:31vArgW2AwpKUkMkKMTj5UFmjCYLp6F1Ck?label=Tehbot%20Donations"
 							</OnLeftClick>
 						</Button>
-					</Tab>							
+					</Tab>
 				</Tabs>
 				<OnSelect>
 					Script[Tehbot].VariableScope.Config.Common:SetActiveTab[${This.SelectedTab.Name}]

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ISUI>
-	<template name='Information.Font'>	
-		<Name>Terminal</Name>
-		<Size>8</Size>
+	<template name='Information.Font'>
+		<Name>Segoe</Name>
+		<Size>24</Size>
 		<Color>FFFFFFFF</Color>
-	</template>	
+	</template>
 
 	<window name='Tehbot_Automate'>
 		<Visible>1</Visible>
@@ -12,11 +12,11 @@
 		<Border>0</Border>
 		<X>200</X>
 		<Y>300</Y>
-		<Width>800</Width>
-		<Height>600</Height>
+		<Width>1600</Width>
+		<Height>1200</Height>
 		<TitleBar>
 			<Width>100%</Width>
-			<Height>20</Height>
+			<Height>40</Height>
 			<Border>0</Border>
 			<BackgroundColor>FF000000</BackgroundColor>
 			<Children>
@@ -24,15 +24,15 @@
 					<X>0</X>
 					<Y>3</Y>
 					<Width>100%</Width>
-					<Height>20</Height>
+					<Height>40</Height>
 					<Alignment>Center</Alignment>
 					<Text>Automate Configuration</Text>
 				</Text>
 				<button	Name='Close'>
-					<X>r40</X>
+					<X>r80</X>
 					<Y>0</Y>
-					<Width>40</Width>
-					<Height>20</Height>
+					<Width>80</Width>
+					<Height>40</Height>
 					<Text>Close</Text>
 					<OnLeftClick>
 						Script[Tehbot].VariableScope.Automate.LocalUI:Stop
@@ -44,21 +44,21 @@
 		<Children name="Tehbot_Automate_Children">
 			<Frame name="Tehbot_Automate_Frame">
 				<X>0</X>
-				<Y>5</Y>
+				<Y>30</Y>
 				<Width>100%</Width>
 				<Height>100%</Height>
 				<BackgroundColor>FF000000</BackgroundColor>
 				<Border>1</Border>
 				<BorderColor>FFFFFFFF</BorderColor>
 				<Children name="Tehbot_Automate_Frame_Children">
-				
 
 
-					<Text name='AutoStartFrameTitle'> 
-						<X>1%</X> 
-						<Y>1%</Y> 
-						<Width>32%</Width> 
-						<Height>3%</Height> 
+
+					<Text name='AutoStartFrameTitle'>
+						<X>1%</X>
+						<Y>1%</Y>
+						<Width>32%</Width>
+						<Height>3%</Height>
 						<Text>AutoStart Configuration</Text>
 						<OnLoad>
 							This.Font:SetColor[FFFFFF00]
@@ -76,8 +76,8 @@
 							<Checkbox name='DelayLogin'>
 								<X>1%</X>
 								<Y>10%</Y>
-								<Width>30%</Width> 
-								<Height>20%</Height> 
+								<Width>30%</Width>
+								<Height>20%</Height>
 								<Text>Delay login until start time plus delta</Text>
 								<OnLoad>
 									if ${Script[Tehbot].VariableScope.Automate.Config.DelayLogin}
@@ -104,8 +104,8 @@
 							<Checkbox name='DelayLoginDelta'>
 								<X>30%</X>
 								<Y>10%</Y>
-								<Width>30%</Width> 
-								<Height>20%</Height> 
+								<Width>30%</Width>
+								<Height>20%</Height>
 								<Text>Only delay login by delta</Text>
 								<OnLoad>
 									if ${Script[Tehbot].VariableScope.Automate.Config.DelayLoginDelta}
@@ -137,12 +137,12 @@
 									}
 								</OnLeftClick>
 							</Checkbox>
-				
-							<Text name='obj_Automate_Hour_Label'> 
-								<X>1%</X> 
-								<Y>40%</Y> 
-								<Width>15%</Width> 
-								<Height>10%</Height> 
+
+							<Text name='obj_Automate_Hour_Label'>
+								<X>1%</X>
+								<Y>40%</Y>
+								<Width>15%</Width>
+								<Height>10%</Height>
 								<Alignment>Center</Alignment>
 								<Text>Start Hour</Text>
 								<OnLoad>
@@ -152,11 +152,12 @@
 									}
 								</OnLoad>
 							</Text>
-							<Textentry name='obj_Automate_Hour'> 
-								<X>1%</X> 
-								<Y>55%</Y> 
-								<Width>15%</Width> 
-								<Height>25%</Height> 
+							<Textentry name='obj_Automate_Hour'>
+								<Font template='Information.Font' />
+								<X>1%</X>
+								<Y>55%</Y>
+								<Width>15%</Width>
+								<Height>25%</Height>
 								<OnLoad>
 									This:SetText[${Script[Tehbot].VariableScope.Automate.Config.StartHour}]
 									if ${Script[Tehbot].VariableScope.Automate.Config.DelayLoginDelta}
@@ -174,11 +175,11 @@
 									UIElement[Information@InformationFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText[""]
 								</OnMouseExit>
 							</Textentry>
-							<Text name='obj_Automate_Minute_Label'> 
-								<X>17%</X> 
-								<Y>40%</Y> 
-								<Width>15%</Width> 
-								<Height>10%</Height> 
+							<Text name='obj_Automate_Minute_Label'>
+								<X>17%</X>
+								<Y>40%</Y>
+								<Width>15%</Width>
+								<Height>10%</Height>
 								<Alignment>Center</Alignment>
 								<Text>Start Minute</Text>
 								<OnLoad>
@@ -188,11 +189,12 @@
 									}
 								</OnLoad>
 							</Text>
-							<Textentry name='obj_Automate_Minute'> 
-								<X>17%</X> 
-								<Y>55%</Y> 
-								<Width>15%</Width> 
-								<Height>25%</Height> 
+							<Textentry name='obj_Automate_Minute'>
+								<Font template='Information.Font' />
+								<X>17%</X>
+								<Y>55%</Y>
+								<Width>15%</Width>
+								<Height>25%</Height>
 								<OnLoad>
 									This:SetText[${Script[Tehbot].VariableScope.Automate.Config.StartMinute}]
 									if ${Script[Tehbot].VariableScope.Automate.Config.DelayLoginDelta}
@@ -210,19 +212,20 @@
 									UIElement[Information@InformationFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText[""]
 								</OnMouseExit>
 							</Textentry>
-							<Text name='obj_Automate_Delta_Label'> 
-								<X>33%</X> 
-								<Y>40%</Y> 
-								<Width>15%</Width> 
-								<Height>10%</Height> 
+							<Text name='obj_Automate_Delta_Label'>
+								<X>33%</X>
+								<Y>40%</Y>
+								<Width>15%</Width>
+								<Height>10%</Height>
 								<Alignment>Center</Alignment>
 								<Text>Delta Minute</Text>
 							</Text>
-							<Textentry name='obj_Automate_Delta'> 
-								<X>33%</X> 
-								<Y>55%</Y> 
-								<Width>15%</Width> 
-								<Height>25%</Height> 
+							<Textentry name='obj_Automate_Delta'>
+								<Font template='Information.Font' />
+								<X>33%</X>
+								<Y>55%</Y>
+								<Width>15%</Width>
+								<Height>25%</Height>
 								<OnLoad>
 									This:SetText[${Script[Tehbot].VariableScope.Automate.Config.StartDelta}]
 								</OnLoad>
@@ -239,12 +242,12 @@
 
 						</Children>
 					</Frame>
-					
-					<Text name='LauncherFrameTitle'> 
-						<X>1%</X> 
-						<Y>19%</Y> 
-						<Width>32%</Width> 
-						<Height>3%</Height> 
+
+					<Text name='LauncherFrameTitle'>
+						<X>1%</X>
+						<Y>19%</Y>
+						<Width>32%</Width>
+						<Height>3%</Height>
 						<Text>Launcher Configuration</Text>
 						<OnLoad>
 							This.Font:SetColor[FFFFFF00]
@@ -262,8 +265,8 @@
 							<Checkbox name='Launch'>
 								<X>1%</X>
 								<Y>10%</Y>
-								<Width>30%</Width> 
-								<Height>20%</Height> 
+								<Width>30%</Width>
+								<Height>20%</Height>
 								<Text>Run the command below after login</Text>
 								<OnLoad>
 									if ${Script[Tehbot].VariableScope.Automate.Config.Launch}
@@ -285,12 +288,12 @@
 									}
 								</OnLeftClick>
 							</Checkbox>
-				
-							<Text name='obj_Automate_Launch_Label'> 
-								<X>1%</X> 
-								<Y>40%</Y> 
-								<Width>47%</Width> 
-								<Height>10%</Height> 
+
+							<Text name='obj_Automate_Launch_Label'>
+								<X>1%</X>
+								<Y>40%</Y>
+								<Width>47%</Width>
+								<Height>10%</Height>
 								<Alignment>Center</Alignment>
 								<Text>Command</Text>
 								<OnLoad>
@@ -300,11 +303,12 @@
 									}
 								</OnLoad>
 							</Text>
-							<Textentry name='obj_Automate_Launch'> 
-								<X>1%</X> 
-								<Y>55%</Y> 
-								<Width>47%</Width> 
-								<Height>25%</Height> 
+							<Textentry name='obj_Automate_Launch'>
+								<Font template='Information.Font' />
+								<X>1%</X>
+								<Y>55%</Y>
+								<Width>47%</Width>
+								<Height>25%</Height>
 								<OnLoad>
 									This:SetText[${Script[Tehbot].VariableScope.Automate.Config.LaunchCommand}]
 									if !${Script[Tehbot].VariableScope.Automate.Config.Launch}
@@ -325,12 +329,12 @@
 
 						</Children>
 					</Frame>
-					
-					<Text name='AutoLogoutFrameTitle'> 
-						<X>1%</X> 
-						<Y>37%</Y> 
-						<Width>32%</Width> 
-						<Height>4%</Height> 
+
+					<Text name='AutoLogoutFrameTitle'>
+						<X>1%</X>
+						<Y>37%</Y>
+						<Width>32%</Width>
+						<Height>4%</Height>
 						<Text>AutoLogout Configuration</Text>
 						<OnLoad>
 							This.Font:SetColor[FFFFFF00]
@@ -348,8 +352,8 @@
 							<Checkbox name='ScheduleLogout'>
 								<X>1%</X>
 								<Y>3%</Y>
-								<Width>30%</Width> 
-								<Height>10%</Height> 
+								<Width>30%</Width>
+								<Height>10%</Height>
 								<Text>Scheduled logout</Text>
 								<OnLoad>
 									if ${Script[Tehbot].VariableScope.Automate.Config.ScheduleLogout}
@@ -376,8 +380,8 @@
 							<Checkbox name='TimedLogout'>
 								<X>1%</X>
 								<Y>15%</Y>
-								<Width>30%</Width> 
-								<Height>10%</Height> 
+								<Width>30%</Width>
+								<Height>10%</Height>
 								<Text>Timed logout</Text>
 								<OnLoad>
 									if ${Script[Tehbot].VariableScope.Automate.Config.TimedLogout}
@@ -408,8 +412,8 @@
 							<Checkbox name='Questor'>
 								<X>1%</X>
 								<Y>30%</Y>
-								<Width>30%</Width> 
-								<Height>10%</Height> 
+								<Width>30%</Width>
+								<Height>10%</Height>
 								<Text>Tell Questor to complete the logout</Text>
 								<OnLoad>
 									if ${Script[Tehbot].VariableScope.Automate.Config.Questor}
@@ -431,12 +435,12 @@
 									}
 								</OnLeftClick>
 							</Checkbox>
-				
+
 							<Checkbox name='Downtime'>
 								<X>1%</X>
 								<Y>50%</Y>
-								<Width>30%</Width> 
-								<Height>10%</Height> 
+								<Width>30%</Width>
+								<Height>10%</Height>
 								<Text>Logout when downtime message is seen</Text>
 								<OnLoad>
 									if ${Script[Tehbot].VariableScope.Automate.Config.Downtime}
@@ -449,11 +453,11 @@
 								</OnLeftClick>
 							</Checkbox>
 
-							<Text name='BookmarkTitle'> 
-								<X>40%</X> 
-								<Y>3%</Y> 
-								<Width>32%</Width> 
-								<Height>10%</Height> 
+							<Text name='BookmarkTitle'>
+								<X>40%</X>
+								<Y>3%</Y>
+								<Width>32%</Width>
+								<Height>10%</Height>
 								<Alignment>Center</Alignment>
 								<Text>Logout Bookmark</Text>
 								<OnLoad>
@@ -462,12 +466,13 @@
 										This:Hide
 									}
 								</OnLoad>
-							</Text>						 
+							</Text>
 							<Textentry Name="Bookmark">
-								<X>40%</X> 
-								<Y>10%</Y> 
-								<Width>32%</Width> 
-								<Height>15%</Height> 
+								<Font template='Information.Font' />
+								<X>40%</X>
+								<Y>10%</Y>
+								<Width>32%</Width>
+								<Height>15%</Height>
 								<OnLoad>
 									This:SetText[${Script[Tehbot].VariableScope.Automate.Config.Bookmark}]
 									if ${Script[Tehbot].VariableScope.Automate.Config.Questor}
@@ -518,13 +523,13 @@
 								<OnMouseExit>
 									UIElement[Information@InformationFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText[""]
 								</OnMouseExit>
-							</listbox>					
-						
-							<Text name='obj_Automate_Hour_Label'> 
-								<X>40%</X> 
-								<Y>33%</Y> 
-								<Width>9%</Width> 
-								<Height>10%</Height> 
+							</listbox>
+
+							<Text name='obj_Automate_Hour_Label'>
+								<X>40%</X>
+								<Y>33%</Y>
+								<Width>9%</Width>
+								<Height>10%</Height>
 								<Alignment>Center</Alignment>
 								<Text>Logout Hour</Text>
 								<OnLoad>
@@ -534,11 +539,12 @@
 									}
 								</OnLoad>
 							</Text>
-							<Textentry name='obj_Automate_Hour'> 
-								<X>40%</X> 
-								<Y>40%</Y> 
-								<Width>9%</Width> 
-								<Height>15%</Height> 
+							<Textentry name='obj_Automate_Hour'>
+								<Font template='Information.Font' />
+								<X>40%</X>
+								<Y>40%</Y>
+								<Width>9%</Width>
+								<Height>15%</Height>
 								<OnLoad>
 									This:SetText[${Script[Tehbot].VariableScope.Automate.Config.Hour}]
 								</OnLoad>
@@ -552,11 +558,11 @@
 									UIElement[Information@InformationFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText[""]
 								</OnMouseExit>
 							</Textentry>
-							<Text name='obj_Automate_Minute_Label'> 
-								<X>51%</X> 
-								<Y>33%</Y> 
-								<Width>10%</Width> 
-								<Height>10%</Height> 
+							<Text name='obj_Automate_Minute_Label'>
+								<X>51%</X>
+								<Y>33%</Y>
+								<Width>10%</Width>
+								<Height>10%</Height>
 								<Alignment>Center</Alignment>
 								<Text>Logout Minute</Text>
 								<OnLoad>
@@ -566,11 +572,12 @@
 									}
 								</OnLoad>
 							</Text>
-							<Textentry name='obj_Automate_Minute'> 
-								<X>51%</X> 
-								<Y>40%</Y> 
-								<Width>10%</Width> 
-								<Height>15%</Height> 
+							<Textentry name='obj_Automate_Minute'>
+								<Font template='Information.Font' />
+								<X>51%</X>
+								<Y>40%</Y>
+								<Width>10%</Width>
+								<Height>15%</Height>
 								<OnLoad>
 									This:SetText[${Script[Tehbot].VariableScope.Automate.Config.Minute}]
 								</OnLoad>
@@ -584,20 +591,21 @@
 									UIElement[Information@InformationFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText[""]
 								</OnMouseExit>
 							</Textentry>
-							
-							<Text name='obj_Automate_Delta_Label'> 
-								<X>63%</X> 
-								<Y>33%</Y> 
-								<Width>9%</Width> 
-								<Height>10%</Height> 
+
+							<Text name='obj_Automate_Delta_Label'>
+								<X>63%</X>
+								<Y>33%</Y>
+								<Width>9%</Width>
+								<Height>10%</Height>
 								<Alignment>Center</Alignment>
 								<Text>Logout Delta</Text>
 							</Text>
-							<Textentry name='obj_Automate_Delta'> 
-								<X>63%</X> 
-								<Y>40%</Y> 
-								<Width>9%</Width> 
-								<Height>15%</Height> 
+							<Textentry name='obj_Automate_Delta'>
+								<Font template='Information.Font' />
+								<X>63%</X>
+								<Y>40%</Y>
+								<Width>9%</Width>
+								<Height>15%</Height>
 								<OnLoad>
 									This:SetText[${Script[Tehbot].VariableScope.Automate.Config.LogoutDelta}]
 								</OnLoad>
@@ -628,16 +636,16 @@
 								<OnMouseExit>
 									UIElement[Information@InformationFrame@Tehbot_Automate_Frame@Tehbot_Automate]:SetText[""]
 								</OnMouseExit>
-							</Button>						
-				
+							</Button>
+
 						</Children>
-					</Frame>					
-					
-					<Text name='InformationFrameTitle'> 
-						<X>1%</X> 
-						<Y>80%</Y> 
-						<Width>32%</Width> 
-						<Height>4%</Height> 
+					</Frame>
+
+					<Text name='InformationFrameTitle'>
+						<X>1%</X>
+						<Y>80%</Y>
+						<Width>32%</Width>
+						<Height>4%</Height>
 						<Text>Information</Text>
 						<OnLoad>
 							This.Font:SetColor[FFFFFF00]
@@ -652,22 +660,22 @@
 						<Border>1</Border>
 						<BorderColor>FFFFFFFF</BorderColor>
 						<Children>
-							<Text name='Information'> 
-								<X>5%</X> 
-								<Y>5%</Y> 
-								<Width>90%</Width> 
-								<Height>90%</Height> 
+							<Text name='Information'>
+								<X>5%</X>
+								<Y>5%</Y>
+								<Width>90%</Width>
+								<Height>90%</Height>
 								<Wrap />
 								<VerticalAlignment>Center</VerticalAlignment>
 							</Text>
 						</Children>
 					</Frame>
-				
-				
-					
+
+
+
 				</Children>
 			</Frame>
 		</Children>
 	</window>
-	
+
 </ISUI>

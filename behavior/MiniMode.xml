@@ -1,28 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ISUI>
-	<template name='Information.Font'>	
-		<Name>Terminal</Name>
-		<Size>8</Size>
+	<template name='Information.Font'>
+		<Name>Segoe</Name>
+		<Size>24</Size>
 		<Color>FFFFFFFF</Color>
-	</template>	
-	<template name='Text.Font'>	
+	</template>
+	<template name='Text.Font'>
 		<Name>Verdana</Name>
 		<Size>12</Size>
 		<Color>FFFFFFFF</Color>
 		<Bold />
-	</template>	
-	<template name='Checkbox.Font'>	
+	</template>
+	<template name='Checkbox.Font'>
 		<Name>Verdana</Name>
 		<Size>12</Size>
 		<Color>FFFFFFFF</Color>
 		<Bold />
-	</template>	
-	<template name='Button.Font'>	
+	</template>
+	<template name='Button.Font'>
 		<Name>Verdana</Name>
 		<Size>12</Size>
 		<Color>FF000000</Color>
 		<Bold />
-	</template>	
+	</template>
 
 	<window name='Tehbot_MiniMode'>
 		<Visible>1</Visible>
@@ -30,11 +30,11 @@
 		<Border>0</Border>
 		<X>200</X>
 		<Y>300</Y>
-		<Width>800</Width>
-		<Height>600</Height>
+		<Width>1600</Width>
+		<Height>1200</Height>
 		<TitleBar>
 			<Width>100%</Width>
-			<Height>20</Height>
+			<Height>40</Height>
 			<Border>0</Border>
 			<BackgroundColor>FF000000</BackgroundColor>
 			<Children>
@@ -42,15 +42,15 @@
 					<X>0</X>
 					<Y>3</Y>
 					<Width>100%</Width>
-					<Height>20</Height>
+					<Height>40</Height>
 					<Alignment>Center</Alignment>
 					<Text>MiniMode Only Configuration</Text>
 				</Text>
 				<button	Name='Close'>
-					<X>r40</X>
+					<X>r80</X>
 					<Y>0</Y>
-					<Width>40</Width>
-					<Height>20</Height>
+					<Width>80</Width>
+					<Height>40</Height>
 					<Text>Close</Text>
 					<OnLeftClick>
 						ui -unload "&filepath;/MiniMode"
@@ -61,18 +61,18 @@
 		<Children name="Tehbot_MiniMode_Children">
 			<Frame name="Tehbot_MiniMode_Frame">
 				<X>0</X>
-				<Y>5</Y>
+				<Y>30</Y>
 				<Width>100%</Width>
 				<Height>100%</Height>
 				<BackgroundColor>FF000000</BackgroundColor>
 				<Border>1</Border>
 				<BorderColor>FFFFFFFF</BorderColor>
 				<Children name="Tehbot_MiniMode_Frame_Children">
-					<Text name='Information'> 
-						<X>5%</X> 
-						<Y>5%</Y> 
-						<Width>90%</Width> 
-						<Height>90%</Height> 
+					<Text name='Information'>
+						<X>5%</X>
+						<Y>5%</Y>
+						<Width>90%</Width>
+						<Height>90%</Height>
 						<Wrap />
 						<VerticalAlignment>Center</VerticalAlignment>
 						<Text>This behavior does nothing.  It doesn't even matter if you run/stop it.  It's just there to be the default mode for the bot.</Text>
@@ -81,5 +81,5 @@
 			</Frame>
 		</Children>
 	</window>
-	
+
 </ISUI>
