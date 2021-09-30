@@ -59,6 +59,8 @@
 #define GROUP_LARGECOLLIDABLESTRUCTURE 																			319
 #define GROUP_SPAWNCONTAINER 																					306
 #define GROUP_DEADSPACEOVERSEERSSTRUCTURE 																		494
+#define GROUP_PRESSURESOLO 																						952
+#define GROUP_ANCIENTSHIPSTRUCTURE 																				1207
 #define GROUP_WRECK 																							186
 #define GROUP_CARGOCONTAINER 																					12
 #define GROUP_WARPGATE 																							366

@@ -56,7 +56,13 @@ objectdef obj_Mission inherits obj_StateQueue
 	variable string secondaryAmmo
 	variable string missionLootContainer
 	variable string missionItemRequired
+	variable string currentMissionGateKey
+	variable string currentMissionGateKeyContainer
+	variable string currentMissionDeliverItem
+	variable string currentMissionDeliverItemContainer
 	variable int useDroneRace = 0
+	variable bool haveGateKeyInCargo = FALSE
+	variable bool haveDeliveryInCargo = FALSE
 
 	; If a target can't be killed within 2 minutes, something is going wrong.
 	variable int maxAttackTime
@@ -68,6 +74,13 @@ objectdef obj_Mission inherits obj_StateQueue
 	variable collection:string ItemsRequired
 	variable collection:float64 CapacityRequired
 	variable set InvalidMissions
+	; (Optional) Bring key to mission when available
+	variable collection:string MissionGateKeys
+	; Look for mission key in cargo if didn't bring
+	variable collection:string MissionGateKeyContainers
+
+	variable collection:string DeliverItem
+	variable collection:string DeliverItemContainer
 
 	variable bool reload = TRUE
 	variable bool isLoadingFallbackDrones
@@ -119,6 +132,8 @@ objectdef obj_Mission inherits obj_StateQueue
 		ItemsRequired:Clear
 		InvalidMissions:Clear
 		AttackTarget:Clear
+		MissionGateKeys:Clear
+		MissionGateKeyContainers:Clear
 
 		if !${Config.MissionFile.NotNULLOrEmpty}
 		{
@@ -338,6 +353,103 @@ objectdef obj_Mission inherits obj_StateQueue
 									missionItemRequired:Set[${ItemsRequired.Element[${ValidMissions.CurrentKey}]}]
 								}
 
+								variable index:item items
+								variable iterator itemIterator
+								currentMissionGateKey:Set[""]
+								currentMissionGateKeyContainer:Set[""]
+								if ${MissionGateKeys.Element[${ValidMissions.CurrentKey}](exists)}
+								{
+									UI:Update["Mission", "Bring gate key if available: \ao${MissionGateKeys.Element[${ValidMissions.CurrentKey}]}", "g"]
+									currentMissionGateKey:Set[${MissionGateKeys.Element[${ValidMissions.CurrentKey}]}]
+
+									haveGateKeyInCargo:Set[FALSE]
+									if (!${EVEWindow[Inventory](exists)})
+									{
+										EVE:Execute[OpenInventory]
+										return FALSE
+									}
+
+									if !${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo](exists)} || ${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo].Capacity} < 0
+									{
+										EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:MakeActive
+										return FALSE
+									}
+
+									EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:GetItems[items]
+									items:GetIterator[itemIterator]
+									if ${itemIterator:First(exists)}
+									{
+										do
+										{
+											if ${itemIterator.Value.Name.Equal[${currentMissionGateKey}]}
+											{
+												UI:Update["Mission", "Confirmed gate key \"${currentMissionGateKey}\" in cargo."]
+												haveGateKeyInCargo:Set[TRUE]
+												break
+											}
+										}
+										while ${itemIterator:Next(exists)}
+									}
+
+									if !${haveGateKeyInCargo}
+									{
+										if ${MissionGateKeyContainers.Element[${ValidMissions.CurrentKey}](exists)}
+										{
+											UI:Update["Mission", "Look for the gate key in: \ao${MissionGateKeyContainers.Element[${ValidMissions.CurrentKey}]}", "g"]
+											currentMissionGateKeyContainer:Set[${MissionGateKeyContainers.Element[${ValidMissions.CurrentKey}]}]
+										}
+									}
+								}
+
+								currentMissionDeliverItem:Set[""]
+								currentMissionDeliverItemContainer:Set[""]
+								if ${DeliverItem.Element[${ValidMissions.CurrentKey}](exists)}
+								{
+									UI:Update["Mission", "Deliver item: \ao${DeliverItem.Element[${ValidMissions.CurrentKey}]}", "g"]
+									currentMissionDeliverItem:Set[${DeliverItem.Element[${ValidMissions.CurrentKey}]}]
+
+									haveDeliveryInCargo:Set[FALSE]
+									if (!${EVEWindow[Inventory](exists)})
+									{
+										EVE:Execute[OpenInventory]
+										return FALSE
+									}
+
+									if !${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo](exists)} || ${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo].Capacity} < 0
+									{
+										EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:MakeActive
+										return FALSE
+									}
+
+									EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:GetItems[items]
+									items:GetIterator[itemIterator]
+									if ${itemIterator:First(exists)}
+									{
+										do
+										{
+											if ${itemIterator.Value.Name.Equal[${currentMissionDeliverItem}]}
+											{
+												UI:Update["Mission", "Confirmed delivery \"${currentMissionDeliverItem}\" in cargo."]
+												haveDeliveryInCargo:Set[TRUE]
+												break
+											}
+										}
+										while ${itemIterator:Next(exists)}
+									}
+
+									if ${DeliverItemContainer.Element[${ValidMissions.CurrentKey}](exists)}
+									{
+										UI:Update["Mission", "Deliver the item to: \ao${DeliverItemContainer.Element[${ValidMissions.CurrentKey}]}", "g"]
+										currentMissionDeliverItemContainer:Set[${DeliverItemContainer.Element[${ValidMissions.CurrentKey}]}]
+									}
+									else
+									{
+										UI:Update["Mission", "Don't know where to deliver, halting.", "r"]
+										This:Clear
+										return TRUE
+									}
+								}
+
 								switch ${ValidMissions.CurrentValue.Lower}
 								{
 									case kinetic
@@ -402,6 +514,14 @@ objectdef obj_Mission inherits obj_StateQueue
 						This:InsertState["CheckForWork"]
 						isLoadingFallbackDrones:Set[FALSE]
 						This:InsertState["ReloadAmmoAndDrones"]
+						if !${haveGateKeyInCargo}
+						{
+							This:InsertState["TryBringGateKey"]
+						}
+						if ${currentMissionDeliverItem.NotNULLOrEmpty} && !${haveDeliveryInCargo}
+						{
+							This:InsertState["BringDelivery"]
+						}
 						This:InsertState["PrepHangars"]
 						return TRUE
 					}
@@ -604,9 +724,40 @@ objectdef obj_Mission inherits obj_StateQueue
 			return TRUE
 		}
 
-		variable index:entity lootContainers
-		EVE:QueryEntities[lootContainers, ${missionLootContainer}]
+		; TODO Add that container which spawns Fajah Ateshi as a hack to support Anomaly 1
+		variable string containerQuery = ""
+		variable string seperator = ""
 
+		if ${missionLootContainer.NotNULLOrEmpty}
+		{
+			containerQuery:Concat["(${missionLootContainer})"]
+			seperator:Set[" || "]
+		}
+
+		; Only interested in the gate key container when it's necessary to loot the key
+		if ${currentMissionGateKeyContainer.NotNULLOrEmpty} && \
+			!${haveGateKeyInCargo} && \
+			!${currentMissionGateKeyContainer.Equal[${missionLootContainer}]}
+		{
+			containerQuery:Concat["${seperator}(${currentMissionGateKeyContainer})"]
+			seperator:Set[" || "]
+		}
+
+		if ${currentMissionDeliverItemContainer.NotNULLOrEmpty} && \
+			${haveDeliveryInCargo}
+		{
+			containerQuery:Concat["${seperator}(${currentMissionDeliverItemContainer})"]
+			seperator:Set[" || "]
+		}
+
+		variable index:entity lootContainers
+		if ${containerQuery.NotNULLOrEmpty}
+		{
+			EVE:QueryEntities[lootContainers, ${containerQuery}]
+		}
+
+
+		; Avoid duplicate check on containers.
 		variable iterator containerIterator
 		blackListedContainers:GetIterator[containerIterator]
 		if ${containerIterator:First(exists)}
@@ -617,8 +768,8 @@ objectdef obj_Mission inherits obj_StateQueue
 			while ${containerIterator:Next(exists)}
 		lootContainers:Collapse
 
-		; Determine movement and perform loot
-		if ${missionLootContainer.NotNULLOrEmpty} && ${lootContainers.Used}
+		; Move to the loot or delivery containers before moving to gates.
+		if ${lootContainers.Used}
 		{
 			if !${currentLootContainer}
 			{
@@ -678,50 +829,93 @@ objectdef obj_Mission inherits obj_StateQueue
 						}
 						notDone:Set[TRUE]
 					}
+					; TODO Test without this condition
 					elseif !${NPCs.TargetList.Used}
 					{
-						variable index:item items
 						if !${EVEWindow[Inventory].ChildWindow[${currentLootContainer}](exists)}
 						{
 							Entity[${currentLootContainer}]:Open
 							This:InsertState["PerformMission"]
 							return TRUE
 						}
+
+						variable index:item items
+						EVEWindow[Inventory].ChildWindow[${currentLootContainer}]:GetItems[items]
+						if ${items.Used}
+						{
+							items:GetIterator[itemIterator]
+							if ${itemIterator:First(exists)}
+								do
+								{
+									if ${itemIterator.Value.Type.Equal[${missionItemRequired}]}
+									{
+										itemIterator.Value:MoveTo[${MyShip.ID}, CargoHold]
+										UI:Update["Mission", "Aquired mission item: \ao${missionItemRequired}", "g"]
+										This:InsertState["CheckForWork"]
+										This:InsertState["Idle", 2000]
+										notDone:Set[FALSE]
+										return TRUE
+									}
+									elseif ${itemIterator.Value.Type.Equal[${currentMissionGateKey}]}
+									{
+										itemIterator.Value:MoveTo[${MyShip.ID}, CargoHold]
+										UI:Update["Mission", "Aquired mission gate key: \ao${currentMissionGateKey}", "g"]
+										haveGateKeyInCargo:Set[TRUE]
+										currentMissionGateKeyContainer:Set[""]
+										This:InsertState["PerformMission"]
+										notDone:Set[FALSE]
+										return TRUE
+									}
+								}
+								while ${itemIterator:Next(exists)}
+							blackListedContainers:Add[${currentLootContainer}]
+							currentLootContainer:Set[0]
+							EVE:Execute[CmdStopShip]
+							This:InsertState["PerformMission"]
+							notDone:Set[FALSE]
+							return TRUE
+						}
+						elseif ${haveDeliveryInCargo} && ${currentMissionDeliverItemContainer.Find[${Entity[${currentLootContainer}].Name}]}
+						{
+							if !${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo](exists)} || ${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo].Capacity} < 0
+							{
+								EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:MakeActive
+								return FALSE
+							}
+
+							variable index:item cargo
+							variable iterator cargoIterator
+							EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:GetItems[cargo]
+							cargo:GetIterator[cargoIterator]
+							if ${cargoIterator:First(exists)}
+							{
+								do
+								{
+									if ${cargoIterator.Value.Name.Equal[${currentMissionDeliverItem}]}
+									{
+										cargoIterator.Value:MoveTo[${Entity[${currentLootContainer}].ID}, CargoHold]
+										UI:Update["Mission", "Delivered \"\ao${currentMissionDeliverItem}\"", "g"]
+										haveDeliveryInCargo:Set[FALSE]
+										This:InsertState["CheckForWork"]
+										This:InsertState["Idle", 2000]
+										return TRUE
+									}
+								}
+								while ${cargoIterator:Next(exists)}
+							}
+
+							UI:Update["Can't find the delivery, halting.", "r"]
+							This:Clear
+							return TRUE
+						}
 						else
 						{
-							EVEWindow[Inventory].ChildWindow[${currentLootContainer}]:GetItems[items]
-							if ${items.Used}
-							{
-								items:GetIterator[itemIterator]
-								if ${itemIterator:First(exists)}
-									do
-									{
-										if ${itemIterator.Value.Type.Equal[${missionItemRequired}]}
-										{
-											itemIterator.Value:MoveTo[${MyShip.ID}, CargoHold]
-											This:InsertState["CheckForWork"]
-											This:InsertState["Idle", 2000]
-											notDone:Set[FALSE]
-											return TRUE
-										}
-									}
-									while ${itemIterator:Next(exists)}
-								blackListedContainers:Add[${currentLootContainer}]
-								currentLootContainer:Set[0]
-								EVE:Execute[CmdStopShip]
-								This:InsertState["PerformMission"]
-								notDone:Set[FALSE]
-								return TRUE
-							}
-							else
-							{
-								blackListedContainers:Add[${currentLootContainer}]
-								currentLootContainer:Set[0]
-								EVE:Execute[CmdStopShip]
-								This:InsertState["PerformMission"]
-								notDone:Set[FALSE]
-								return TRUE
-							}
+							blackListedContainers:Add[${currentLootContainer}]
+							currentLootContainer:Set[0]
+							EVE:Execute[CmdStopShip]
+							This:InsertState["PerformMission"]
+							notDone:Set[FALSE]
+							return TRUE
 						}
 					}
 					else
@@ -922,7 +1116,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				Ship.ModuleList_TargetPainter:DeactivateNotOn[${currentTarget}]
 			}
 			; 'Effectiveness Falloff' is not read by ISXEVE, but 20km is a generally reasonable range to activate the module
-			if ${Entity[${currentTarget}].Distance} <= ${Math.Calc[${Ship.ModuleList_StasisGrap.Range} + 20000]} 
+			if ${Entity[${currentTarget}].Distance} <= ${Math.Calc[${Ship.ModuleList_StasisGrap.Range} + 20000]}
 			{
 				Ship.ModuleList_StasisGrap:Activate[${currentTarget}]
 				Ship.ModuleList_StasisGrap:DeactivateNotOn[${currentTarget}]
@@ -1453,6 +1647,157 @@ objectdef obj_Mission inherits obj_StateQueue
 		}
 
 		This:InsertState["StackHangars"]
+		return TRUE
+	}
+
+	member:bool TryBringGateKey()
+	{
+		if !${currentMissionGateKey.NotNULLOrEmpty}
+		{
+			return TRUE
+		}
+
+		if (!${EVEWindow[Inventory](exists)})
+		{
+			EVE:Execute[OpenInventory]
+			return FALSE
+		}
+
+		variable index:item items
+		variable iterator itemIterator
+
+		if !${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo](exists)} || ${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo].Capacity} < 0
+		{
+			EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:MakeActive
+			return FALSE
+		}
+
+		EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:GetItems[items]
+		items:GetIterator[itemIterator]
+		if ${itemIterator:First(exists)}
+		{
+			do
+			{
+				if ${itemIterator.Value.Name.Equal[${currentMissionGateKey}]}
+				{
+					UI:Update["Mission", "Confirmed gate key \"${currentMissionGateKey}\" in cargo."]
+					haveGateKeyInCargo:Set[TRUE]
+					currentMissionGateKeyContainer:Set[""]
+					return TRUE
+				}
+			}
+			while ${itemIterator:Next(exists)}
+		}
+
+		; Try loading from hangar
+		if ${Config.DropoffType.Equal[Corporation Hangar]}
+		{
+			if !${EVEWindow[Inventory].ChildWindow[StationCorpHangar](exists)}
+			{
+				EVEWindow[Inventory].ChildWindow[StationCorpHangars]:MakeActive
+				return FALSE
+			}
+
+			if !${EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}](exists)}
+			{
+				EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}]:MakeActive
+				return FALSE
+			}
+
+			EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}]:GetItems[items]
+		}
+		else
+		{
+			if !${EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems](exists)}
+			{
+				EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:MakeActive
+				return FALSE
+			}
+
+			EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:GetItems[items]
+		}
+
+		items:GetIterator[itemIterator]
+		if ${itemIterator:First(exists)}
+		{
+			do
+			{
+				if ${itemIterator.Value.Name.Equal[${currentMissionGateKey}]}
+				{
+					UI:Update["Mission", "Moving the gate key \"${currentMissionGateKey}\" to cargo."]
+					itemIterator.Value:MoveTo[${MyShip.ID}, CargoHold, 1]
+					return FALSE
+				}
+			}
+			while ${itemIterator:Next(exists)}
+		}
+
+		return TRUE
+	}
+
+	member:bool BringDelivery()
+	{
+		if !${currentMissionDeliverItem.NotNULLOrEmpty}
+		{
+			return TRUE
+		}
+
+		if (!${EVEWindow[Inventory](exists)})
+		{
+			EVE:Execute[OpenInventory]
+			return FALSE
+		}
+
+		variable index:item items
+		variable iterator itemIterator
+
+		if !${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo](exists)} || ${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo].Capacity} < 0
+		{
+			EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:MakeActive
+			return FALSE
+		}
+
+		EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:GetItems[items]
+		items:GetIterator[itemIterator]
+		if ${itemIterator:First(exists)}
+		{
+			do
+			{
+				if ${itemIterator.Value.Name.Equal[${currentMissionDeliverItem}]}
+				{
+					UI:Update["Mission", "Confirmed the delivery \"${currentMissionDeliverItem}\" in cargo."]
+					haveDeliveryInCargo:Set[TRUE]
+					return TRUE
+				}
+			}
+			while ${itemIterator:Next(exists)}
+		}
+
+		if !${EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems](exists)}
+		{
+			EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:MakeActive
+			return FALSE
+		}
+
+		EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:GetItems[items]
+
+		items:GetIterator[itemIterator]
+		if ${itemIterator:First(exists)}
+		{
+			do
+			{
+				if ${itemIterator.Value.Name.Equal[${currentMissionDeliverItem}]}
+				{
+					UI:Update["Mission", "Moving the delivery \"${currentMissionDeliverItem}\" to cargo."]
+					itemIterator.Value:MoveTo[${MyShip.ID}, CargoHold, 1]
+					return FALSE
+				}
+			}
+			while ${itemIterator:Next(exists)}
+		}
+
+		UI:Update["Mission", "Can't find the delivery ${currentMissionDeliverItem}, halting.", "r"]
+		This:Clear
 		return TRUE
 	}
 
