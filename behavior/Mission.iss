@@ -1534,7 +1534,9 @@ objectdef obj_Mission inherits obj_StateQueue
 				Ship.ModuleList_Siege:DeactivateAll
 			}
 
-			if ${DroneControl.ActiveDrones.Used} > 0
+			variable index:activedrone activeDrones
+			Me:GetActiveDrones[activeDrones]
+			if ${activeDrones.Used} > 0
 			{
 				DroneControl:Recall
 				return FALSE
