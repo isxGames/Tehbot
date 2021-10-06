@@ -22,22 +22,54 @@ function main()
 	; when you kill a target.  For looting a needed item, see the next section.
 	;
 	Script[Tehbot].VariableScope.Mission.ValidMissions:Set["The Damsel In Distress", "Kinetic"]
-	Script[Tehbot].VariableScope.Mission.AttackTarget:Set["The Damsel In Distress", "Name = \"Kruul's Pleasure Gardens\""]				
+	Script[Tehbot].VariableScope.Mission.AttackTarget:Set["The Damsel In Distress", "Name = \"Kruul's Pleasure Gardens\""]
 	Script[Tehbot].VariableScope.Mission.ItemsRequired:Set["The Damsel In Distress", "The Damsel"]
 
 	;
 	; For some missions, you must loot an item.  To configure these, use the LootContainers AND the ItemsRequired collections.
 	; This collection requires the mission name and a search string.  Most of these use the Name member, but also empty wrecks need to be excluded.  Note the single equal and the \ escaped quotes!
 	;
-	Script[Tehbot].VariableScope.Mission.ValidMissions:Set["Unauthorized Military Presence", "EM"]
-	Script[Tehbot].VariableScope.Mission.LootContainers:Set["Unauthorized Military Presence", "Name = \"Blood Raider Personnel Transport Wreck\" && !IsWreckEmpty"]
-	Script[Tehbot].VariableScope.Mission.ItemsRequired:Set["Unauthorized Military Presence", "Militants"]
+	Script[Tehbot].VariableScope.Mission.ValidMissions:Set["Worlds Collide", "EM"]
+	Script[Tehbot].VariableScope.Mission.LootContainers:Set["Worlds Collide", "Name = \"Damaged Heron\" && !IsWreckEmpty"]
+	Script[Tehbot].VariableScope.Mission.ItemsRequired:Set["Worlds Collide", "Ship's Crew"]
 
 	;
-	; Finally, use the InvalidMissions set to specify mission the bot should skip.  TAKE NOTE, this is NOT a collection like all the above tools.
+	; For some missions, you need a gate key to activate the acceleration gate.
+	; The gate key item can either be obtained in the mission or brought to the mission.
+	; Set the gate key item as below. If you already have the gate key, the bot will bring it to the mission, OTHERWISE it will search for the key in the specified container.
+	;
+	Script[Tehbot].VariableScope.Mission.ValidMissions:Set["Dread Pirate Scarlet", "Kinetic"]
+	Script[Tehbot].VariableScope.Mission.MissionGateKeys:Set["Dread Pirate Scarlet", "Gate Key"]
+	Script[Tehbot].VariableScope.Mission.MissionGateKeyContainers:Set["Dread Pirate Scarlet", "Name = \"Cargo Container\""]
+
+	;
+	; Setting example of multistep mission 'The Anomaly'.
+	;
+	Script[Tehbot].VariableScope.Mission.ValidMissions:Set["The Anomaly (1 of 3)", "EM"]
+	Script[Tehbot].VariableScope.Mission.MissionGateKeys:Set["The Anomaly (1 of 3)", "Oura Madusaari"]
+	; 'Type' attribute tells the real Life Pod from the 3 fakes.
+	Script[Tehbot].VariableScope.Mission.MissionGateKeyContainers:Set["The Anomaly (1 of 3)", "Type = \"Life Pod\""]
+	Script[Tehbot].VariableScope.Mission.AttackTarget:Set["The Anomaly (1 of 3)", "Name = \"Pressure Silo Debris\""]
+	Script[Tehbot].VariableScope.Mission.LootContainers:Set["The Anomaly (1 of 3)", "Name = \"Cargo Container\""]
+	Script[Tehbot].VariableScope.Mission.ItemsRequired:Set["The Anomaly (1 of 3)", "Fajah Ateshi"]
+
+	;
+	; For some missions, you need to deliver an item to a container.
+	; Set the delivery as below.
+	;
+	Script[Tehbot].VariableScope.Mission.ValidMissions:Set["The Anomaly (2 of 3)", "EM"]
+	Script[Tehbot].VariableScope.Mission.DeliverItem:Set["The Anomaly (2 of 3)", "Neurowave Pattern Scanner"]
+	Script[Tehbot].VariableScope.Mission.DeliverItemContainer:Set["The Anomaly (2 of 3)", "Name = \"The Anomaly\""]
+
+	Script[Tehbot].VariableScope.Mission.ValidMissions:Set["The Anomaly (3 of 3)", "EM"]
+	Script[Tehbot].VariableScope.Mission.DeliverItem:Set["The Anomaly (3 of 3)", "Fajah Ateshi"]
+	Script[Tehbot].VariableScope.Mission.DeliverItemContainer:Set["The Anomaly (3 of 3)", "Name = \"The Anomaly\""]
+
+	;
+	; Finally, use the InvalidMissions set to specify mission the bot should skip. TAKE NOTE, this is NOT a collection like all the above tools.
 	; It only takes one argument (the name of the mission) and uses the "Add" method instead of the "Set" method.
 	;
-	Script[Tehbot].VariableScope.Mission.InvalidMissions:Add["Worlds Collide"]
-	
+	Script[Tehbot].VariableScope.Mission.InvalidMissions:Add["Surprise Surprise"]
+
 	echo done
 }

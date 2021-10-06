@@ -702,13 +702,13 @@ objectdef obj_Mission inherits obj_StateQueue
 			return TRUE
 		}
 
-		; TODO Add that container which spawns Fajah Ateshi as a hack to support Anomaly 1
-		variable string containerQuery = ""
-		variable string seperator = ""
+		; Hack: Approach to spawn Fajah Ateshi in Anomaly 1, not worth adding another mission configue for this one mission
+		variable string containerQuery = "(Type = \"Ancient Ship Structure\")"
+		variable string seperator = " || "
 
 		if ${missionLootContainer.NotNULLOrEmpty}
 		{
-			containerQuery:Concat["(${missionLootContainer})"]
+			containerQuery:Concat["${seperator}(${missionLootContainer})"]
 			seperator:Set[" || "]
 		}
 
