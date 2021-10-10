@@ -951,7 +951,7 @@
 
 					<Checkbox name='RangeLimit'>
 						<X>1%</X>
-						<Y>45%</Y>
+						<Y>43%</Y>
 						<Width>30%</Width>
 						<Height>5%</Height>
 						<Text>Range Limit</Text>
@@ -974,7 +974,7 @@
 
 					<Checkbox name='DeclineLowSec'>
 						<X>13%</X>
-						<Y>45%</Y>
+						<Y>43%</Y>
 						<Width>30%</Width>
 						<Height>5%</Height>
 						<Text>Decline Low-Sec Missions</Text>
@@ -997,7 +997,7 @@
 
 					<Checkbox name='UseDrones'>
 						<X>1%</X>
-						<Y>50%</Y>
+						<Y>47%</Y>
 						<Width>30%</Width>
 						<Height>5%</Height>
 						<Text>Use Drones</Text>
@@ -1030,7 +1030,7 @@
 						<Font template='Information.Font' />
 						<BackgroundColor>FF000000</BackgroundColor>
 						<X>1%</X>
-						<Y>55%</Y>
+						<Y>52%</Y>
 						<Width>30%</Width>
 						<Height>5%</Height>
 						<OnLoad>
@@ -1082,10 +1082,9 @@
 						</OnMouseExit>
 					</combobox>
 
-
 					<Text name='DropoffTypeTitle'>
 						<X>36%</X>
-						<Y>56%</Y>
+						<Y>60%</Y>
 						<Width>30%</Width>
 						<Height>5%</Height>
 						<Alignment>Center</Alignment>
@@ -1097,7 +1096,7 @@
 						<Border>1</Border>
 						<BorderColor>FFFFFFFF</BorderColor>
 						<X>36%</X>
-						<Y>58%</Y>
+						<Y>62%</Y>
 						<Width>30%</Width>
 						<Height>5%</Height>
 						<Items>
@@ -1118,6 +1117,7 @@
 								case Personal Hangar
 									UIElement[DropoffSubTypeTitle@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:Hide
 									UIElement[DropoffSubType@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:Hide
+									break
 							}
 						</OnSelect>
 						<OnMouseEnter>
@@ -1129,9 +1129,9 @@
 					</listbox>
 
 					<Text name='DropoffSubTypeTitle'>
-						<X>67%</X>
-						<Y>56%</Y>
-						<Width>32%</Width>
+						<X>69%</X>
+						<Y>60%</Y>
+						<Width>30%</Width>
 						<Height>5%</Height>
 						<Alignment>Center</Alignment>
 						<Text>Corporation Folder</Text>
@@ -1152,9 +1152,9 @@
 						<BackgroundColor>FF000000</BackgroundColor>
 						<Border>1</Border>
 						<BorderColor>FFFFFFFF</BorderColor>
-						<X>67%</X>
-						<Y>58%</Y>
-						<Width>32%</Width>
+						<X>69%</X>
+						<Y>62%</Y>
+						<Width>30%</Width>
 						<Height>10%</Height>
 						<Items>
 							<Item>Folder1</Item>
@@ -1190,8 +1190,8 @@
 
 					<Text name='SalvagePrefixTitle'>
 						<X>1%</X>
-						<Y>64%</Y>
-						<Width>34%</Width>
+						<Y>60%</Y>
+						<Width>30%</Width>
 						<Height>5%</Height>
 						<Alignment>Center</Alignment>
 						<Text>Salvage Prefix</Text>
@@ -1202,8 +1202,8 @@
 						<Border>1</Border>
 						<BorderColor>FFFFFFFF</BorderColor>
 						<X>1%</X>
-						<Y>66%</Y>
-						<Width>34%</Width>
+						<Y>62%</Y>
+						<Width>30%</Width>
 						<Height>5%</Height>
 						<OnLoad>
 							This:SetText[${Script[Tehbot].VariableScope.Mission.Config.SalvagePrefix}]
@@ -1221,7 +1221,7 @@
 
 					<Text name='MissionConfigTitle'>
 						<X>1%</X>
-						<Y>71%</Y>
+						<Y>79%</Y>
 						<Width>98%</Width>
 						<Height>5%</Height>
 						<Alignment>Center</Alignment>
@@ -1233,7 +1233,7 @@
 						<Font template='Information.Font' />
 						<BackgroundColor>FF000000</BackgroundColor>
 						<X>1%</X>
-						<Y>73%</Y>
+						<Y>81%</Y>
 						<Width>98%</Width>
 						<Height>5%</Height>
 						<OnLoad>
@@ -1263,7 +1263,7 @@
 
 					<Text name='InformationFrameTitle'>
 						<X>1%</X>
-						<Y>80%</Y>
+						<Y>88%</Y>
 						<Width>32%</Width>
 						<Height>4%</Height>
 						<Text>Information</Text>
@@ -1273,9 +1273,9 @@
 					</Text>
 					<Frame name="InformationFrame">
 						<X>0%</X>
-						<Y>82%</Y>
+						<Y>90%</Y>
 						<Width>100%</Width>
-						<Height>18%</Height>
+						<Height>12%</Height>
 						<BackgroundColor>FF000000</BackgroundColor>
 						<Border>1</Border>
 						<BorderColor>FFFFFFFF</BorderColor>
