@@ -207,7 +207,7 @@
 								</OnMouseExit>
 							</listbox>
 
-							<Text name='DropoffSubTypeTitle'>
+							<Text name='MunitionStorageFolderTitle'>
 								<X>67%</X>
 								<Y>3%</Y>
 								<Width>32%</Width>
@@ -215,7 +215,7 @@
 								<Alignment>Center</Alignment>
 								<Text>Corporation Folder</Text>
 								<OnLoad>
-									switch ${Script[Tehbot].VariableScope.Salvager.Config.DropoffType}
+									switch ${Script[Tehbot].VariableScope.Salvager.Config.MunitionStorage}
 									{
 										case Corporation Hangar
 											break
@@ -225,7 +225,7 @@
 									}
 								</OnLoad>
 							</Text>
-							<listbox Name="DropoffSubType">
+							<listbox Name="MunitionStorageFolder">
 								<BackgroundColor>FF000000</BackgroundColor>
 								<Border>1</Border>
 								<BorderColor>FFFFFFFF</BorderColor>
@@ -234,7 +234,7 @@
 								<Width>32%</Width>
 								<Height>85%</Height>
 								<OnLoad>
-									switch ${Script[Tehbot].VariableScope.Salvager.Config.DropoffType}
+									switch ${Script[Tehbot].VariableScope.Salvager.Config.MunitionStorage}
 									{
 										case Corporation Hangar
 											This:AddItem[Corporation Folder 1]
@@ -249,10 +249,10 @@
 											This:Hide
 											break
 									}
-									This.ItemByText["${Script[Tehbot].VariableScope.Salvager.Config.DropoffSubType}"]:Select
+									This.ItemByText["${Script[Tehbot].VariableScope.Salvager.Config.MunitionStorageFolder}"]:Select
 								</OnLoad>
 								<OnSelect>
-									Script[Tehbot].VariableScope.Salvager.Config:SetDropoffSubType[${This.SelectedItem.Text}]
+									Script[Tehbot].VariableScope.Salvager.Config:SetMunitionStorageFolder[${This.SelectedItem.Text}]
 								</OnSelect>
 								<OnMouseEnter>
 									UIElement[Information@InformationFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:SetText["This field is used to further configure your dropoff type for types that have additional options, like Corporate Hangars."]
@@ -262,7 +262,7 @@
 								</OnMouseExit>
 							</listbox>
 
-							<Text name='DropoffTypeTitle'>
+							<Text name='MunitionStorageTitle'>
 								<X>1%</X>
 								<Y>3%</Y>
 								<Width>32%</Width>
@@ -270,7 +270,7 @@
 								<Alignment>Center</Alignment>
 								<Text>Unload To</Text>
 							</Text>
-							<listbox Name="DropoffType">
+							<listbox Name="MunitionStorage">
 								<BackgroundColor>FF000000</BackgroundColor>
 								<Border>1</Border>
 								<BorderColor>FFFFFFFF</BorderColor>
@@ -283,34 +283,34 @@
 									<Item>Corporation Hangar</Item>
 								</Items>
 								<OnLoad>
-									This.ItemByText[${Script[Tehbot].VariableScope.Salvager.Config.DropoffType}]:Select
+									This.ItemByText[${Script[Tehbot].VariableScope.Salvager.Config.MunitionStorage}]:Select
 								</OnLoad>
 								<OnSelect>
-									Script[Tehbot].VariableScope.Salvager.Config:SetDropoffType[${This.SelectedItem.Text}]
-									UIElement[DropoffSubType@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:ClearItems
+									Script[Tehbot].VariableScope.Salvager.Config:SetMunitionStorage[${This.SelectedItem.Text}]
+									UIElement[MunitionStorageFolder@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:ClearItems
 									switch ${This.SelectedItem.Text}
 									{
 										case Corporation Hangar
-											UIElement[DropoffSubType@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:AddItem[Corporation Folder 1]
-											UIElement[DropoffSubType@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:AddItem[Corporation Folder 2]
-											UIElement[DropoffSubType@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:AddItem[Corporation Folder 3]
-											UIElement[DropoffSubType@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:AddItem[Corporation Folder 4]
-											UIElement[DropoffSubType@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:AddItem[Corporation Folder 5]
-											UIElement[DropoffSubType@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:AddItem[Corporation Folder 6]
-											UIElement[DropoffSubType@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:AddItem[Corporation Folder 7]
-											UIElement[DropoffSubType@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager].ItemByText["${Script[Tehbot].VariableScope.Salvager.Config.DropoffSubType}"]:Select
-											UIElement[DropoffSubTypeTitle@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:SetText[Corporate Folder]
-											UIElement[DropoffSubTypeTitle@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:Show
-											UIElement[DropoffSubType@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:Show
+											UIElement[MunitionStorageFolder@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:AddItem[Corporation Folder 1]
+											UIElement[MunitionStorageFolder@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:AddItem[Corporation Folder 2]
+											UIElement[MunitionStorageFolder@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:AddItem[Corporation Folder 3]
+											UIElement[MunitionStorageFolder@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:AddItem[Corporation Folder 4]
+											UIElement[MunitionStorageFolder@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:AddItem[Corporation Folder 5]
+											UIElement[MunitionStorageFolder@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:AddItem[Corporation Folder 6]
+											UIElement[MunitionStorageFolder@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:AddItem[Corporation Folder 7]
+											UIElement[MunitionStorageFolder@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager].ItemByText["${Script[Tehbot].VariableScope.Salvager.Config.MunitionStorageFolder}"]:Select
+											UIElement[MunitionStorageFolderTitle@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:SetText[Corporate Folder]
+											UIElement[MunitionStorageFolderTitle@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:Show
+											UIElement[MunitionStorageFolder@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:Show
 											UIElement[Dropoff_Container@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:Hide
 											UIElement[Dropoff_ContainerTitle@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:Hide
 											Script[Tehbot].VariableScope.Salvager.Config:SetDropoffContainer[\"\"]
 											UIElement[DropoffTitle@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:SetText[Station Bookmark]
 											break
 										case Personal Hangar
-											UIElement[DropoffSubTypeTitle@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:Hide
-											UIElement[DropoffSubType@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:Hide
-											Script[Tehbot].VariableScope.Salvager.Config:SetDropoffSubType[\"\"]
+											UIElement[MunitionStorageFolderTitle@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:Hide
+											UIElement[MunitionStorageFolder@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:Hide
+											Script[Tehbot].VariableScope.Salvager.Config:SetMunitionStorageFolder[\"\"]
 											UIElement[Dropoff_Container@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:Hide
 											UIElement[Dropoff_ContainerTitle@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:Hide
 											Script[Tehbot].VariableScope.Salvager.Config:SetDropoffContainer[\"\"]

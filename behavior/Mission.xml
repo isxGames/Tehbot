@@ -1082,7 +1082,7 @@
 						</OnMouseExit>
 					</combobox>
 
-					<Text name='DropoffTypeTitle'>
+					<Text name='MunitionStorageTitle'>
 						<X>36%</X>
 						<Y>60%</Y>
 						<Width>30%</Width>
@@ -1090,7 +1090,7 @@
 						<Alignment>Center</Alignment>
 						<Text>Ammo/Drone Storage</Text>
 					</Text>
-					<listbox Name="DropoffType">
+					<listbox Name="MunitionStorage">
 						<Font template='Information.Font' />
 						<BackgroundColor>FF000000</BackgroundColor>
 						<Border>1</Border>
@@ -1104,19 +1104,19 @@
 							<Item>Corporation Hangar</Item>
 						</Items>
 						<OnLoad>
-							This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.DropoffType}]:Select
+							This.ItemByText[${Script[Tehbot].VariableScope.Mission.Config.MunitionStorage}]:Select
 						</OnLoad>
 						<OnSelect>
-							Script[Tehbot].VariableScope.Mission.Config:SetDropoffType[${This.SelectedItem.Text}]
+							Script[Tehbot].VariableScope.Mission.Config:SetMunitionStorage[${This.SelectedItem.Text}]
 							switch ${This.SelectedItem.Text}
 							{
 								case Corporation Hangar
-									UIElement[DropoffSubTypeTitle@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:Show
-									UIElement[DropoffSubType@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:Show
+									UIElement[MunitionStorageFolderTitle@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:Show
+									UIElement[MunitionStorageFolder@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:Show
 									break
 								case Personal Hangar
-									UIElement[DropoffSubTypeTitle@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:Hide
-									UIElement[DropoffSubType@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:Hide
+									UIElement[MunitionStorageFolderTitle@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:Hide
+									UIElement[MunitionStorageFolder@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:Hide
 									break
 							}
 						</OnSelect>
@@ -1128,7 +1128,7 @@
 						</OnMouseExit>
 					</listbox>
 
-					<Text name='DropoffSubTypeTitle'>
+					<Text name='MunitionStorageFolderTitle'>
 						<X>69%</X>
 						<Y>60%</Y>
 						<Width>30%</Width>
@@ -1136,7 +1136,7 @@
 						<Alignment>Center</Alignment>
 						<Text>Corporation Folder</Text>
 						<OnLoad>
-							switch ${Script[Tehbot].VariableScope.Mission.Config.DropoffType}
+							switch ${Script[Tehbot].VariableScope.Mission.Config.MunitionStorage}
 							{
 								case Corporation Hangar
 									This:Show
@@ -1147,7 +1147,7 @@
 							}
 						</OnLoad>
 					</Text>
-					<listbox Name="DropoffSubType">
+					<listbox Name="MunitionStorageFolder">
 						<Font template='Information.Font' />
 						<BackgroundColor>FF000000</BackgroundColor>
 						<Border>1</Border>
@@ -1166,7 +1166,7 @@
 							<Item>Folder7</Item>
 						</Items>
 						<OnLoad>
-							switch ${Script[Tehbot].VariableScope.Mission.Config.DropoffType}
+							switch ${Script[Tehbot].VariableScope.Mission.Config.MunitionStorage}
 							{
 								case Corporation Hangar
 									This:Show
@@ -1175,10 +1175,10 @@
 									This:Hide
 									break
 							}
-							This.ItemByText["${Script[Tehbot].VariableScope.Mission.Config.DropoffSubType}"]:Select
+							This.ItemByText["${Script[Tehbot].VariableScope.Mission.Config.MunitionStorageFolder}"]:Select
 						</OnLoad>
 						<OnSelect>
-							Script[Tehbot].VariableScope.Mission.Config:SetDropoffSubType[${This.SelectedItem.Text}]
+							Script[Tehbot].VariableScope.Mission.Config:SetMunitionStorageFolder[${This.SelectedItem.Text}]
 						</OnSelect>
 						<OnMouseEnter>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText["This field is used to further configure your dropoff type for types that have additional options, like Corporate Hangars."]

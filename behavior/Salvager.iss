@@ -31,15 +31,15 @@ objectdef obj_Configuration_Salvager
 		BaseConfig.BaseRef:AddSet[${This.SetName}]
 		This.CommonRef:AddSet[SafeBookmarks]
 
-		This.CommonRef:AddSetting[Dropoff_Type,Personal Hangar]
+		This.CommonRef:AddSetting[MunitionStorage, Personal Hangar]
 		This.CommonRef:AddSetting[Prefix,Salvage:]
 		This.CommonRef:AddSetting[Dropoff,""]
 	}
 
 	Setting(string, Prefix, SetPrefix)
 	Setting(string, Dropoff, SetDropoff)
-	Setting(string, DropoffType, SetDropoffType)
-	Setting(string, DropoffSubType, SetDropoffSubType)
+	Setting(string, MunitionStorage, SetMunitionStorage)
+	Setting(string, MunitionStorageFolder, SetMunitionStorageFolder)
 }
 
 objectdef obj_Salvager inherits obj_StateQueue
@@ -535,7 +535,6 @@ objectdef obj_Salvager inherits obj_StateQueue
 		return TRUE
 	}
 
-
 	member:bool CheckCargoHold()
 	{
 		if !${Client.Inventory}
@@ -557,9 +556,6 @@ objectdef obj_Salvager inherits obj_StateQueue
 		return TRUE
 	}
 
-
-
-
 	member:bool RefreshBookmarks(bool refreshdone=FALSE)
 	{
 		if !${refreshdone}
@@ -576,22 +572,19 @@ objectdef obj_Salvager inherits obj_StateQueue
 
 	member:bool Offload()
 	{
-		switch ${Config.DropoffType}
+		switch ${Config.MunitionStorage}
 		{
 			case Personal Hangar
 				Cargo:At[${Config.Dropoff}]:Unload
 				break
 			default
-				Cargo:At[${Config.Dropoff},${Config.DropoffType},${Config.DropoffSubType},${Config.DropoffContainer}]:Unload
+				Cargo:At[${Config.Dropoff},${Config.MunitionStorage},${Config.MunitionStorageFolder},${Config.DropoffContainer}]:Unload
 				break
 		}
 		return TRUE
 	}
 
 }
-
-
-
 
 objectdef obj_SalvageUI inherits obj_StateQueue
 {

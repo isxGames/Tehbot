@@ -30,8 +30,8 @@ objectdef obj_Configuration_Mission
 	Setting(bool, UseDrones, SetDrones)
 	Setting(bool, RangeLimit, SetRangeLimit)
 	Setting(string, SalvagePrefix, SetSalvagePrefix)
-	Setting(string, DropoffType, SetDropoffType)
-	Setting(string, DropoffSubType, SetDropoffSubType)
+	Setting(string, MunitionStorage, SetMunitionStorage)
+	Setting(string, MunitionStorageFolder, SetMunitionStorageFolder)
 	Setting(string, DroneType, SetDroneType)
 	Setting(string, Agent, SetAgent)
 	Setting(string, MissionFile, SetMissionFile)
@@ -1468,7 +1468,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 	member:bool StackHangars()
 	{
-		if ${Config.DropoffType.Equal[Corporation Hangar]}
+		if ${Config.MunitionStorage.Equal[Corporation Hangar]}
 		{
 			if !${EVEWindow[Inventory].ChildWindow[StationCorpHangar](exists)}
 			{
@@ -1476,13 +1476,13 @@ objectdef obj_Mission inherits obj_StateQueue
 				return FALSE
 			}
 
-			if !${EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}](exists)}
+			if !${EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}](exists)}
 			{
-				EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}]:MakeActive
+				EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}]:MakeActive
 				return FALSE
 			}
 
-			EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}]:StackAll
+			EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}]:StackAll
 		}
 		else
 		{
@@ -1518,7 +1518,7 @@ objectdef obj_Mission inherits obj_StateQueue
 	member:string CorporationFolder()
 	{
 		variable string folder
-		switch ${Config.DropoffSubType}
+		switch ${Config.MunitionStorageFolder}
 		{
 			case Folder1
 				folder:Set[Corporation Folder 1]
@@ -1585,7 +1585,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				   ; Insignias for Extravaganza missions
 				   !${itemIterator.Value.Name.Find["Diamond"]}
 				{
-					if ${Config.DropoffType.Equal[Corporation Hangar]}
+					if ${Config.MunitionStorage.Equal[Corporation Hangar]}
 					{
 						if !${EVEWindow[Inventory].ChildWindow[StationCorpHangar](exists)}
 						{
@@ -1593,10 +1593,10 @@ objectdef obj_Mission inherits obj_StateQueue
 							return FALSE
 						}
 
-						if !${EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}](exists)}
+						if !${EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}](exists)}
 						{
 
-							EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}]:MakeActive
+							EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}]:MakeActive
 							return FALSE
 						}
 
@@ -1653,7 +1653,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		variable iterator itemIterator
 
 		; Try loading from hangar
-		if ${Config.DropoffType.Equal[Corporation Hangar]}
+		if ${Config.MunitionStorage.Equal[Corporation Hangar]}
 		{
 			if !${EVEWindow[Inventory].ChildWindow[StationCorpHangar](exists)}
 			{
@@ -1661,13 +1661,13 @@ objectdef obj_Mission inherits obj_StateQueue
 				return FALSE
 			}
 
-			if !${EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}](exists)}
+			if !${EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}](exists)}
 			{
-				EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}]:MakeActive
+				EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}]:MakeActive
 				return FALSE
 			}
 
-			EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}]:GetItems[items]
+			EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}]:GetItems[items]
 		}
 		else
 		{
@@ -1795,7 +1795,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			{
 				do
 				{
-					if ${Config.DropoffType.Equal[Corporation Hangar]}
+					if ${Config.MunitionStorage.Equal[Corporation Hangar]}
 					{
 						if !${EVEWindow[Inventory].ChildWindow[StationCorpHangar](exists)}
 						{
@@ -1803,10 +1803,10 @@ objectdef obj_Mission inherits obj_StateQueue
 							return FALSE
 						}
 
-						if !${EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}](exists)}
+						if !${EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}](exists)}
 						{
 
-							EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}]:MakeActive
+							EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}]:MakeActive
 							return FALSE
 						}
 
@@ -1885,7 +1885,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				; Move fallback drones together(to station hanger) before moving them to drone bay to ensure preferred type is loaded before fallback type.
 				if ${itemIterator.Value.Name.Equal[${fallbackDroneType}]}
 				{
-					if ${Config.DropoffType.Equal[Corporation Hangar]}
+					if ${Config.MunitionStorage.Equal[Corporation Hangar]}
 					{
 						if !${EVEWindow[Inventory].ChildWindow[StationCorpHangar](exists)}
 						{
@@ -1893,10 +1893,10 @@ objectdef obj_Mission inherits obj_StateQueue
 							return FALSE
 						}
 
-						if !${EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}](exists)}
+						if !${EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}](exists)}
 						{
 
-							EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}]:MakeActive
+							EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}]:MakeActive
 							return FALSE
 						}
 
@@ -1920,7 +1920,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			while ${itemIterator:Next(exists)}
 		}
 
-		if ${Config.DropoffType.Equal[Corporation Hangar]}
+		if ${Config.MunitionStorage.Equal[Corporation Hangar]}
 		{
 			if !${EVEWindow[Inventory].ChildWindow[StationCorpHangar](exists)}
 			{
@@ -1928,13 +1928,13 @@ objectdef obj_Mission inherits obj_StateQueue
 				return FALSE
 			}
 
-			if !${EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}](exists)}
+			if !${EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}](exists)}
 			{
-				EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}]:MakeActive
+				EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}]:MakeActive
 				return FALSE
 			}
 
-			EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.DropoffSubType}]:GetItems[items]
+			EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}]:GetItems[items]
 		}
 		else
 		{
