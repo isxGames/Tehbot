@@ -14,7 +14,7 @@ This bot also lacks any kind of safety functions. It won't protect you if you tr
 
 ### Mission Flow
 
-Unless otherwise specified in the config, the bot will fly to the mission location, kill every enemy on grid, then follow the gate if there is one on grid. It will repeat this until there are no more gates. If your mission requires an item in your cargo hold, set it in the config following the examples. Most of missions are now supported and tested including The Anomaly and World Collide, but I can't test all missions especially those fighting navys. So you may still encounter missions that the bot can't do no matter how hard you try try and configure them. You can config and skip them in this case.
+Unless otherwise specified in the config, the bot will fly to the mission location, kill every enemy on grid, then follow the gate if there is one on grid. It will repeat this until there are no more gates. If your mission requires an item in your cargo hold, set it in the config following the examples. Most of missions are now supported and tested including The Anomaly and World Collide, but I can't test all missions especially those fighting navys. So you may still encounter missions that the bot can't do no matter how hard you try and configure them. You can config and skip them in this case.
 
 ## Salvaging
 

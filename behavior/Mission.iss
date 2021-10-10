@@ -2191,20 +2191,6 @@ objectdef obj_Mission inherits obj_StateQueue
 		return TRUE
 	}
 
-	method DeepCopyIndex(string From, string To)
-	{
-		variable iterator i
-		${From}:GetIterator[i]
-		if ${i:First(exists)}
-		{
-			do
-			{
-				${To}:Insert[${i.Value}]
-			}
-			while ${i:Next(exists)}
-		}
-	}
-
 	member:int InventoryItemQuantity(string itemName, string inventoryID, string subFolderName = "")
 	{
 		variable index:item items
@@ -2233,6 +2219,20 @@ objectdef obj_Mission inherits obj_StateQueue
 		}
 
 		return ${itemQuantity}
+	}
+
+	method DeepCopyIndex(string From, string To)
+	{
+		variable iterator i
+		${From}:GetIterator[i]
+		if ${i:First(exists)}
+		{
+			do
+			{
+				${To}:Insert[${i.Value}]
+			}
+			while ${i:Next(exists)}
+		}
 	}
 }
 
