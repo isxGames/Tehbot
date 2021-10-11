@@ -1219,6 +1219,68 @@
 						</OnMouseExit>
 					</Textentry>
 
+					<Checkbox name='DropOffToContainer'>
+						<X>1%</X>
+						<Y>68%</Y>
+						<Width>30%</Width>
+						<Height>5%</Height>
+						<Text>Unload Loot To Container</Text>
+						<OnLoad>
+							if ${Script[Tehbot].VariableScope.Mission.Config.DropOffToContainer}
+							{
+								This:SetChecked
+							}
+						</OnLoad>
+						<OnLeftClick>
+							Script[Tehbot].VariableScope.Mission.Config:SetDropOffToContainer[${This.Checked}]
+							if ${This.Checked}
+							{
+								UIElement[DropOffContainerName@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:Show
+							}
+							else
+							{
+								UIElement[DropOffContainerName@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:Hide
+							}
+						</OnLeftClick>
+						<OnMouseEnter>
+							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText["Check this if you want to unload loot to station container."]
+						</OnMouseEnter>
+						<OnMouseExit>
+							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
+						</OnMouseExit>
+					</Checkbox>
+
+					<Textentry Name="DropOffContainerName">
+						<Font template='Information.Font' />
+						<BackgroundColor>FF000000</BackgroundColor>
+						<Border>1</Border>
+						<BorderColor>FFFFFFFF</BorderColor>
+						<X>1%</X>
+						<Y>73%</Y>
+						<Width>30%</Width>
+						<Height>5%</Height>
+						<OnLoad>
+							This:SetText[${Script[Tehbot].VariableScope.Mission.Config.DropOffContainerName}]
+							if ${Script[Tehbot].VariableScope.Mission.Config.DropOffToContainer}
+							{
+								This:Show
+							}
+							else
+							{
+								This:Hide
+							}
+						</OnLoad>
+						<OnChange>
+							Script[Tehbot].VariableScope.Mission.Config:SetDropOffContainerName[${This.Text}]
+						</OnChange>
+						<OnMouseEnter>
+							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText["The bot will unload all the loot from missions to a station container with the specified name."]
+						</OnMouseEnter>
+						<OnMouseExit>
+							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
+						</OnMouseExit>
+					</Textentry>
+
 					<Text name='MissionConfigTitle'>
 						<X>1%</X>
 						<Y>79%</Y>
