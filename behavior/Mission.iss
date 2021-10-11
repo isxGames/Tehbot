@@ -1484,7 +1484,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 			EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}]:StackAll
 		}
-		else
+		elseif ${Config.MunitionStorage.Equal[Personal Hangar]}
 		{
 			if !${EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems](exists)}
 			{
@@ -1603,14 +1603,14 @@ objectdef obj_Mission inherits obj_StateQueue
 						itemIterator.Value:MoveTo[MyStationCorporateHangar, StationCorporateHangar, ${itemIterator.Value.Quantity}, ${This.CorporationFolder}]
 						; return FALSE
 					}
-					else
+					elseif ${Config.MunitionStorage.Equal[Personal Hangar]}
 					{
 						if !${EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems](exists)}
 						{
 							EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:MakeActive
 							return FALSE
 						}
-						itemIterator.Value:MoveTo[MyStationHangar, Hangar, ${itemIterator.Value.Quantity}]
+						itemIterator.Value:MoveTo[MyStationHangar, Hangar]
 						; return FALSE
 					}
 				}
@@ -1669,7 +1669,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 			EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}]:GetItems[items]
 		}
-		else
+		elseif ${Config.MunitionStorage.Equal[Personal Hangar]}
 		{
 			if !${EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems](exists)}
 			{
@@ -1816,7 +1816,7 @@ objectdef obj_Mission inherits obj_StateQueue
 							return FALSE
 						}
 					}
-					else
+					elseif ${Config.MunitionStorage.Equal[Personal Hangar]}
 					{
 						if !${EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems](exists)}
 						{
@@ -1827,7 +1827,7 @@ objectdef obj_Mission inherits obj_StateQueue
 						if !${itemIterator.Value.Name.Equal[${preferredDroneType}]} && \
 							(!${itemIterator.Value.Name.Equal[${fallbackDroneType}]} || !${isLoadingFallbackDrones})
 						{
-							itemIterator.Value:MoveTo[MyStationHangar, Hangar, ${itemIterator.Value.Quantity}]
+							itemIterator.Value:MoveTo[MyStationHangar, Hangar]
 							return FALSE
 						}
 					}
@@ -1903,7 +1903,7 @@ objectdef obj_Mission inherits obj_StateQueue
 						itemIterator.Value:MoveTo[MyStationCorporateHangar, StationCorporateHangar, ${itemIterator.Value.Quantity}, ${This.CorporationFolder}]
 						return FALSE
 					}
-					else
+					elseif ${Config.MunitionStorage.Equal[Personal Hangar]}
 					{
 						if !${EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems](exists)}
 						{
@@ -1911,7 +1911,7 @@ objectdef obj_Mission inherits obj_StateQueue
 							return FALSE
 						}
 
-						itemIterator.Value:MoveTo[MyStationHangar, Hangar, ${itemIterator.Value.Quantity}]
+						itemIterator.Value:MoveTo[MyStationHangar, Hangar]
 						return FALSE
 					}
 					continue
@@ -1936,7 +1936,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 			EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}]:GetItems[items]
 		}
-		else
+		elseif ${Config.MunitionStorage.Equal[Personal Hangar]}
 		{
 			if !${EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems](exists)}
 			{
