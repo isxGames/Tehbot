@@ -29,7 +29,9 @@ objectdef obj_Configuration_Mission
 	Setting(bool, UseSecondaryAmmo, SetSecondary)
 	Setting(bool, UseDrones, SetDrones)
 	Setting(bool, RangeLimit, SetRangeLimit)
+	Setting(bool, DropOffToContainer, SetDropOffToContainer)
 	Setting(string, SalvagePrefix, SetSalvagePrefix)
+	Setting(string, DropOffContainerName, SetDropOffContainerName)
 	Setting(string, MunitionStorage, SetMunitionStorage)
 	Setting(string, MunitionStorageFolder, SetMunitionStorageFolder)
 	Setting(string, DroneType, SetDroneType)
@@ -1382,7 +1384,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			UIElement[Run@TitleBar@Tehbot]:SetText[Run]
 		}
 		halt:Set[FALSE]
-		This:InsertState["UnloadLoots"]
+		This:InsertState["DropOffLoot"]
 		This:InsertState["Cleanup"]
 		return TRUE
 	}
@@ -1468,6 +1470,21 @@ objectdef obj_Mission inherits obj_StateQueue
 
 	member:bool StackHangars()
 	{
+		if !${Me.InStation}
+		{
+			return TRUE
+		}
+
+		if !${EVEWindow[Inventory](exists)}
+		{
+			EVE:Execute[OpenInventory]
+			return FALSE
+		}
+
+		variable index:item items
+		variable iterator itemIterator
+		variable int64 dropOffContainerID = 0;
+
 		if ${Config.MunitionStorage.Equal[Corporation Hangar]}
 		{
 			if !${EVEWindow[Inventory].ChildWindow[StationCorpHangar](exists)}
@@ -1481,8 +1498,12 @@ objectdef obj_Mission inherits obj_StateQueue
 				EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}]:MakeActive
 				return FALSE
 			}
-
 			EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}]:StackAll
+
+			if ${Config.DropOffToContainer} && ${Config.DropOffContainerName.NotNULLOrEmpty}
+			{
+				EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}]:GetItems[items]
+			}
 		}
 		elseif ${Config.MunitionStorage.Equal[Personal Hangar]}
 		{
@@ -1493,6 +1514,41 @@ objectdef obj_Mission inherits obj_StateQueue
 				return FALSE
 			}
 			EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:StackAll
+
+			if ${Config.DropOffToContainer} && ${Config.DropOffContainerName.NotNULLOrEmpty}
+			{
+				EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:GetItems[items]
+			}
+		}
+
+		items:GetIterator[itemIterator]
+		if ${itemIterator:First(exists)}
+		{
+			do
+			{
+				if ${itemIterator.Value.Name.Equal[${Config.DropOffContainerName}]} && ${itemIterator.Value.Type.Equal["Station Container"]}
+				{
+					dropOffContainerID:Set[${itemIterator.Value.ID}]
+					itemIterator.Value:Open
+					; Client:Wait[1000]
+					; if !${EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems](exists)}
+					; {
+					; 	echo stack open station
+					; 	EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:MakeActive
+					; 	return FALSE
+					; }
+
+					if !${EVEWindow[Inventory].ChildWindow[${dropOffContainerID}](exists)}
+					{
+						echo stack open container
+						EVEWindow[Inventory].ChildWindow[${dropOffContainerID}]:MakeActive
+						return FALSE
+					}
+					EVEWindow[Inventory].ChildWindow[${dropOffContainerID}]:StackAll
+					break
+				}
+			}
+			while ${itemIterator:Next(exists)}
 		}
 		return TRUE
 	}
@@ -1546,12 +1602,73 @@ objectdef obj_Mission inherits obj_StateQueue
 		return ${folder}
 	}
 
-	member:bool UnloadLoots()
+	member:bool DropOffLoot()
 	{
-		if (!${EVEWindow[Inventory](exists)})
+		if !${Me.InStation}
+		{
+			return TRUE
+		}
+
+		if !${EVEWindow[Inventory](exists)}
 		{
 			EVE:Execute[OpenInventory]
 			return FALSE
+		}
+
+		variable index:item items
+		variable iterator itemIterator
+		variable int64 dropOffContainerID = 0;
+		; Find the container item id first
+		if ${Config.DropOffToContainer} && ${Config.DropOffContainerName.NotNULLOrEmpty}
+		{
+			if ${Config.MunitionStorage.Equal[Corporation Hangar]}
+			{
+				if !${EVEWindow[Inventory].ChildWindow[StationCorpHangar](exists)}
+				{
+					EVEWindow[Inventory].ChildWindow[StationCorpHangars]:MakeActive
+					return FALSE
+				}
+
+				if !${EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}](exists)}
+				{
+
+					EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}]:MakeActive
+					return FALSE
+				}
+				EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}]:GetItems[items]
+			}
+			elseif ${Config.MunitionStorage.Equal[Personal Hangar]}
+			{
+				if !${EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems](exists)}
+				{
+					EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:MakeActive
+					return FALSE
+				}
+				EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:GetItems[items]
+			}
+
+			items:GetIterator[itemIterator]
+			if ${itemIterator:First(exists)}
+			{
+				do
+				{
+					if ${itemIterator.Value.Name.Equal[${Config.DropOffContainerName}]} && \
+						${itemIterator.Value.Type.Equal["Station Container"]}
+					{
+						dropOffContainerID:Set[${itemIterator.Value.ID}]
+						itemIterator.Value:Open
+						if !${EVEWindow[Inventory].ChildWindow[${dropOffContainerID}](exists)}
+						{
+							echo unload open container
+							EVEWindow[Inventory].ChildWindow[${dropOffContainerID}]:MakeActive
+							return FALSE
+						}
+						EVEWindow[Inventory].ChildWindow[${dropOffContainerID}]:StackAll
+						break
+					}
+				}
+				while ${itemIterator:Next(exists)}
+			}
 		}
 
 		if !${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo](exists)}
@@ -1560,8 +1677,6 @@ objectdef obj_Mission inherits obj_StateQueue
 			return FALSE
 		}
 
-		variable index:item items
-		variable iterator itemIterator
 		EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:GetItems[items]
 		items:GetIterator[itemIterator]
 		if ${itemIterator:First(exists)}
@@ -1585,7 +1700,12 @@ objectdef obj_Mission inherits obj_StateQueue
 				   ; Insignias for Extravaganza missions
 				   !${itemIterator.Value.Name.Find["Diamond"]}
 				{
-					if ${Config.MunitionStorage.Equal[Corporation Hangar]}
+					if ${Config.DropOffToContainer} && ${Config.DropOffContainerName.NotNULLOrEmpty} && ${dropOffContainerID} > 0
+					{
+						itemIterator.Value:MoveTo[${dropOffContainerID}, CargoHold]
+						; return FALSE
+					}
+					elseif ${Config.MunitionStorage.Equal[Corporation Hangar]}
 					{
 						if !${EVEWindow[Inventory].ChildWindow[StationCorpHangar](exists)}
 						{
@@ -1595,12 +1715,11 @@ objectdef obj_Mission inherits obj_StateQueue
 
 						if !${EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}](exists)}
 						{
-
 							EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}]:MakeActive
 							return FALSE
 						}
 
-						itemIterator.Value:MoveTo[MyStationCorporateHangar, StationCorporateHangar, ${itemIterator.Value.Quantity}, ${This.CorporationFolder}]
+						itemIterator.Value:MoveTo[MyStationCorporateHangar, StationCorporateHangar, ${This.CorporationFolder}]
 						; return FALSE
 					}
 					elseif ${Config.MunitionStorage.Equal[Personal Hangar]}
@@ -1610,7 +1729,7 @@ objectdef obj_Mission inherits obj_StateQueue
 							EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:MakeActive
 							return FALSE
 						}
-						itemIterator.Value:MoveTo[MyStationHangar, Hangar, ${itemIterator.Value.Quantity}]
+						itemIterator.Value:MoveTo[MyStationHangar, Hangar]
 						; return FALSE
 					}
 				}
