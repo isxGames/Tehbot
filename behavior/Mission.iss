@@ -2242,7 +2242,7 @@ objectdef obj_Mission inherits obj_StateQueue
 					if ${moduleIterator:First(exists)}
 						do
 						{
-							if !${Ship.ModuleList_Weapon:IncludeModule[${moduleIterator.Value.ID}]} || ${moduleIterator.Value.Charge.Type.Equal[${ammo}]} || ${moduleIterator.Value.IsReloading}
+							if !${Ship.ModuleList_Weapon.IncludeModule[${moduleIterator.Value.ID}]} || ${moduleIterator.Value.Charge.Type.Equal[${ammo}]} || ${moduleIterator.Value.IsReloading}
 							{
 								continue
 							}
