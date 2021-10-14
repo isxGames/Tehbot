@@ -1079,10 +1079,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			{
 				Ship.ModuleList_Weapon:ActivateAll[${currentTarget}]
 				Ship.ModuleList_Weapon:DeactivateNotOn[${currentTarget}]
-				if ${AutoModule.Config.TrackingComputers}
-				{
-					Ship.ModuleList_TrackingComputer:ActivateAll[${currentTarget}]
-				}
+				Ship.ModuleList_TrackingComputer:ActivateAll[${currentTarget}]
 			}
 			if ${Entity[${currentTarget}].Distance} <= ${Ship.ModuleList_TargetPainter.Range}
 			{
