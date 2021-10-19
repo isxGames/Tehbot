@@ -363,6 +363,7 @@ objectdef obj_ModuleBase inherits obj_StateQueue
             This:QueueState["DeactivatePercent", 50, ${DeactivatePercent}]
         }
 
+		; Need this state to catch target is destruction and reset CurrentTarget
         This:QueueState["WaitTillInactive"]
     }
 
@@ -523,19 +524,20 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 		return FALSE
 	}
 
-	member:bool WaitTillInactive(int Count = -1)
+	member:bool WaitTillInactive(int count = -1)
 	{
-		if ${Count} > 50
+		if ${count} > 50
 		{
 			MyShip.Module[${ModuleID}]:Deactivate
 			This:InsertState["WaitTillInactive", 50, 0]
 			return TRUE
 		}
+
 		if ${MyShip.Module[${ModuleID}].IsActive}
 		{
-			if ${Count} >= 0
+			if ${count} >= 0
 			{
-				This:InsertState["WaitTillInactive", 50, ${Count:Inc}]
+				This:InsertState["WaitTillInactive", 50, ${count:Inc}]
 				return TRUE
 			}
 			else
