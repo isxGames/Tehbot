@@ -1,6 +1,6 @@
 /*
 
-ComBot  Copyright © 2012  Tehtsuo and Vendan
+ComBot  Copyright ï¿½ 2012  Tehtsuo and Vendan
 
 This file is part of ComBot.
 
@@ -465,6 +465,16 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 	{
 		if ${newTarget} == -1 || ${newTarget} == 0
 		{
+			if ${MyShip.Module[${ModuleID}].IsActive}
+			{
+				if (${Me.ToEntity.Mode} == 3 && ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_AFTERBURNER)
+				{
+					Activated:Set[FALSE]
+					CurrentTarget:Set[-1]
+					This:Clear
+				}
+				return TRUE
+			}
 			MyShip.Module[${ModuleID}]:Activate
 		}
 		else

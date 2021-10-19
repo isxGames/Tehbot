@@ -67,12 +67,14 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 	{
 		variable bool TurnOff=TRUE
 
-		if !${Client.InSpace}
+		if !${Client.InSpace} || ${Me.ToEntity.IsCloaked}
 		{
 			return FALSE
 		}
-		if ${Me.ToEntity.IsCloaked}
+
+		if ${Me.ToEntity.Mode} == 3
 		{
+			Ship.ModuleList_AB_MWD:DeactivateAll
 			return FALSE
 		}
 
