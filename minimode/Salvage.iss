@@ -88,7 +88,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 		{
 			group:Set["((Group = \"Cargo Container\") && (Distance >= 2500))"]
 		}
-		else
+		elseif ${Me.InSpace}
 		{
 			UI:Update["Salvage", " Salvage mini module has no equipments to do anything", "r"]
 		}

@@ -865,7 +865,7 @@ objectdef obj_Mission inherits obj_StateQueue
 									if ${cargoIterator.Value.Name.Equal[${currentMissionDeliverItem}]}
 									{
 										cargoIterator.Value:MoveTo[${Entity[${currentLootContainer}].ID}, CargoHold]
-										UI:Update["Mission", "Delivered \"\ao${currentMissionDeliverItem}\"", "g"]
+										UI:Update["Mission", "Delivered \ao\"${currentMissionDeliverItem}\"", "g"]
 										haveDeliveryInCargo:Set[FALSE]
 										This:InsertState["CheckForWork"]
 										This:InsertState["Idle", 2000]
