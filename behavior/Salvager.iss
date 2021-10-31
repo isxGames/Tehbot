@@ -6,10 +6,10 @@ objectdef obj_Configuration_Salvager
 	{
 		if !${BaseConfig.BaseRef.FindSet[${This.SetName}](exists)}
 		{
-			UI:Update["Configuration", " ${This.SetName} settings missing - initializing", "o"]
+			Logger:Log["Configuration", " ${This.SetName} settings missing - initializing", "o"]
 			This:Set_Default_Values[]
 		}
-		UI:Update["Configuration", " ${This.SetName}: Initialized", "-g"]
+		Logger:Log["Configuration", " ${This.SetName}: Initialized", "-g"]
 	}
 
 	member:settingsetref CommonRef()
@@ -73,7 +73,7 @@ objectdef obj_Salvager inherits obj_StateQueue
 
 	method Start()
 	{
-		UI:Update["obj_Salvage", "Started", "g"]
+		Logger:Log["obj_Salvage", "Started", "g"]
 		if ${This.IsIdle}
 		{
 			This:QueueState["CheckCargoHold", 500]
@@ -192,7 +192,7 @@ objectdef obj_Salvager inherits obj_StateQueue
 				{
 					if ${BookmarkIterator.Value.Created.AsInt64} + 72000000000 < ${EVETime.AsInt64} && !${UsedBookmarks.Contains[${BookmarkIterator.Value.ID}]}
 					{
-						UI:Update["Salvager", "Removing expired bookmark - ${BookmarkIterator.Value.Label}", "o", TRUE]
+						Logger:Log["Salvager", "Removing expired bookmark - ${BookmarkIterator.Value.Label}", "o", TRUE]
 						BookmarkIterator.Value:Remove
 						UsedBookmarks:Add[${BookmarkIterator.Value.ID}]
 						This:InsertState["CheckBookmarks"]
@@ -242,7 +242,7 @@ objectdef obj_Salvager inherits obj_StateQueue
 				{
 					if ${BookmarkIterator.Value.Created.AsInt64} + 72000000000 < ${EVETime.AsInt64} && !${UsedBookmarks.Contains[${BookmarkIterator.Value.ID}]}
 					{
-						UI:Update["Salvager", "Removing expired bookmark - ${BookmarkIterator.Value.Label}", "o", TRUE]
+						Logger:Log["Salvager", "Removing expired bookmark - ${BookmarkIterator.Value.Label}", "o", TRUE]
 						BookmarkIterator.Value:Remove
 						UsedBookmarks:Add[${BookmarkIterator.Value.ID}]
 						This:InsertState["CheckBookmarks"]
@@ -265,7 +265,7 @@ objectdef obj_Salvager inherits obj_StateQueue
 		if ${BookmarkFound}
 		{
 			relay "all other" -event Tehbot_ReserveBookmark ${Me.ID},${TargetID}
-			UI:Update["obj_Salvage", "Setting course for ${Target}", "g"]
+			Logger:Log["obj_Salvage", "Setting course for ${Target}", "g"]
 			Move:Bookmark[${Target}, TRUE]
 			This:QueueState["Traveling"]
 			This:QueueState["Log", 1000, "Salvaging at ${Target}"]
@@ -281,7 +281,7 @@ objectdef obj_Salvager inherits obj_StateQueue
 			return TRUE
 		}
 
-		UI:Update["obj_Salvage", "No salvage bookmark found - returning to station", "g"]
+		Logger:Log["obj_Salvage", "No salvage bookmark found - returning to station", "g"]
 		This:QueueState["Offload"]
 		This:QueueState["Traveling"]
 		This:QueueState["Log", 10, "Idling for 30 seconds"]
@@ -345,9 +345,9 @@ objectdef obj_Salvager inherits obj_StateQueue
 		{
 			variable int expire
 			expire:Set[${Math.Calc[(${BookmarkTime} + 72000000000 - ${EVETime.AsInt64}) / 600000000].Int}]
-			UI:Update["Salvager", "Total Valid Salvage Bookmarks: \ar${totalBookmarks}", "o"]
-			UI:Update["Salvager", "Oldest Salvage bookmark expires in \ar${expire} \aominutes", "o"]
-			UI:Update["Salvager", " Named: \ar${BookmarkLabel}", "o"]
+			Logger:Log["Salvager", "Total Valid Salvage Bookmarks: \ar${totalBookmarks}", "o"]
+			Logger:Log["Salvager", "Oldest Salvage bookmark expires in \ar${expire} \aominutes", "o"]
+			Logger:Log["Salvager", " Named: \ar${BookmarkLabel}", "o"]
 
 		}
 	}
@@ -363,7 +363,7 @@ objectdef obj_Salvager inherits obj_StateQueue
 
 	member:bool Log(string text)
 	{
-		UI:Update["obj_Salvage", "${text}", "g"]
+		Logger:Log["obj_Salvage", "${text}", "g"]
 		return TRUE
 	}
 
@@ -399,7 +399,7 @@ objectdef obj_Salvager inherits obj_StateQueue
 
 		if ${NPCs.TargetList.Used} && ${NPCRun}
 		{
-			UI:Update["obj_Salvage", "Pocket has NPCs - Jumping Clear", "g"]
+			Logger:Log["obj_Salvage", "Pocket has NPCs - Jumping Clear", "g"]
 
 			HoldOffPlayer:Insert[${BookmarkCreator}]
 			HoldOffTimer:Insert[${Math.Calc[${LavishScript.RunningTime} + 600000]}]
@@ -419,7 +419,7 @@ objectdef obj_Salvager inherits obj_StateQueue
 
 		if ${EVEWindow[Inventory].ChildWindow[${MyShip.ID}, ShipCargo].UsedCapacity} / ${EVEWindow[Inventory].ChildWindow[${MyShip.ID}, ShipCargo].Capacity} > ${FullHold}
 		{
-			UI:Update["Salvage", "Unload trip required", "g"]
+			Logger:Log["Salvage", "Unload trip required", "g"]
 			This:Clear
 			This:QueueState["Offload"]
 			This:QueueState["Traveling"]
@@ -492,7 +492,7 @@ objectdef obj_Salvager inherits obj_StateQueue
 
 	member:bool JumpToCelestial()
 	{
-		UI:Update["Salvager", "Warping to ${Entity[GroupID = GROUP_SUN].Name}", "g"]
+		Logger:Log["Salvager", "Warping to ${Entity[GroupID = GROUP_SUN].Name}", "g"]
 		Move:Warp[${Entity["GroupID = GROUP_SUN"].ID}]
 		return TRUE
 	}
@@ -515,7 +515,7 @@ objectdef obj_Salvager inherits obj_StateQueue
 					{
 						if ${Removed} != ${BookmarkIterator.Value.ID}
 						{
-							UI:Update["obj_Salvage", "Finished Salvaging ${BookmarkIterator.Value.Label} - Deleting", "g"]
+							Logger:Log["obj_Salvage", "Finished Salvaging ${BookmarkIterator.Value.Label} - Deleting", "g"]
 							This:InsertState["DeleteBookmark", 1000, "${BookmarkCreator},${BookmarkIterator.Value.ID}"]
 							Config.SafeBookmarksRef.FindSetting[${BookmarkIterator.Value.ID}]:Remove
 							BookmarkIterator.Value:Remove
@@ -543,13 +543,13 @@ objectdef obj_Salvager inherits obj_StateQueue
 		}
 		if ${EVEWindow[Inventory].ChildWindow[${MyShip.ID}, ShipCargo].UsedCapacity} / ${EVEWindow[Inventory].ChildWindow[${MyShip.ID}, ShipCargo].Capacity} > 0.75
 		{
-			UI:Update["obj_Salvage", "Unload trip required", "g"]
+			Logger:Log["obj_Salvage", "Unload trip required", "g"]
 			This:QueueState["Offload"]
 			This:QueueState["Traveling"]
 		}
 		else
 		{
-			UI:Update["obj_Salvage", "Unload trip not required", "g"]
+			Logger:Log["obj_Salvage", "Unload trip not required", "g"]
 		}
 		This:QueueState["RefreshBookmarks", 3000]
 		This:QueueState["CheckBookmarks", 3000]
@@ -560,7 +560,7 @@ objectdef obj_Salvager inherits obj_StateQueue
 	{
 		if !${refreshdone}
 		{
-			UI:Update["obj_Salvage", "Refreshing bookmarks", "g"]
+			Logger:Log["obj_Salvage", "Refreshing bookmarks", "g"]
 			EVE:RefreshBookmarks
 			This:InsertState["RefreshBookmarks", 2000, "TRUE"]
 			return TRUE

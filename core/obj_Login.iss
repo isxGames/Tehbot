@@ -37,7 +37,7 @@ objectdef obj_Login inherits obj_StateQueue
 	{
 		if ${Wait}
 		{
-			UI:Update["Login", "Login pending for character \ao${EVEExtension.Character}", "y"]
+			Logger:Log["Login", "Login pending for character \ao${EVEExtension.Character}", "y"]
 		}
 		This:QueueState["WaitForLogin"]
 		if ${EVEExtension.Character.Length}
@@ -64,7 +64,7 @@ objectdef obj_Login inherits obj_StateQueue
 
 	member:bool Log(string msg, string color)
 	{
-		UI:Update["Login", "${msg}", "${color}"]
+		Logger:Log["Login", "${msg}", "${color}"]
 		return TRUE
 	}
 
@@ -82,7 +82,7 @@ objectdef obj_Login inherits obj_StateQueue
 
 		if ${EVEWindow[ByName,MessageBox](exists)} || ${EVEWindow[ByCaption,System Congested](exists)}
 		{
-			UI:Update["obj_Login", "System may be congested, waiting 10 seconds", "g"]
+			Logger:Log["obj_Login", "System may be congested, waiting 10 seconds", "g"]
 			Press Esc
 			This:Clear
 			This:QueueState["Idle", 10000]
@@ -108,7 +108,7 @@ objectdef obj_Login inherits obj_StateQueue
 		}
 
 		CharSelect:ClickCharacter[${Config.Common.CharID}]
-		UI:Update["obj_Login", "Character select command sent", "g"]
+		Logger:Log["obj_Login", "Character select command sent", "g"]
 		This:Clear
 		This:QueueState["Idle", 20000]
 		This:QueueState["SelectCharacter"]

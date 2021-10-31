@@ -191,7 +191,7 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 				; BUG of ISXEVE: UnloadToCargo method is not working
 				; elseif ${MyShip.Module[${ModuleID}].Charge.Type.Find["Tracking Speed Script"]}
 				; {
-				; 	UI:Update["obj_Module", "Unloading Tracking Speed Script"]
+				; 	Logger:Log["obj_Module", "Unloading Tracking Speed Script"]
 				; 	This:Deactivate
 				; 	This:QueueState["UnloadAmmoToCargo", 50]
 				; }
@@ -210,7 +210,7 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 				; BUG of ISXEVE: UnloadToCargo method is not working
 				; elseif ${MyShip.Module[${ModuleID}].Charge.Type.Find["Optimal Range Script"]}
 				; {
-				; 	UI:Update["obj_Module", "Unloading Optimal Range Script"]
+				; 	Logger:Log["obj_Module", "Unloading Optimal Range Script"]
 				; 	This:Deactivate
 				; 	This:QueueState["UnloadAmmoToCargo", 50]
 				; }
@@ -393,7 +393,7 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 
 			if ${Crystals.Used} == 0
 			{
-				UI:Update["obj_Module", "No crystals available - mining ouput decreased", "o"]
+				Logger:Log["obj_Module", "No crystals available - mining ouput decreased", "o"]
 			}
 
 			Crystals:GetIterator[Crystal]
@@ -403,7 +403,7 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 			{
 				if ${OreType.Find[${Crystal.Value.Name.Token[1, " "]}](exists)}
 				{
-					UI:Update["obj_Module", "Switching Crystal to ${Crystal.Value.Name}"]
+					Logger:Log["obj_Module", "Switching Crystal to ${Crystal.Value.Name}"]
 					MyShip.Module[${ModuleID}]:ChangeAmmo[${Crystal.Value.ID}, 1]
 					return TRUE
 				}
@@ -435,7 +435,7 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 			{
 				if ${Me.InSpace}
 				{
-					UI:Update["obj_Module", "No Ammo available - dreadful - also, annoying", "o"]
+					Logger:Log["obj_Module", "No Ammo available - dreadful - also, annoying", "o"]
 				}
 				return FALSE
 			}
@@ -446,7 +446,7 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 			{
 				if ${ammo.Equal[${availableAmmoIterator.Value.Name}]}
 				{
-					UI:Update["obj_Module", "Switching Ammo to \ay${availableAmmoIterator.Value.Name}"]
+					Logger:Log["obj_Module", "Switching Ammo to \ay${availableAmmoIterator.Value.Name}"]
 					variable int ChargeAmountToLoad = ${MyShip.Cargo[${ammo}].Quantity}
 
 					if ${ChargeAmountToLoad} > ${MyShip.Module[${ModuleID}].MaxCharges}
@@ -478,7 +478,7 @@ objectdef obj_ModuleBase inherits obj_StateQueue
 		}
 		else
 		{
-			UI:Update["obj_Module", "Unloading \ay${MyShip.Module[${ModuleID}].Charge.Type}"]
+			Logger:Log["obj_Module", "Unloading \ay${MyShip.Module[${ModuleID}].Charge.Type}"]
 			MyShip.Module[${ModuleID}]:UnloadToCargo
 			return TRUE
 		}

@@ -17,7 +17,7 @@ objectdef obj_Configuration_DroneData
 		}
 		BaseRef:Set[${LavishSettings[DroneData].FindSet[DroneTypes]}]
 
-		UI:Update["Configuration", " ${This.SetName}: Initialized", "-g"]
+		Logger:Log["Configuration", " ${This.SetName}: Initialized", "-g"]
 	}
 
 	method Shutdown()
@@ -180,7 +180,7 @@ objectdef obj_Drones inherits obj_StateQueue
 
 	method RecallAll()
 	{
-		UI:Update["obj_Drone", "Recalling Drones", "g"]
+		Logger:Log["obj_Drone", "Recalling Drones", "g"]
 		EVE:Execute[CmdDronesReturnToBay]
 		DronesOut:Set[FALSE]
 	}

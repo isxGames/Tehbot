@@ -6,7 +6,7 @@ objectdef obj_Configuration_Automate
 	{
 		if !${BaseConfig.BaseRef.FindSet[${This.SetName}](exists)}
 		{
-			UI:Update["Automate", " ${This.SetName} settings missing - initializing", "o"]
+			Logger:Log["Automate", " ${This.SetName} settings missing - initializing", "o"]
 			This:Set_Default_Values[]
 		}
 	}
@@ -61,22 +61,22 @@ objectdef obj_Automate inherits obj_StateQueue
 
 	method Start()
 	{
-		UI:Update["Automate", "Starting Automate", "g"]
+		Logger:Log["Automate", "Starting Automate", "g"]
 		StartComplete:Set[FALSE]
 		if !${Me(exists)} && !${MyShip(exists)} && !(${Me.InSpace} || ${Me.InStation})
 		{
 			if ${Config.DelayLogin}
 			{
-				UI:Update["Automate", "Login will proceed at \ag${Config.StartHour}:${Config.StartMinute}\ay plus ~\ag${Config.StartDelta}\ay minutes", "y"]
+				Logger:Log["Automate", "Login will proceed at \ag${Config.StartHour}:${Config.StartMinute}\ay plus ~\ag${Config.StartDelta}\ay minutes", "y"]
 				TehbotLogin.Wait:Set[TRUE]
 			}
 			if ${Config.DelayLoginDelta}
 			{
-				UI:Update["Automate", "Login will proceed in ~\ag${Config.StartDelta}\ay minutes", "y"]
+				Logger:Log["Automate", "Login will proceed in ~\ag${Config.StartDelta}\ay minutes", "y"]
 				TehbotLogin.Wait:Set[TRUE]
 				variable int Delta=${Math.Rand[${Config.StartDelta} + 1]}
 				StartComplete:Set[TRUE]
-				UI:Update["Automate", "Starting in \ao${Delta}\ag minutes", "g"]
+				Logger:Log["Automate", "Starting in \ao${Delta}\ag minutes", "g"]
 				This:QueueState["AllowLogin", ${Math.Calc[${Delta} * 60000]}.Int]
 				This:QueueState["WaitForLogin"]
 				This:QueueState["Launch"]
@@ -94,7 +94,7 @@ objectdef obj_Automate inherits obj_StateQueue
 		if ${Config.TimedLogout}
 		{
 			variable int Logout=${Math.Calc[${Config.Hour} * 60 + ${Config.Minute} + ${Math.Rand[${Config.LogoutDelta} + 1]}]}
-			UI:Update["Automate", "Logout in \ag${Config.Hour}\ay hours \ag${Config.Minute}\ay minutes plus ~\ag${Config.LogoutDelta}\ay minutes", "y"]
+			Logger:Log["Automate", "Logout in \ag${Config.Hour}\ay hours \ag${Config.Minute}\ay minutes plus ~\ag${Config.LogoutDelta}\ay minutes", "y"]
 			echo  This:QueueState["Idle", ${Math.Calc[${Logout} * 60000].Int}]
 			This:QueueState["Idle", ${Math.Calc[${Logout} * 60000].Int}]
 			if ${Config.Questor}
@@ -114,7 +114,7 @@ objectdef obj_Automate inherits obj_StateQueue
 	method Stop()
 	{
 		This:Clear
-		UI:Update["Automate", "Stopping Automate", "g"]
+		Logger:Log["Automate", "Stopping Automate", "g"]
 	}
 
 	member:bool Automate()
@@ -122,7 +122,7 @@ objectdef obj_Automate inherits obj_StateQueue
 		if ${Time.Hour} == ${Config.Hour} && ${Time.Minute} == ${Config.Minute}
 		{
 			variable int Logout=${Math.Rand[${Config.LogoutDelta} + 1]}
-			UI:Update["Automate", "Logout will proceed in \ao${Logout}\ag minutes", "g"]
+			Logger:Log["Automate", "Logout will proceed in \ao${Logout}\ag minutes", "g"]
 			This:QueueState["Idle", ${Math.Calc[${Logout} * 60000].Int}]
 			if ${Config.Questor}
 			{
@@ -140,7 +140,7 @@ objectdef obj_Automate inherits obj_StateQueue
 		{
 			variable int Delta=${Math.Rand[${Config.StartDelta} + 1]}
 			StartComplete:Set[TRUE]
-			UI:Update["Automate", "Starting in \ao${Delta}\ag minutes", "g"]
+			Logger:Log["Automate", "Starting in \ao${Delta}\ag minutes", "g"]
 			This:QueueState["AllowLogin", ${Math.Calc[${Delta} * 60000]}]
 			This:QueueState["WaitForLogin"]
 			This:QueueState["AutoStart"]
@@ -191,7 +191,7 @@ objectdef obj_Automate inherits obj_StateQueue
 	method DeltaLogoutNow()
 	{
 		variable int Logout=${Math.Rand[${Config.LogoutDelta} + 1]}
-		UI:Update["Automate", "Logout will proceed in \ao${Logout}\ag minutes", "g"]
+		Logger:Log["Automate", "Logout will proceed in \ao${Logout}\ag minutes", "g"]
 		This:Clear
 		This:QueueState["Idle", ${Math.Calc[${Logout} * 60000].Int}
 		This:QueueState["MoveToLogout"]
@@ -201,7 +201,7 @@ objectdef obj_Automate inherits obj_StateQueue
 
 	method LogoutNow()
 	{
-		UI:Update["Automate", "Logout time!", "r"]
+		Logger:Log["Automate", "Logout time!", "r"]
 		This:Clear
 		This:QueueState["MoveToLogout"]
 		This:QueueState["Traveling"]
@@ -211,7 +211,7 @@ objectdef obj_Automate inherits obj_StateQueue
 
 	method GotoLogoutNow()
 	{
-		UI:Update["Automate", "Going Home!", "r"]
+		Logger:Log["Automate", "Going Home!", "r"]
 		This:Clear
 		This:QueueState["MoveToLogout"]
 		This:QueueState["Traveling"]
@@ -227,7 +227,7 @@ objectdef obj_Automate inherits obj_StateQueue
 	{
 		if ${Busy.IsBusy}
 		{
-			UI:Update["Automate", "Waiting for drones", "y"]
+			Logger:Log["Automate", "Waiting for drones", "y"]
 			return FALSE
 		}
 		variable iterator Behaviors

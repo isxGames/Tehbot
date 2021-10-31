@@ -161,7 +161,7 @@ objectdef obj_Client
 
 		if ${BookmarkIndex.Used}
 		{
-			UI:Update["Client", "Undock warping to ${BookmarkIndex.Get[1].Label}", "g"]
+			Logger:Log["Client", "Undock warping to ${BookmarkIndex.Get[1].Label}", "g"]
 			BookmarkIndex.Get[1]:WarpTo
 			Client:Wait[5000]
 		}
@@ -170,7 +170,7 @@ objectdef obj_Client
 
 	method Wait(int delay)
 	{
-		UI:Update["Client", "Initiating ${delay} millisecond wait", "-o"]
+		Logger:Log["Client", "Initiating ${delay} millisecond wait", "-o"]
 		This.Ready:Set[FALSE]
 		This.NextPulse:Set[${Math.Calc[${LavishScript.RunningTime} + ${delay}]}]
 	}
@@ -186,7 +186,7 @@ objectdef obj_Client
 		variable index:item cargo
 		if !${EVEWindow[Inventory].ChildWindow[${Me.ShipID},ShipCargo]:GetItems[cargo](exists)}
 		{
-			UI:Update["Client", "Cargo hold information invalid, activating", "g"]
+			Logger:Log["Client", "Cargo hold information invalid, activating", "g"]
 			EVEWindow[Inventory].ChildWindow[${MyShip.ID}, ShipCargo]:MakeActive
 			return FALSE
 		}
@@ -203,7 +203,7 @@ objectdef obj_Client
 				}
 				else
 				{
-					UI:Update["Client", "Ore hold information invalid, activating", "g"]
+					Logger:Log["Client", "Ore hold information invalid, activating", "g"]
 					EVEWindow[Inventory].ChildWindow[${MyShip.ID}, ShipOreHold]:MakeActive
 					cycleCargoHold:Set[TRUE]
 					return FALSE
@@ -215,7 +215,7 @@ objectdef obj_Client
 			if ${EVEWindow[Inventory].ChildWindow[${MyShip.ID}, ShipFleetHangar].UsedCapacity} == -1 || \
 				${EVEWindow[Inventory].ChildWindow[${MyShip.ID}, ShipFleetHangar].Capacity} <= 0
 			{
-				UI:Update["Client", "Fleet Hangar information invalid, activating", "g"]
+				Logger:Log["Client", "Fleet Hangar information invalid, activating", "g"]
 				EVEWindow[Inventory].ChildWindow[${MyShip.ID}, ShipFleetHangar]:MakeActive
 				return FALSE
 			}

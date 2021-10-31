@@ -6,10 +6,10 @@ objectdef obj_Configuration_Mission
 	{
 		if !${BaseConfig.BaseRef.FindSet[${This.SetName}](exists)}
 		{
-			UI:Update["Configuration", " ${This.SetName} settings missing - initializing", "o"]
+			Logger:Log["Configuration", " ${This.SetName} settings missing - initializing", "o"]
 			This:Set_Default_Values[]
 		}
-		UI:Update["Configuration", " ${This.SetName}: Initialized", "-g"]
+		Logger:Log["Configuration", " ${This.SetName}: Initialized", "-g"]
 	}
 
 	member:settingsetref CommonRef()
@@ -139,7 +139,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 		if !${Config.MissionFile.NotNULLOrEmpty}
 		{
-			UI:Update["obj_Mission", "You need to specify a mission file!", "r"]
+			Logger:Log["obj_Mission", "You need to specify a mission file!", "r"]
 			return
 		}
 
@@ -148,7 +148,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 		if ${This.IsIdle}
 		{
-			UI:Update["obj_Mission", "Started", "g"]
+			Logger:Log["obj_Mission", "Started", "g"]
 			This:QueueState["UpdateNPCs"]
 			This:QueueState["ReportMissionConfigs"]
 			This:QueueState["Cleanup"]
@@ -175,8 +175,8 @@ objectdef obj_Mission inherits obj_StateQueue
 
 	member:bool ReportMissionConfigs()
 	{
-		UI:Update["obj_Mission", "Mission Configuration Loaded", "g"]
-		UI:Update["obj_Mission", " ${ValidMissions.Used} Missions Configured", "o"]
+		Logger:Log["obj_Mission", "Mission Configuration Loaded", "g"]
+		Logger:Log["obj_Mission", " ${ValidMissions.Used} Missions Configured", "o"]
 		return TRUE
 	}
 
@@ -255,8 +255,8 @@ objectdef obj_Mission inherits obj_StateQueue
 				{
 					if ${Config.DeclineLowSec} && ${missionJournalText.Find["low security system"]}
 					{
-						UI:Update["Mission", "Declining low security mission", "g"]
-						UI:Update["Mission", " ${missionIterator.Value.Name}", "o"]
+						Logger:Log["Mission", "Declining low security mission", "g"]
+						Logger:Log["Mission", " ${missionIterator.Value.Name}", "o"]
 						This:InsertState["Cleanup"]
 						This:InsertState["CheckForWork"]
 						This:InsertState["InteractAgent", 1500, "DECLINE"]
@@ -269,7 +269,7 @@ objectdef obj_Mission inherits obj_StateQueue
 						{
 							if ${missionJournalText.Find[${ValidMissions.CurrentKey} Objectives]}
 							{
-								UI:Update["Mission", "Accepting mission \ao${missionIterator.Value.Name}", "g"]
+								Logger:Log["Mission", "Accepting mission \ao${missionIterator.Value.Name}", "g"]
 								This:InsertState["Cleanup"]
 								This:InsertState["CheckForWork"]
 								This:InsertState["InteractAgent", 1500, "ACCEPT"]
@@ -286,7 +286,7 @@ objectdef obj_Mission inherits obj_StateQueue
 						{
 							if ${missionJournalText.Find[${InvalidMissions.CurrentKey} Objectives]}
 							{
-								UI:Update["Mission", "Declining mission \ao${missionIterator.Value.Name}", "g"]
+								Logger:Log["Mission", "Declining mission \ao${missionIterator.Value.Name}", "g"]
 								This:InsertState["Cleanup"]
 								This:InsertState["CheckForWork"]
 								This:InsertState["InteractAgent", 1500, "DECLINE"]
@@ -296,10 +296,10 @@ objectdef obj_Mission inherits obj_StateQueue
 						while ${InvalidMissions.NextKey(exists)}
 					}
 
-					UI:Update["Mission", "Unknown mission \ao${missionIterator.Value.Name}", "g"]
+					Logger:Log["Mission", "Unknown mission \ao${missionIterator.Value.Name}", "g"]
 					if ${Me.StationID} != ${EVE.Agent[${agentIndex}].StationID}
 					{
-						UI:Update["Mission", "Going to the agent station anyway", "g"]								This:InsertState["Cleanup"]
+						Logger:Log["Mission", "Going to the agent station anyway", "g"]								This:InsertState["Cleanup"]
 						This:InsertState["CheckForWork"]
 						This:InsertState["InteractAgent", 1500, "OFFER"]
 						return TRUE
@@ -322,8 +322,8 @@ objectdef obj_Mission inherits obj_StateQueue
 							; No unfinished targets(circle) or the circle appears before the first check which means the ship is not docked at the dropoff station
 							(!${missionJournalText.Find[${circlemarkIcon}]} || ${missionJournalText.Find[${circlemarkIcon}]} < ${missionJournalText.Find[${checkmarkIcon}]}))
 							{
-								UI:Update["Mission", "Mission Complete", "g"]
-								UI:Update["Mission", " ${missionIterator.Value.Name}", "o"]
+								Logger:Log["Mission", "Mission Complete", "g"]
+								Logger:Log["Mission", " ${missionIterator.Value.Name}", "o"]
 								This:InsertState["Cleanup"]
 								This:InsertState["CompleteMission", 1500]
 								return TRUE
@@ -331,27 +331,27 @@ objectdef obj_Mission inherits obj_StateQueue
 
 							if ${missionJournalText.Find[${ValidMissions.CurrentKey} Objectives]}
 							{
-								UI:Update["Mission", "Ongoing mission identified", "g"]
-								UI:Update["Mission", " ${missionIterator.Value.Name}", "o"]
+								Logger:Log["Mission", "Ongoing mission identified", "g"]
+								Logger:Log["Mission", " ${missionIterator.Value.Name}", "o"]
 
 								missionAttackTarget:Set[""]
 								if ${AttackTarget.Element[${ValidMissions.CurrentKey}](exists)}
 								{
-									UI:Update["Mission", "Attack target: \ao${AttackTarget.Element[${ValidMissions.CurrentKey}]}", "g"]
+									Logger:Log["Mission", "Attack target: \ao${AttackTarget.Element[${ValidMissions.CurrentKey}]}", "g"]
 									missionAttackTarget:Set[${AttackTarget.Element[${ValidMissions.CurrentKey}]}]
 								}
 
 								missionLootContainer:Set[""]
 								if ${LootContainers.Element[${ValidMissions.CurrentKey}](exists)}
 								{
-									UI:Update["Mission", "Loot container: \ao${LootContainers.Element[${ValidMissions.CurrentKey}]}", "g"]
+									Logger:Log["Mission", "Loot container: \ao${LootContainers.Element[${ValidMissions.CurrentKey}]}", "g"]
 									missionLootContainer:Set[${LootContainers.Element[${ValidMissions.CurrentKey}]}]
 								}
 
 								missionItemRequired:Set[""]
 								if ${ItemsRequired.Element[${ValidMissions.CurrentKey}](exists)}
 								{
-									UI:Update["Mission", "Acquire item: \ao${ItemsRequired.Element[${ValidMissions.CurrentKey}]}", "g"]
+									Logger:Log["Mission", "Acquire item: \ao${ItemsRequired.Element[${ValidMissions.CurrentKey}]}", "g"]
 									missionItemRequired:Set[${ItemsRequired.Element[${ValidMissions.CurrentKey}]}]
 								}
 
@@ -359,7 +359,7 @@ objectdef obj_Mission inherits obj_StateQueue
 								currentMissionGateKeyContainer:Set[""]
 								if ${MissionGateKeys.Element[${ValidMissions.CurrentKey}](exists)}
 								{
-									UI:Update["Mission", "Bring gate key if available: \ao${MissionGateKeys.Element[${ValidMissions.CurrentKey}]}", "g"]
+									Logger:Log["Mission", "Bring gate key if available: \ao${MissionGateKeys.Element[${ValidMissions.CurrentKey}]}", "g"]
 									currentMissionGateKey:Set[${MissionGateKeys.Element[${ValidMissions.CurrentKey}]}]
 
 									haveGateKeyInCargo:Set[FALSE]
@@ -377,7 +377,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 									if ${This.InventoryItemQuantity[${currentMissionGateKey}, ${Me.ShipID}, "ShipCargo"]} > 0
 									{
-										UI:Update["Mission", "Confirmed gate key \"${currentMissionGateKey}\" in cargo."]
+										Logger:Log["Mission", "Confirmed gate key \"${currentMissionGateKey}\" in cargo."]
 										haveGateKeyInCargo:Set[TRUE]
 									}
 
@@ -385,7 +385,7 @@ objectdef obj_Mission inherits obj_StateQueue
 									{
 										if ${MissionGateKeyContainers.Element[${ValidMissions.CurrentKey}](exists)}
 										{
-											UI:Update["Mission", "Look for the gate key in: \ao${MissionGateKeyContainers.Element[${ValidMissions.CurrentKey}]}", "g"]
+											Logger:Log["Mission", "Look for the gate key in: \ao${MissionGateKeyContainers.Element[${ValidMissions.CurrentKey}]}", "g"]
 											currentMissionGateKeyContainer:Set[${MissionGateKeyContainers.Element[${ValidMissions.CurrentKey}]}]
 										}
 									}
@@ -395,7 +395,7 @@ objectdef obj_Mission inherits obj_StateQueue
 								currentMissionDeliverItemContainer:Set[""]
 								if ${DeliverItem.Element[${ValidMissions.CurrentKey}](exists)}
 								{
-									UI:Update["Mission", "Deliver item: \ao${DeliverItem.Element[${ValidMissions.CurrentKey}]}", "g"]
+									Logger:Log["Mission", "Deliver item: \ao${DeliverItem.Element[${ValidMissions.CurrentKey}]}", "g"]
 									currentMissionDeliverItem:Set[${DeliverItem.Element[${ValidMissions.CurrentKey}]}]
 
 									haveDeliveryInCargo:Set[FALSE]
@@ -413,18 +413,18 @@ objectdef obj_Mission inherits obj_StateQueue
 
 									if ${This.InventoryItemQuantity[${currentMissionDeliverItem}, ${Me.ShipID}, "ShipCargo"]} > 0
 									{
-										UI:Update["Mission", "Confirmed delivery \"${currentMissionDeliverItem}\" in cargo."]
+										Logger:Log["Mission", "Confirmed delivery \"${currentMissionDeliverItem}\" in cargo."]
 										haveDeliveryInCargo:Set[TRUE]
 									}
 
 									if ${DeliverItemContainer.Element[${ValidMissions.CurrentKey}](exists)}
 									{
-										UI:Update["Mission", "Deliver the item to: \ao${DeliverItemContainer.Element[${ValidMissions.CurrentKey}]}", "g"]
+										Logger:Log["Mission", "Deliver the item to: \ao${DeliverItemContainer.Element[${ValidMissions.CurrentKey}]}", "g"]
 										currentMissionDeliverItemContainer:Set[${DeliverItemContainer.Element[${ValidMissions.CurrentKey}]}]
 									}
 									else
 									{
-										UI:Update["Mission", "Don't know where to deliver, halting.", "r"]
+										Logger:Log["Mission", "Don't know where to deliver, halting.", "r"]
 										This:Clear
 										return TRUE
 									}
@@ -486,10 +486,10 @@ objectdef obj_Mission inherits obj_StateQueue
 
 					if ${Me.InStation} && ${reload}
 					{
-						UI:Update["Mission", "Loading Ammo", "g"]
-						UI:Update["Mission", " ${ammo}", "o"]
+						Logger:Log["Mission", "Loading Ammo", "g"]
+						Logger:Log["Mission", " ${ammo}", "o"]
 						if ${Config.UseSecondaryAmmo}
-							UI:Update["Mission", " ${secondaryAmmo}", "o"]
+							Logger:Log["Mission", " ${secondaryAmmo}", "o"]
 						reload:Set[FALSE]
 						This:InsertState["CheckForWork"]
 						isLoadingFallbackDrones:Set[FALSE]
@@ -531,7 +531,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			while ${missionIterator:Next(exists)}
 		}
 
-		UI:Update["Mission", "Requesting mission", "g"]
+		Logger:Log["Mission", "Requesting mission", "g"]
 		This:InsertState["CheckForWork"]
 		This:InsertState["InteractAgent", 1500, "OFFER"]
 		return TRUE
@@ -603,7 +603,7 @@ objectdef obj_Mission inherits obj_StateQueue
 					}
 					else
 					{
-						UI:Update["Mission", "unknown EW ${jamsIterator.Value}", "r"]
+						Logger:Log["Mission", "unknown EW ${jamsIterator.Value}", "r"]
 					}
 				}
 				while ${jamsIterator:Next(exists)}
@@ -772,7 +772,7 @@ objectdef obj_Mission inherits obj_StateQueue
 						{
 							if ${Ship.ModuleList_Siege.ActiveCount}
 							{
-								; UI:Update["Mission", "Deactivate siege module due to approaching"]
+								; Logger:Log["Mission", "Deactivate siege module due to approaching"]
 								Ship.ModuleList_Siege:DeactivateAll
 							}
 							Entity[${currentLootContainer}]:Approach[1000]
@@ -827,7 +827,7 @@ objectdef obj_Mission inherits obj_StateQueue
 									if ${itemIterator.Value.Type.Equal[${missionItemRequired}]}
 									{
 										itemIterator.Value:MoveTo[${MyShip.ID}, CargoHold]
-										UI:Update["Mission", "Aquired mission item: \ao${missionItemRequired}", "g"]
+										Logger:Log["Mission", "Aquired mission item: \ao${missionItemRequired}", "g"]
 										This:InsertState["CheckForWork"]
 										This:InsertState["Idle", 2000]
 										notDone:Set[FALSE]
@@ -836,7 +836,7 @@ objectdef obj_Mission inherits obj_StateQueue
 									elseif ${itemIterator.Value.Type.Equal[${currentMissionGateKey}]}
 									{
 										itemIterator.Value:MoveTo[${MyShip.ID}, CargoHold]
-										UI:Update["Mission", "Aquired mission gate key: \ao${currentMissionGateKey}", "g"]
+										Logger:Log["Mission", "Aquired mission gate key: \ao${currentMissionGateKey}", "g"]
 										haveGateKeyInCargo:Set[TRUE]
 										currentMissionGateKeyContainer:Set[""]
 										This:InsertState["PerformMission"]
@@ -871,7 +871,7 @@ objectdef obj_Mission inherits obj_StateQueue
 									if ${cargoIterator.Value.Name.Equal[${currentMissionDeliverItem}]}
 									{
 										cargoIterator.Value:MoveTo[${Entity[${currentLootContainer}].ID}, CargoHold]
-										UI:Update["Mission", "Delivered \ao\"${currentMissionDeliverItem}\"", "g"]
+										Logger:Log["Mission", "Delivered \ao\"${currentMissionDeliverItem}\"", "g"]
 										haveDeliveryInCargo:Set[FALSE]
 										This:InsertState["CheckForWork"]
 										This:InsertState["Idle", 2000]
@@ -881,7 +881,7 @@ objectdef obj_Mission inherits obj_StateQueue
 								while ${cargoIterator:Next(exists)}
 							}
 
-							UI:Update["Can't find the delivery in cargo", "r"]
+							Logger:Log["Can't find the delivery in cargo", "r"]
 							; Don't halt here to help surviving
 							; This:Clear
 							; return TRUE
@@ -979,7 +979,7 @@ objectdef obj_Mission inherits obj_StateQueue
 						{
 							currentTarget:Set[${activateJammerIterator.Value}]
 							maxAttackTime:Set[${Math.Calc[${LavishScript.RunningTime} + (${switchTargetAfter} * 1000)]}]
-							UI:Update["Mission", "Switching target to activate jammer \ar${Entity[${currentTarget}].Name}", "g"]
+							Logger:Log["Mission", "Switching target to activate jammer \ar${Entity[${currentTarget}].Name}", "g"]
 							finalized:Set[TRUE]
 							break
 						}
@@ -1003,7 +1003,7 @@ objectdef obj_Mission inherits obj_StateQueue
 					{
 						currentTarget:Set[${lockedTargetIterator.Value}]
 						maxAttackTime:Set[${Math.Calc[${LavishScript.RunningTime} + (${switchTargetAfter} * 1000)]}]
-						UI:Update["Mission", "Switching to easier target: \ar${Entity[${currentTarget}].Name}", "g"]
+						Logger:Log["Mission", "Switching to easier target: \ar${Entity[${currentTarget}].Name}", "g"]
 					}
 				}
 				while ${lockedTargetIterator:Next(exists)}
@@ -1021,7 +1021,7 @@ objectdef obj_Mission inherits obj_StateQueue
 					{
 						currentTarget:Set[${activateJammerIterator.Value}]
 						maxAttackTime:Set[${Math.Calc[${LavishScript.RunningTime} + (${switchTargetAfter} * 1000)]}]
-						UI:Update["Mission", "Targeting activate jammer \ar${Entity[${currentTarget}].Name}", "g"]
+						Logger:Log["Mission", "Targeting activate jammer \ar${Entity[${currentTarget}].Name}", "g"]
 						break
 					}
 				}
@@ -1043,7 +1043,7 @@ objectdef obj_Mission inherits obj_StateQueue
 					elseif ${currentTarget} == 0 || ${Entity[${currentTarget}].Distance} > ${Entity[${lockedTargetIterator.Value}].Distance}
 					{
 						; if ${currentTarget} != 0
-						; 	UI:Update["Mission", "there is something closer ${Entity[${lockedTargetIterator.Value}].Name}"]
+						; 	Logger:Log["Mission", "there is something closer ${Entity[${lockedTargetIterator.Value}].Name}"]
 						currentTarget:Set[${lockedTargetIterator.Value}]
 						maxAttackTime:Set[${Math.Calc[${LavishScript.RunningTime} + (${switchTargetAfter} * 1000)]}]
 					}
@@ -1052,12 +1052,12 @@ objectdef obj_Mission inherits obj_StateQueue
 
 				if ${currentTarget} == 0
 				{
-					; UI:Update["Mission", "no easy target"]
+					; Logger:Log["Mission", "no easy target"]
 					currentTarget:Set[${HardToDealWithTarget}]
 					maxAttackTime:Set[${Math.Calc[${LavishScript.RunningTime} + (${switchTargetAfter} * 1000)]}]
 				}
 			}
-			UI:Update["Mission", "Primary target: \ar${Entity[${currentTarget}].Name}", "g"]
+			Logger:Log["Mission", "Primary target: \ar${Entity[${currentTarget}].Name}", "g"]
 		}
 
 		; Nothing locked
@@ -1067,10 +1067,10 @@ objectdef obj_Mission inherits obj_StateQueue
 		{
 			if ${Ship.ModuleList_Siege.ActiveCount}
 			{
-				; UI:Update["Mission", "Deactivate siege module due to no target"]
+				; Logger:Log["Mission", "Deactivate siege module due to no target"]
 				Ship.ModuleList_Siege:DeactivateAll
 			}
-			UI:Update["Mission", "Approaching distanced target: \ar${ActiveNPCs.TargetList.Get[1].Name}", "g"]
+			Logger:Log["Mission", "Approaching distanced target: \ar${ActiveNPCs.TargetList.Get[1].Name}", "g"]
 			ActiveNPCs.TargetList.Get[1]:Approach
 			This:InsertState["PerformMission"]
 			return TRUE
@@ -1117,7 +1117,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			{
 				if ${Ship.ModuleList_Siege.ActiveCount}
 				{
-					; UI:Update["Mission", "Deactivate siege module due to approaching"]
+					; Logger:Log["Mission", "Deactivate siege module due to approaching"]
 					Ship.ModuleList_Siege:DeactivateAll
 				}
 				NPCs.TargetList.Get[1]:Approach
@@ -1142,7 +1142,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			{
 				if ${Ship.ModuleList_Siege.ActiveCount}
 				{
-					; UI:Update["Mission", "Deactivate siege module due to approaching"]
+					; Logger:Log["Mission", "Deactivate siege module due to approaching"]
 					Ship.ModuleList_Siege:DeactivateAll
 				}
 				Entity[${missionAttackTarget}]:Approach
@@ -1151,8 +1151,8 @@ objectdef obj_Mission inherits obj_StateQueue
 			if !${Entity[${missionAttackTarget}].IsLockedTarget} && !${Entity[${missionAttackTarget}].BeingTargeted} && \
 				${Entity[${missionAttackTarget}].Distance} < ${MyShip.MaxTargetRange}
 			{
-				UI:Update["Mission", "Locking Mission Target", "g"]
-				UI:Update["Mission", " ${Entity[${missionAttackTarget}].Name}", "o"]
+				Logger:Log["Mission", "Locking Mission Target", "g"]
+				Logger:Log["Mission", " ${Entity[${missionAttackTarget}].Name}", "o"]
 				Entity[${missionAttackTarget}]:LockTarget
 			}
 			elseif ${Entity[${missionAttackTarget}].IsLockedTarget}
@@ -1215,8 +1215,8 @@ objectdef obj_Mission inherits obj_StateQueue
 							; No unfinished targets(circle) or the circle appears before the first check which means the ship is not docked at the dropoff station
 							(!${missionJournalText.Find[${circlemarkIcon}]} || ${missionJournalText.Find[${circlemarkIcon}]} < ${missionJournalText.Find[${checkmarkIcon}]}))
 							{
-								UI:Update["Mission", "Mission Complete", "g"]
-								UI:Update["Mission", " ${missionIterator.Value.Name}", "o"]
+								Logger:Log["Mission", "Mission Complete", "g"]
+								Logger:Log["Mission", " ${missionIterator.Value.Name}", "o"]
 								This:InsertState["Cleanup"]
 								This:InsertState["CompleteMission", 1500]
 								return TRUE
@@ -1233,7 +1233,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		{
 			if ${Ship.ModuleList_Siege.ActiveCount}
 			{
-				; UI:Update["Mission", "Deactivate siege module due to approaching"]
+				; Logger:Log["Mission", "Deactivate siege module due to approaching"]
 				Ship.ModuleList_Siege:DeactivateAll
 			}
 
@@ -1317,7 +1317,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		{
 			if ${Ship.ModuleList_Siege.ActiveCount}
 			{
-				; UI:Update["Mission", "Deactivate siege module due to mission complete"]
+				; Logger:Log["Mission", "Deactivate siege module due to mission complete"]
 				Ship.ModuleList_Siege:DeactivateAll
 			}
 
@@ -1330,8 +1330,8 @@ objectdef obj_Mission inherits obj_StateQueue
 
 		if ${Me.StationID} != ${EVE.Agent[${agentIndex}].StationID}
 		{
-			UI:Update["Mission", "Need to be at agent station to complete mission", "g"]
-			UI:Update["Mission", "Setting course for \ao${EVE.Station[${EVE.Agent[${agentIndex}].StationID}].Name}", "g"]
+			Logger:Log["Mission", "Need to be at agent station to complete mission", "g"]
+			Logger:Log["Mission", "Setting course for \ao${EVE.Station[${EVE.Agent[${agentIndex}].StationID}].Name}", "g"]
 			Move:Agent[${agentIndex}]
 			This:InsertState["CompleteMission", 1500]
 			This:InsertState["Traveling"]
@@ -1750,7 +1750,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 		if ${This.InventoryItemQuantity[${currentMissionGateKey}, ${Me.ShipID}, "ShipCargo"]} > 0
 		{
-			UI:Update["Mission", "Confirmed gate key \"${currentMissionGateKey}\" in cargo."]
+			Logger:Log["Mission", "Confirmed gate key \"${currentMissionGateKey}\" in cargo."]
 			haveGateKeyInCargo:Set[TRUE]
 			currentMissionGateKeyContainer:Set[""]
 			return TRUE
@@ -1794,7 +1794,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			{
 				if ${itemIterator.Value.Name.Equal[${currentMissionGateKey}]}
 				{
-					UI:Update["Mission", "Moving the gate key \"${currentMissionGateKey}\" to cargo."]
+					Logger:Log["Mission", "Moving the gate key \"${currentMissionGateKey}\" to cargo."]
 					itemIterator.Value:MoveTo[${MyShip.ID}, CargoHold, 1]
 					return FALSE
 				}
@@ -1826,7 +1826,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 		if ${This.InventoryItemQuantity[${currentMissionDeliverItem}, ${Me.ShipID}, "ShipCargo"]} > 0
 		{
-			UI:Update["Mission", "Confirmed the delivery \"${currentMissionDeliverItem}\" in cargo."]
+			Logger:Log["Mission", "Confirmed the delivery \"${currentMissionDeliverItem}\" in cargo."]
 			haveDeliveryInCargo:Set[TRUE]
 			return TRUE
 		}
@@ -1848,7 +1848,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			{
 				if ${itemIterator.Value.Name.Equal[${currentMissionDeliverItem}]}
 				{
-					UI:Update["Mission", "Moving the delivery \"${currentMissionDeliverItem}\" to cargo."]
+					Logger:Log["Mission", "Moving the delivery \"${currentMissionDeliverItem}\" to cargo."]
 					itemIterator.Value:MoveTo[${MyShip.ID}, CargoHold, 1]
 					return FALSE
 				}
@@ -1856,7 +1856,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			while ${itemIterator:Next(exists)}
 		}
 
-		UI:Update["Mission", "Can't find the delivery ${currentMissionDeliverItem}, halting.", "r"]
+		Logger:Log["Mission", "Can't find the delivery ${currentMissionDeliverItem}, halting.", "r"]
 		This:Clear
 		return TRUE
 	}
@@ -1981,7 +1981,7 @@ objectdef obj_Mission inherits obj_StateQueue
 						{
 							loadingDroneNumber:Set[${itemIterator.Value.Quantity}]
 						}
-						UI:Update["Mission", "Loading ${loadingDroneNumber} \ao${preferredDroneType}\aws."]
+						Logger:Log["Mission", "Loading ${loadingDroneNumber} \ao${preferredDroneType}\aws."]
 						itemIterator.Value:MoveTo[${MyShip.ID}, DroneBay, ${loadingDroneNumber}]
 						droneAmountToLoad:Dec[${loadingDroneNumber}]
 						return FALSE
@@ -2114,7 +2114,7 @@ objectdef obj_Mission inherits obj_StateQueue
 					{
 						loadingDroneNumber:Set[${itemIterator.Value.Quantity}]
 					}
-					UI:Update["Mission", "Loading ${loadingDroneNumber} \ao${preferredDroneType}\aws."]
+					Logger:Log["Mission", "Loading ${loadingDroneNumber} \ao${preferredDroneType}\aws."]
 					itemIterator.Value:MoveTo[${MyShip.ID}, DroneBay, ${loadingDroneNumber}]
 					droneAmountToLoad:Dec[${loadingDroneNumber}]
 					return FALSE
@@ -2139,7 +2139,7 @@ objectdef obj_Mission inherits obj_StateQueue
 						{
 							loadingDroneNumber:Set[${itemIterator.Value.Quantity}]
 						}
-						UI:Update["Mission", "Loading ${loadingDroneNumber} \ao${fallbackDroneType}\aws for having no \ao${preferredDroneType}\aw."]
+						Logger:Log["Mission", "Loading ${loadingDroneNumber} \ao${fallbackDroneType}\aws for having no \ao${preferredDroneType}\aw."]
 						itemIterator.Value:MoveTo[${MyShip.ID}, DroneBay, ${loadingDroneNumber}]
 						droneAmountToLoad:Dec[${loadingDroneNumber}]
 						return FALSE
@@ -2151,19 +2151,19 @@ objectdef obj_Mission inherits obj_StateQueue
 
 		if ${defaultAmmoAmountToLoad} > 0
 		{
-			UI:Update["Mission", "You're out of ${ammo}, halting.", "r"]
+			Logger:Log["Mission", "You're out of ${ammo}, halting.", "r"]
 			This:Clear
 			return TRUE
 		}
 		elseif ${Config.UseSecondaryAmmo} && ${secondaryAmmoAmountToLoad} > 0
 		{
-			UI:Update["Mission", "You're out of ${secondaryAmmo}, halting.", "r"]
+			Logger:Log["Mission", "You're out of ${secondaryAmmo}, halting.", "r"]
 			This:Clear
 			return TRUE
 		}
 		elseif ${Config.UseDrones} && ${droneAmountToLoad} > 0
 		{
-			UI:Update["Mission", "You're out of drones, halting.", "r"]
+			Logger:Log["Mission", "You're out of drones, halting.", "r"]
 			This:Clear
 			return TRUE
 		}
@@ -2176,7 +2176,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 	member:bool RefreshBookmarks()
 	{
-		UI:Update["obj_Mission", "Refreshing bookmarks", "g"]
+		Logger:Log["obj_Mission", "Refreshing bookmarks", "g"]
 		EVE:RefreshBookmarks
 		return TRUE
 	}
@@ -2202,7 +2202,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		EVE:RefreshBookmarks
 		if ${totalBookmarks} > 15
 		{
-			UI:Update["obj_Mission", "Salvage running behind, waiting 5 minutes", "g"]
+			Logger:Log["obj_Mission", "Salvage running behind, waiting 5 minutes", "g"]
 			This:InsertState["RefreshBookmarks", 300000]
 		}
 

@@ -27,10 +27,10 @@ objectdef obj_Configuration_AutoModule
 	{
 		if !${BaseConfig.BaseRef.FindSet[${This.SetName}](exists)}
 		{
-			UI:Update["obj_Configuration", " ${This.SetName} settings missing - initializing", "o"]
+			Logger:Log["obj_Configuration", " ${This.SetName} settings missing - initializing", "o"]
 			This:Set_Default_Values[]
 		}
-		UI:Update["obj_Configuration", " ${This.SetName}: Initialized", "-g"]
+		Logger:Log["obj_Configuration", " ${This.SetName}: Initialized", "-g"]
 	}
 
 	member:settingsetref CommonRef()
@@ -219,7 +219,7 @@ objectdef obj_AutoModule inherits obj_StateQueue
 
 		if ${Ship.ModuleList_DroneControlUnit.ActiveCount} < ${Ship.ModuleList_DroneControlUnit.Count} && ${Config.DroneControlUnit}
 		{
-			UI:Update["AutoModule", "Activating DroneControlUnit", "g"]
+			Logger:Log["AutoModule", "Activating DroneControlUnit", "g"]
 			Ship.ModuleList_DroneControlUnit:ActivateAll
 		}
 

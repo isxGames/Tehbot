@@ -328,7 +328,7 @@ objectdef obj_DroneControl inherits obj_StateQueue
 					}
 					else
 					{
-						UI:Update["Mission", "unknown EW ${jamsIterator.Value}", "r"]
+						Logger:Log["Mission", "unknown EW ${jamsIterator.Value}", "r"]
 					}
 				}
 				while ${jamsIterator:Next(exists)}
@@ -500,7 +500,7 @@ objectdef obj_DroneControl inherits obj_StateQueue
 						if ${Entity[${activateJammerIterator.Value}].IsLockedTarget} && ${Entity[${activateJammerIterator.Value}].Distance} < ${droneEngageRange}
 						{
 							currentTarget:Set[${activateJammerIterator.Value}]
-							UI:Update["DroneControl", "Switching target to activate jammer \ar${Entity[${currentTarget}].Name}"]
+							Logger:Log["DroneControl", "Switching target to activate jammer \ar${Entity[${currentTarget}].Name}"]
 							finalized:Set[TRUE]
 							break
 						}
@@ -523,7 +523,7 @@ objectdef obj_DroneControl inherits obj_StateQueue
 					(!${Ship.IsHardToDealWithTarget[${currentTarget}]} || ${Entity[${currentTarget}].Distance} > ${Entity[${lockedTargetIterator.Value}].Distance})
 					{
 						currentTarget:Set[${lockedTargetIterator.Value}]
-						UI:Update["DroneControl", "Switching to target skipped by ship: \ar${Entity[${currentTarget}].Name}"]
+						Logger:Log["DroneControl", "Switching to target skipped by ship: \ar${Entity[${currentTarget}].Name}"]
 					}
 				}
 				while ${lockedTargetIterator:Next(exists)}
@@ -540,7 +540,7 @@ objectdef obj_DroneControl inherits obj_StateQueue
 					if ${Entity[${activateJammerIterator.Value}].IsLockedTarget} && ${Entity[${activateJammerIterator.Value}].Distance} < ${droneEngageRange}
 					{
 						currentTarget:Set[${activateJammerIterator.Value}]
-						UI:Update["DroneControl", "Targeting activate jammer \ar${Entity[${currentTarget}].Name}"]
+						Logger:Log["DroneControl", "Targeting activate jammer \ar${Entity[${currentTarget}].Name}"]
 						break
 					}
 				}
@@ -562,7 +562,7 @@ objectdef obj_DroneControl inherits obj_StateQueue
 				while ${lockedTargetIterator:Next(exists)}
 			}
 			if ${currentTarget} != 0
-				UI:Update["DroneControl", "Primary target: \ar${Entity[${currentTarget}].Name}"]
+				Logger:Log["DroneControl", "Primary target: \ar${Entity[${currentTarget}].Name}"]
 		}
 
 		if ${currentTarget} != 0

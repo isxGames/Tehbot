@@ -17,14 +17,14 @@ objectdef obj_NPCData
 		}
 		BaseRef:Set[${LavishSettings[NPCData].FindSet[NPCTypes]}]
 
-		UI:Update["Configuration", " ${This.SetName}: Initialized", "-g"]
+		Logger:Log["Configuration", " ${This.SetName}: Initialized", "-g"]
 	}
 
 	method Shutdown()
 	{
 		LavishSettings[NPCData]:Clear
 	}
-	
+
 	member:string NPCType(int GroupID)
 	{
 		variable iterator NPCTypes

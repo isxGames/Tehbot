@@ -6,7 +6,7 @@ objectdef obj_Configuration_UndockWarp
 	{
 		if !${BaseConfig.BaseRef.FindSet[${This.SetName}](exists)}
 		{
-			UI:Update["Configuration", " ${This.SetName} settings missing - initializing", "o"]
+			Logger:Log["Configuration", " ${This.SetName} settings missing - initializing", "o"]
 			This:Set_Default_Values[]
 		}
 	}
@@ -58,7 +58,7 @@ objectdef obj_UndockWarp inherits obj_StateQueue
 		{
 			if ${EVE.ProgressWindowTitle.Equal[Prepare to undock]}
 			{
-				UI:Update["UndockWarp", "Triggering warp to undock bookmark, if available", "y"]
+				Logger:Log["UndockWarp", "Triggering warp to undock bookmark, if available", "y"]
 				Client.Undock:Set[TRUE]
 			}
 		}

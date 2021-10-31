@@ -38,7 +38,7 @@ objectdef obj_Move inherits obj_StateQueue
 	{
 		if !${Me.AutoPilotOn}
 		{
-			UI:Update["Move", "Activating autopilot", "o"]
+			Logger:Log["Move", "Activating autopilot", "o"]
 			EVE:Execute[CmdToggleAutopilot]
 		}
 	}
@@ -55,8 +55,8 @@ objectdef obj_Move inherits obj_StateQueue
 
 		if ${DestinationList[${DestinationList.Used}]} != ${DestinationSystemID}
 		{
-			UI:Update["Move", "Setting destination", "o"]
-			UI:Update["Move", " ${Universe[${DestinationSystemID}].Name}", "-g"]
+			Logger:Log["Move", "Setting destination", "o"]
+			Logger:Log["Move", " ${Universe[${DestinationSystemID}].Name}", "-g"]
 			Universe[${DestinationSystemID}]:SetDestination
 			return
 		}
@@ -82,8 +82,8 @@ objectdef obj_Move inherits obj_StateQueue
 
 		if ${DestinationList[${DestinationList.Used}]} != ${EVE.Station[${StationID}].SolarSystem.ID}
 		{
-			UI:Update["Move", "Setting destination", "o"]
-			UI:Update["Move", " ${EVE.Station[${StationID}].Name}", "-g"]
+			Logger:Log["Move", "Setting destination", "o"]
+			Logger:Log["Move", " ${EVE.Station[${StationID}].Name}", "-g"]
 			Universe[${EVE.Station[${StationID}].SolarSystem.ID}]:SetDestination
 			return
 		}
@@ -101,15 +101,15 @@ objectdef obj_Move inherits obj_StateQueue
 	{
 		if ${Entity[${StationID}](exists)}
 		{
-			UI:Update["Move", "Docking", "o"]
-			UI:Update["Move", " ${Entity[${StationID}].Name}", "-g"]
+			Logger:Log["Move", "Docking", "o"]
+			Logger:Log["Move", " ${Entity[${StationID}].Name}", "-g"]
 			Entity[${StationID}]:Dock
 			Client:Wait[10000]
 		}
 		else
 		{
-			UI:Update["Move", "Station Requested does not exist", "r"]
-			UI:Update["Move", "StationID: ${StationID}", "r"]
+			Logger:Log["Move", "Station Requested does not exist", "r"]
+			Logger:Log["Move", "StationID: ${StationID}", "r"]
 		}
 	}
 
@@ -124,13 +124,13 @@ objectdef obj_Move inherits obj_StateQueue
 
 		if !${Me.Fleet.Member[${ID}](exists)}
 		{
-			UI:Update["Move", "Fleet member does not exist", "r"]
-			UI:Update["Move", "Fleet member CharID: ${ID}", "r"]
+			Logger:Log["Move", "Fleet member does not exist", "r"]
+			Logger:Log["Move", "Fleet member CharID: ${ID}", "r"]
 			return
 		}
 
-		UI:Update["Move", "Movement queued", "o"]
-		UI:Update["Move", " ${Being[${ID}].Name}", "-g"]
+		Logger:Log["Move", "Movement queued", "o"]
+		Logger:Log["Move", " ${Being[${ID}].Name}", "-g"]
 		This.Traveling:Set[TRUE]
 		This:QueueState["FleetmemberMove", 2000, "${ID}, ${IgnoreGate}, ${Distance}"]
 	}
@@ -144,20 +144,20 @@ objectdef obj_Move inherits obj_StateQueue
 
 		if !${EVE.Bookmark[${DestinationBookmarkLabel}](exists)} && !${EVE.Station[${DestinationBookmarkLabel}](exists)}
 		{
-			UI:Update["Move", "Attempted to travel to a bookmark which does not exist", "r"]
-			UI:Update["Move", "Bookmark label: ${DestinationBookmarkLabel}", "r"]
+			Logger:Log["Move", "Attempted to travel to a bookmark which does not exist", "r"]
+			Logger:Log["Move", "Bookmark label: ${DestinationBookmarkLabel}", "r"]
 			return
 		}
 
 		if ${EVE.Bookmark[${DestinationBookmarkLabel}](exists)}
 		{
-			UI:Update["Move", "Movement queued", "o"]
-			UI:Update["Move", " ${DestinationBookmarkLabel}", "-g"]
+			Logger:Log["Move", "Movement queued", "o"]
+			Logger:Log["Move", " ${DestinationBookmarkLabel}", "-g"]
 		}
 		if ${EVE.Station[${DestinationBookmarkLabel}](exists)}
 		{
-			UI:Update["Move", "Movement queued", "o"]
-			UI:Update["Move", " ${EVE.Station[${DestinationBookmarkLabel}].Name}", "-g"]
+			Logger:Log["Move", "Movement queued", "o"]
+			Logger:Log["Move", " ${EVE.Station[${DestinationBookmarkLabel}].Name}", "-g"]
 		}
 		This.Traveling:Set[TRUE]
 		This:QueueState["BookmarkMove", 2000, "${DestinationBookmarkLabel}, ${IgnoreGate}, ${Distance}, ${FleetWarp}"]
@@ -190,12 +190,12 @@ objectdef obj_Move inherits obj_StateQueue
 							{
 								if ${Client.InSpace} && (${Entity[Type = "Beacon"]} || ${Entity[Type = "Acceleration Gate"]})
 								{
-									UI:Update["Move", "Appear to already be in a dungeon", "o"]
+									Logger:Log["Move", "Appear to already be in a dungeon", "o"]
 									return
 								}
 							}
-							UI:Update["Move", "Movement queued", "o"]
-							UI:Update["Move", " ${b.Value.Label}", "-g"]
+							Logger:Log["Move", "Movement queued", "o"]
+							Logger:Log["Move", " ${b.Value.Label}", "-g"]
 						}
 					}
 					while ${b:Next(exists)}
@@ -203,8 +203,8 @@ objectdef obj_Move inherits obj_StateQueue
 			while ${m:Next(exists)}
 		else
 		{
-			UI:Update["Move", "Attempted to travel to an agent bookmark which does not exist", "r"]
-			UI:Update["Move", "Bookmark ID: ${destinationID}", "r"]
+			Logger:Log["Move", "Attempted to travel to an agent bookmark which does not exist", "r"]
+			Logger:Log["Move", "Bookmark ID: ${destinationID}", "r"]
 			return
 		}
 
@@ -222,13 +222,13 @@ objectdef obj_Move inherits obj_StateQueue
 
 		if !${Universe[${SystemID}](exists)}
 		{
-			UI:Update["Move", "Attempted to travel to a system which does not exist", "r"]
-			UI:Update["Move", "System ID: ${SystemID}", "r"]
+			Logger:Log["Move", "Attempted to travel to a system which does not exist", "r"]
+			Logger:Log["Move", "System ID: ${SystemID}", "r"]
 			return
 		}
 
-		UI:Update["Move", "Movement queued", "o"]
-		UI:Update["Move", " ${Universe[${SystemID}].Name}", "-g"]
+		Logger:Log["Move", "Movement queued", "o"]
+		Logger:Log["Move", " ${Universe[${SystemID}].Name}", "-g"]
 		This.Traveling:Set[TRUE]
 		This:QueueState["SystemMove", 2000, ${SystemID}]
 	}
@@ -240,8 +240,8 @@ objectdef obj_Move inherits obj_StateQueue
 			return
 		}
 
-		UI:Update["Move", "Movement queued", "o"]
-		UI:Update["Move", " ${Entity[${ID}].Name}", "-g"]
+		Logger:Log["Move", "Movement queued", "o"]
+		Logger:Log["Move", " ${Entity[${ID}].Name}", "-g"]
 		This.Traveling:Set[TRUE]
 		This:QueueState["ObjectMove", 2000, "${ID},${Distance},${FleetWarp}"]
 	}
@@ -255,13 +255,13 @@ objectdef obj_Move inherits obj_StateQueue
 
 		if !${EVE.Agent[${AgentName}](exists)}
 		{
-			UI:Update["Move", "Attempted to travel to an agent which does not exist", "r"]
-			UI:Update["Move", "Agent name: ${AgentName}", "r"]
+			Logger:Log["Move", "Attempted to travel to an agent which does not exist", "r"]
+			Logger:Log["Move", "Agent name: ${AgentName}", "r"]
 			return
 		}
 
-		UI:Update["Move", "Movement queued", "o"]
-		UI:Update["Move", " ${AgentName}", "-g"]
+		Logger:Log["Move", "Movement queued", "o"]
+		Logger:Log["Move", " ${AgentName}", "-g"]
 		This.Traveling:Set[TRUE]
 		This:InsertState["AgentMove", 2000, ${EVE.Agent[AgentName].Index}]
 	}
@@ -275,21 +275,21 @@ objectdef obj_Move inherits obj_StateQueue
 
 		if !${EVE.Agent[${AgentIndex}](exists)}
 		{
-			UI:Update["Move", "Attempted to travel to an agent which does not exist", "r"]
-			UI:Update["Move", "Agent index: ${AgentIndex}", "r"]
+			Logger:Log["Move", "Attempted to travel to an agent which does not exist", "r"]
+			Logger:Log["Move", "Agent index: ${AgentIndex}", "r"]
 			return
 		}
 
-		UI:Update["Move", "Movement queued", "o"]
-		UI:Update["Move", " ${EVE.Agent[${AgentIndex}].Name}", "-g"]
+		Logger:Log["Move", "Movement queued", "o"]
+		Logger:Log["Move", " ${EVE.Agent[${AgentIndex}].Name}", "-g"]
 		This.Traveling:Set[TRUE]
 		This:InsertState["AgentMove", 2000, ${AgentIndex}]
 	}
 
 	method Gate(int64 ID, bool CalledFromMove=FALSE)
 	{
-		UI:Update["Move", "Movement queued", "o"]
-		UI:Update["Move", " ${Entity[${ID}].Name}", "-g"]
+		Logger:Log["Move", "Movement queued", "o"]
+		Logger:Log["Move", " ${Entity[${ID}].Name}", "-g"]
 		This.Traveling:Set[TRUE]
 		This:QueueState["GateMove", 2000, "${ID}, ${CalledFromMove}"]
 	}
@@ -312,7 +312,7 @@ objectdef obj_Move inherits obj_StateQueue
 
 		if ${Entity[${ID}].Distance} < -8000
 		{
-			UI:Update["Move", "Too close!  Orbiting ${Entity[${ID}].Name}", "g"]
+			Logger:Log["Move", "Too close!  Orbiting ${Entity[${ID}].Name}", "g"]
 			Entity[${ID}]:Orbit
 			Client:Wait[10000]
 			return FALSE
@@ -322,7 +322,7 @@ objectdef obj_Move inherits obj_StateQueue
 			This:Approach[${ID}, 3000]
 			return FALSE
 		}
-		UI:Update["Move", "Activating ${Entity[${ID}].Name}", "g"]
+		Logger:Log["Move", "Activating ${Entity[${ID}].Name}", "g"]
 		Entity[${ID}]:Activate
 		Client:Wait[5000]
 		if !${CalledFromMove}
@@ -336,15 +336,15 @@ objectdef obj_Move inherits obj_StateQueue
 	{
 		if !${Me.Fleet.Member[${ID}].ToPilot(exists)}
 		{
-			UI:Update["Move", "Fleet member ${Being[${ID}].Name} is no longer in local, canceling Move", "g"]
+			Logger:Log["Move", "Fleet member ${Being[${ID}].Name} is no longer in local, canceling Move", "g"]
 			This.Traveling:Set[FALSE]
 			return TRUE
 		}
 
 		if ${Me.InStation}
 		{
-			UI:Update["Move", "Undocking", "o"]
-			UI:Update["Move", " ${Me.Station.Name}", "-g"]
+			Logger:Log["Move", "Undocking", "o"]
+			Logger:Log["Move", " ${Me.Station.Name}", "-g"]
 			This:Undock
 			return FALSE
 		}
@@ -364,15 +364,15 @@ objectdef obj_Move inherits obj_StateQueue
 			if ${Me.Fleet.Member[${ID}].ToEntity.Distance} > 100000
 			{
 
-				UI:Update["Move", "Bounce warping", "o"]
-				UI:Update["Move", " ${Entity[ID >= 40000000 && ID <= 50000000].Name}", "-g"]
+				Logger:Log["Move", "Bounce warping", "o"]
+				Logger:Log["Move", " ${Entity[ID >= 40000000 && ID <= 50000000].Name}", "-g"]
 				Entity[ID >= 40000000 && ID <= 50000000]:WarpTo
 				Client:Wait[5000]
 				return FALSE
 			}
 			else
 			{
-				UI:Update["Move", "Reached \ao${Me.Fleet.Member[${ID}].ToPilot.Name}", "g"]
+				Logger:Log["Move", "Reached \ao${Me.Fleet.Member[${ID}].ToPilot.Name}", "g"]
 				This.Traveling:Set[FALSE]
 				return TRUE
 			}
@@ -381,13 +381,13 @@ objectdef obj_Move inherits obj_StateQueue
 		{
 				if ${Entity["GroupID = GROUP_WARPGATE"](exists)} && !${IgnoreGate}
 				{
-					UI:Update["Move", "Gate found, activating", "g"]
+					Logger:Log["Move", "Gate found, activating", "g"]
 					This:Gate[${Entity["GroupID = GROUP_WARPGATE"].ID}, TRUE]
 					This:QueueState["FleetmemberMove", 2000, ${ID}]
 					return TRUE
 				}
-				UI:Update["Move", "Warping", "o"]
-				UI:Update["Move", " ${Me.Fleet.Member[${ID}].ToPilot.Name}", "-g"]
+				Logger:Log["Move", "Warping", "o"]
+				Logger:Log["Move", " ${Me.Fleet.Member[${ID}].ToPilot.Name}", "-g"]
 				Me.Fleet.Member[${ID}]:WarpTo[${Distance}]
 				Client:Wait[5000]
 				This:QueueState["FleetmemberMove", 2000, "${ID}, FALSE, ${Distance}"]
@@ -405,15 +405,15 @@ objectdef obj_Move inherits obj_StateQueue
 			{
 				if ${Me.StationID} == ${EVE.Bookmark[${Bookmark}].ItemID}
 				{
-					UI:Update["Move", "Docked", "o"]
-					UI:Update["Move", " ${Bookmark}", "-g"]
+					Logger:Log["Move", "Docked", "o"]
+					Logger:Log["Move", " ${Bookmark}", "-g"]
 					This.Traveling:Set[FALSE]
 					return TRUE
 				}
 				else
 				{
-					UI:Update["Move", "Undocking", "o"]
-					UI:Update["Move", " ${Me.Station.Name}", "-g"]
+					Logger:Log["Move", "Undocking", "o"]
+					Logger:Log["Move", " ${Me.Station.Name}", "-g"]
 					This:Undock
 					return FALSE
 				}
@@ -422,15 +422,15 @@ objectdef obj_Move inherits obj_StateQueue
 			{
 				if ${Me.StationID} == ${Bookmark}
 				{
-					UI:Update["Move", "Docked", "o"]
-					UI:Update["Move", " ${EVE.Station[${Bookmark}].Name}", "-g"]
+					Logger:Log["Move", "Docked", "o"]
+					Logger:Log["Move", " ${EVE.Station[${Bookmark}].Name}", "-g"]
 					This.Traveling:Set[FALSE]
 					return TRUE
 				}
 				else
 				{
-					UI:Update["Move", "Undocking", "o"]
-					UI:Update["Move", " ${Me.Station.Name}", "-g"]
+					Logger:Log["Move", "Undocking", "o"]
+					Logger:Log["Move", " ${Me.Station.Name}", "-g"]
 					This:Undock
 					return FALSE
 				}
@@ -466,14 +466,14 @@ objectdef obj_Move inherits obj_StateQueue
 			{
 				if ${Entity["GroupID = GROUP_WARPGATE"](exists)} && !${IgnoreGate}
 				{
-					UI:Update["Move", "Gate found, activating", "g"]
+					Logger:Log["Move", "Gate found, activating", "g"]
 					This:Gate[${Entity["GroupID = GROUP_WARPGATE"].ID}, TRUE]
 					This:QueueState["BookmarkMove", 2000, ${Bookmark}]
 					return TRUE
 				}
 
-				UI:Update["Move", "Warping", "o"]
-				UI:Update["Move", " ${Bookmark}", "-g"]
+				Logger:Log["Move", "Warping", "o"]
+				Logger:Log["Move", " ${Bookmark}", "-g"]
 				if ${Me.Fleet.IsMember[${Me.CharID}]}
 				{
 					if (${Me.ToFleetMember.IsFleetCommander} || \
@@ -498,8 +498,8 @@ objectdef obj_Move inherits obj_StateQueue
 			}
 			elseif ${EVE.Bookmark[${Bookmark}].Distance} != -1 && ${EVE.Bookmark[${Bookmark}].Distance(exists)}
 			{
-				UI:Update["Move", "Reached", "o"]
-				UI:Update["Move", " ${Bookmark}", "-g"]
+				Logger:Log["Move", "Reached", "o"]
+				Logger:Log["Move", " ${Bookmark}", "-g"]
 				This.Traveling:Set[FALSE]
 				return TRUE
 			}
@@ -514,8 +514,8 @@ objectdef obj_Move inherits obj_StateQueue
 			{
 				if ${EVE.Bookmark[${Bookmark}].ToEntity.Distance} > 150000
 				{
-					UI:Update["Move", "Warping", "o"]
-					UI:Update["Move", " ${Bookmark}", "-g"]
+					Logger:Log["Move", "Warping", "o"]
+					Logger:Log["Move", " ${Bookmark}", "-g"]
 					if ${Me.Fleet.IsMember[${Me.CharID}]}
 					{
 						if (${Me.ToFleetMember.IsFleetCommander} || \
@@ -538,8 +538,8 @@ objectdef obj_Move inherits obj_StateQueue
 				}
 				elseif ${EVE.Bookmark[${Bookmark}].ToEntity.Distance} != -1 && ${EVE.Bookmark[${Bookmark}].ToEntity.Distance(exists)}
 				{
-					UI:Update["Move", "Docking", "o"]
-					UI:Update["Move", " ${Bookmark}", "-g"]
+					Logger:Log["Move", "Docking", "o"]
+					Logger:Log["Move", " ${Bookmark}", "-g"]
 					This:DockAtStation[${EVE.Bookmark[${Bookmark}].ItemID}]
 					return FALSE
 				}
@@ -552,8 +552,8 @@ objectdef obj_Move inherits obj_StateQueue
 			{
 				if ${EVE.Bookmark[${Bookmark}].Distance} > 150000
 				{
-					UI:Update["Move", "Warping", "o"]
-					UI:Update["Move", " ${Bookmark}", "-g"]
+					Logger:Log["Move", "Warping", "o"]
+					Logger:Log["Move", " ${Bookmark}", "-g"]
 					if ${Me.Fleet.IsMember[${Me.CharID}]}
 					{
 						if (${Me.ToFleetMember.IsFleetCommander} || \
@@ -577,8 +577,8 @@ objectdef obj_Move inherits obj_StateQueue
 				}
 				elseif ${EVE.Bookmark[${Bookmark}].Distance} != -1 && ${EVE.Bookmark[${Bookmark}].Distance(exists)}
 				{
-					UI:Update["Move", "Reached", "o"]
-					UI:Update["Move", " ${Bookmark}", "-g"]
+					Logger:Log["Move", "Reached", "o"]
+					Logger:Log["Move", " ${Bookmark}", "-g"]
 					This.Traveling:Set[FALSE]
 					return TRUE
 				}
@@ -613,15 +613,15 @@ objectdef obj_Move inherits obj_StateQueue
 						{
 							if ${Me.StationID} == ${b.Value.ItemID}
 							{
-								UI:Update["Move", "Docked", "o"]
-								UI:Update["Move", " ${Me.Station.Name]}", "-g"]
+								Logger:Log["Move", "Docked", "o"]
+								Logger:Log["Move", " ${Me.Station.Name]}", "-g"]
 								This.Traveling:Set[FALSE]
 								return TRUE
 							}
 							else
 							{
-								UI:Update["Move", "Undocking", "o"]
-								UI:Update["Move", " ${Me.Station.Name}", "-g"]
+								Logger:Log["Move", "Undocking", "o"]
+								Logger:Log["Move", " ${Me.Station.Name}", "-g"]
 								This:Undock
 								return FALSE
 							}
@@ -637,8 +637,8 @@ objectdef obj_Move inherits obj_StateQueue
 						{
 							if ${b.Value.Distance} > 150000
 							{
-								UI:Update["Move", "Warping", "o"]
-								UI:Update["Move", " ${b.Value.Label}", "-g"]
+								Logger:Log["Move", "Warping", "o"]
+								Logger:Log["Move", " ${b.Value.Label}", "-g"]
 
 								b.Value:WarpTo[0]
 								Client:Wait[5000]
@@ -647,8 +647,8 @@ objectdef obj_Move inherits obj_StateQueue
 							}
 							elseif ${b.Value.Distance} != -1 && ${b.Value.Distance(exists)}
 							{
-								UI:Update["Move", "Reached", "o"]
-								UI:Update["Move", " ${b.Value.Label}", "-g"]
+								Logger:Log["Move", "Reached", "o"]
+								Logger:Log["Move", " ${b.Value.Label}", "-g"]
 								This.Traveling:Set[FALSE]
 								return TRUE
 							}
@@ -663,16 +663,16 @@ objectdef obj_Move inherits obj_StateQueue
 							{
 								if ${b.Value.ToEntity.Distance} > 150000
 								{
-									UI:Update["Move", "Warping", "o"]
-									UI:Update["Move", " ${b.Value.Label}", "-g"]
+									Logger:Log["Move", "Warping", "o"]
+									Logger:Log["Move", " ${b.Value.Label}", "-g"]
 
 									b.Value.ToEntity:WarpTo[0]
 									return FALSE
 								}
 								elseif ${b.Value.ToEntity.Distance} != -1 && ${b.Value.ToEntity.Distance(exists)}
 								{
-									UI:Update["Move", "Docking", "o"]
-									UI:Update["Move", " ${b.Value.Label}", "-g"]
+									Logger:Log["Move", "Docking", "o"]
+									Logger:Log["Move", " ${b.Value.Label}", "-g"]
 									This:DockAtStation[${b.Value.ItemID}]
 									return FALSE
 								}
@@ -687,15 +687,15 @@ objectdef obj_Move inherits obj_StateQueue
 								{
 									if ${Client.InSpace} && (${Entity[Type = "Beacon"]} || ${Entity[Type = "Acceleration Gate"]})
 									{
-										UI:Update["Move", "Appear to already be in a dungeon", "o"]
+										Logger:Log["Move", "Appear to already be in a dungeon", "o"]
 										This.Traveling:Set[FALSE]
 										return TRUE
 									}
 								}
 								if ${b.Value.Distance} > 150000
 								{
-									UI:Update["Move", "Warping", "o"]
-									UI:Update["Move", " ${b.Value.Label}", "-g"]
+									Logger:Log["Move", "Warping", "o"]
+									Logger:Log["Move", " ${b.Value.Label}", "-g"]
 
 									b.Value:WarpTo[0]
 									Client:Wait[5000]
@@ -703,8 +703,8 @@ objectdef obj_Move inherits obj_StateQueue
 								}
 								elseif ${b.Value.Distance} != -1 && ${b.Value.Distance(exists)}
 								{
-									UI:Update["Move", "Reached", "o"]
-									UI:Update["Move", " ${b.Value.Label}", "-g"]
+									Logger:Log["Move", "Reached", "o"]
+									Logger:Log["Move", " ${b.Value.Label}", "-g"]
 									This.Traveling:Set[FALSE]
 									return TRUE
 								}
@@ -727,15 +727,15 @@ objectdef obj_Move inherits obj_StateQueue
 		{
 			if ${Me.StationID} == ${EVE.Agent[${ID}].StationID}
 			{
-				UI:Update["Move", "Docked", "o"]
-				UI:Update["Move", " ${Agent[${ID}].Station}", "-g"]
+				Logger:Log["Move", "Docked", "o"]
+				Logger:Log["Move", " ${Agent[${ID}].Station}", "-g"]
 				This.Traveling:Set[FALSE]
 				return TRUE
 			}
 			else
 			{
-				UI:Update["Move", "Undocking", "o"]
-				UI:Update["Move", " ${Me.Station.Name}", "-g"]
+				Logger:Log["Move", "Undocking", "o"]
+				Logger:Log["Move", " ${Me.Station.Name}", "-g"]
 				This:Undock
 				return FALSE
 			}
@@ -756,15 +756,15 @@ objectdef obj_Move inherits obj_StateQueue
 		{
 			if ${Entity[${EVE.Agent[${ID}].StationID}].Distance} > 150000
 			{
-				UI:Update["Move", "Warping", "o"]
-				UI:Update["Move", " ${EVE.Agent[${ID}].Station}", "-g"]
+				Logger:Log["Move", "Warping", "o"]
+				Logger:Log["Move", " ${EVE.Agent[${ID}].Station}", "-g"]
 				This:Warp[${EVE.Agent[${ID}].StationID}]
 				return FALSE
 			}
 			else
 			{
-				UI:Update["Move", "Docking", "o"]
-				UI:Update["Move", " ${EVE.Agent[${ID}].Station}", "-g"]
+				Logger:Log["Move", "Docking", "o"]
+				Logger:Log["Move", " ${EVE.Agent[${ID}].Station}", "-g"]
 				This:DockAtStation[${EVE.Agent[${ID}].StationID}]
 				This.Traveling:Set[FALSE]
 				return TRUE
@@ -779,14 +779,14 @@ objectdef obj_Move inherits obj_StateQueue
 		{
 			if ${Me.SolarSystemID} == ${ID}
 			{
-				UI:Update["Move", "Reached ${Universe[${ID}].Name}", "g"]
+				Logger:Log["Move", "Reached ${Universe[${ID}].Name}", "g"]
 				This.Traveling:Set[FALSE]
 				return TRUE
 			}
 			else
 			{
-				UI:Update["Move", "Undocking", "o"]
-				UI:Update["Move", " ${Me.Station.Name}", "-g"]
+				Logger:Log["Move", "Undocking", "o"]
+				Logger:Log["Move", " ${Me.Station.Name}", "-g"]
 				This:Undock
 				return FALSE
 			}
@@ -822,8 +822,8 @@ objectdef obj_Move inherits obj_StateQueue
 				echo Returned out of ObjectMove
 				return TRUE
 			}
-			UI:Update["Move", "Undocking", "o"]
-			UI:Update["Move", " ${Me.Station.Name}", "-g"]
+			Logger:Log["Move", "Undocking", "o"]
+			Logger:Log["Move", " ${Me.Station.Name}", "-g"]
 			This:Undock
 			return FALSE
 		}
@@ -840,7 +840,7 @@ objectdef obj_Move inherits obj_StateQueue
 
 		if !${Entity[${ID}](exists)}
 		{
-			UI:Update["Move", "Attempted to warp to object ${ID} which does not exist", "r"]
+			Logger:Log["Move", "Attempted to warp to object ${ID} which does not exist", "r"]
 		}
 
 		if ${Entity[${ID}].Distance} > 150000
@@ -870,8 +870,8 @@ objectdef obj_Move inherits obj_StateQueue
 		}
 		if !${Entity[${ID}](exists)}
 		{
-			UI:Update["Move", "Attempted to approach a target that does not exist", "r"]
-			UI:Update["Move", "Target ID: ${ID}", "r"]
+			Logger:Log["Move", "Attempted to approach a target that does not exist", "r"]
+			Logger:Log["Move", "Target ID: ${ID}", "r"]
 			return
 		}
 		if ${Entity[${ID}].Distance} <= ${distance}
@@ -891,7 +891,7 @@ objectdef obj_Move inherits obj_StateQueue
 		;	Find out if we need to approach the target
 		if ${Me.ToEntity.Mode} != 4 || ${orbitTarget} != ${ID}
 		{
-			UI:Update["Move", "Orbiting ${Entity[${ID}].Name} at ${ComBot.MetersToKM_Str[${distance}]}", "g"]
+			Logger:Log["Move", "Orbiting ${Entity[${ID}].Name} at ${ComBot.MetersToKM_Str[${distance}]}", "g"]
 			Entity[${ID}]:Orbit[${distance}]
 			orbitTarget:Set[${ID}]
 			return
@@ -900,7 +900,7 @@ objectdef obj_Move inherits obj_StateQueue
 
 	method SaveSpot()
 	{
-		UI:Update["Move", "Storing current location", "y"]
+		Logger:Log["Move", "Storing current location", "y"]
 		This.SavedSpot:Set["Saved Spot ${EVETime.Time.Left[-3]}"]
 		EVE:CreateBookmark["${This.SavedSpot}","","",1]
 	}
@@ -955,7 +955,7 @@ objectdef obj_Approach inherits obj_StateQueue
 		;	Find out if we need to approach the target
 		if ${Entity[${ID}].Distance} > ${distance} && ${Me.ToEntity.Mode} != 1
 		{
-			UI:Update["Move", "Approaching to within ${ComBot.MetersToKM_Str[${distance}]} of ${Entity[${ID}].Name}", "g"]
+			Logger:Log["Move", "Approaching to within ${ComBot.MetersToKM_Str[${distance}]} of ${Entity[${ID}].Name}", "g"]
 			Entity[${ID}]:Approach[${distance}]
 			return FALSE
 		}
@@ -963,7 +963,7 @@ objectdef obj_Approach inherits obj_StateQueue
 		;	If we're approaching a target, find out if we need to stop doing so
 		if ${Entity[${ID}].Distance} <= ${distance} && ${Me.ToEntity.Mode} == 1
 		{
-			UI:Update["Move", "Within ${ComBot.MetersToKM_Str[${distance}]} of ${Entity[${ID}].Name}", "g"]
+			Logger:Log["Move", "Within ${ComBot.MetersToKM_Str[${distance}]} of ${Entity[${ID}].Name}", "g"]
 			EVE:Execute[CmdStopShip]
 			Ship.ModuleList_AB_MWD:DeactivateAll
 			return TRUE

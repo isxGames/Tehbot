@@ -1,6 +1,6 @@
 /*
 
-ComBot  Copyright © 2012  Tehtsuo and Vendan
+ComBot  Copyright ï¿½ 2012  Tehtsuo and Vendan
 
 This file is part of ComBot.
 
@@ -96,11 +96,11 @@ objectdef obj_Ship inherits obj_StateQueue
 		variable index:module ModuleList
 		ModuleLists:GetIterator[List]
 
-		UI:Update["Ship", "Update Called"]
+		Logger:Log["Ship", "Update Called"]
 
 		if !${Client.InSpace}
 		{
-			UI:Update["Ship", "UpdateModules called while in station", "o"]
+			Logger:Log["Ship", "UpdateModules called while in station", "o"]
 			RetryUpdateModuleList:Set[1]
 			return
 		}
@@ -119,8 +119,8 @@ objectdef obj_Ship inherits obj_StateQueue
 
 		if !${ModuleList.Used} && ${MyShip.HighSlots} > 0
 		{
-			UI:Update["Ship", "UpdateModuleList - No modules found. Retrying in a few seconds", "o"]
-			UI:Update["Ship", "If this ship has slots, you must have at least one module equipped, of any type.", "o"]
+			Logger:Log["Ship", "UpdateModuleList - No modules found. Retrying in a few seconds", "o"]
+			Logger:Log["Ship", "If this ship has slots, you must have at least one module equipped, of any type.", "o"]
 			RetryUpdateModuleList:Inc
 			if ${RetryUpdateModuleList} >= 10
 			{
@@ -138,7 +138,7 @@ objectdef obj_Ship inherits obj_StateQueue
 		{
 			if !${ModuleIter.Value(exists)}
 			{
-				UI:Update["Ship", "UpdateModuleList - Null module found. Retrying in a few seconds.", "o"]
+				Logger:Log["Ship", "UpdateModuleList - Null module found. Retrying in a few seconds.", "o"]
 				RetryUpdateModuleList:Inc
 				return FALSE
 			}
@@ -156,7 +156,7 @@ objectdef obj_Ship inherits obj_StateQueue
 		}
 		while ${ModuleIter:Next(exists)}
 
-		UI:Update["Ship", "Ship Module Inventory", "y"]
+		Logger:Log["Ship", "Ship Module Inventory", "y"]
 
 		if ${List:First(exists)}
 			do
@@ -164,10 +164,10 @@ objectdef obj_Ship inherits obj_StateQueue
 				This.ModuleList_${List.Value}:GetIterator[ModuleIter]
 				if ${ModuleIter:First(exists)}
 				{
-					UI:Update["Ship", "${List.Value}:", "g"]
+					Logger:Log["Ship", "${List.Value}:", "g"]
 					do
 					{
-						UI:Update["Ship", " Slot: ${ModuleIter.Value.ToItem.Slot} ${ModuleIter.Value.ToItem.Name}", "-g"]
+						Logger:Log["Ship", " Slot: ${ModuleIter.Value.ToItem.Slot} ${ModuleIter.Value.ToItem.Name}", "-g"]
 					}
 					while ${ModuleIter:Next(exists)}
 				}
@@ -176,7 +176,7 @@ objectdef obj_Ship inherits obj_StateQueue
 
 		if ${This.ModuleList_AB_MWD.Used} > 1
 		{
-			UI:Update["Ship", "Warning: More than 1 Afterburner or MWD was detected, I will only use the first one.", "o"]
+			Logger:Log["Ship", "Warning: More than 1 Afterburner or MWD was detected, I will only use the first one.", "o"]
 		}
 		This:QueueState["WaitForStation"]
 		This:QueueState["WaitForSpace"]
@@ -298,7 +298,7 @@ objectdef obj_Ship inherits obj_StateQueue
 					}
 					else
 					{
-						UI:Update["Mission", "unknown EW ${jamsIterator.Value}", "r"]
+						Logger:Log["Mission", "unknown EW ${jamsIterator.Value}", "r"]
 					}
 				}
 				while ${jamsIterator:Next(exists)}
@@ -308,7 +308,7 @@ objectdef obj_Ship inherits obj_StateQueue
 
 		if !${ActivateJammerSet.Used} != !${ActivateJammerList.Used}
 		{
-			UI:Update["Mission", "not equal!", "r"]
+			Logger:Log["Mission", "not equal!", "r"]
 		}
 	}
 

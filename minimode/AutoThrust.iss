@@ -6,7 +6,7 @@ objectdef obj_Configuration_AutoThrust
 	{
 		if !${BaseConfig.BaseRef.FindSet[${This.SetName}](exists)}
 		{
-			UI:Update["obj_AutoThrust", " ${This.SetName} settings missing - initializing", "o"]
+			Logger:Log["obj_AutoThrust", " ${This.SetName} settings missing - initializing", "o"]
 			This:Set_Default_Values[]
 		}
 	}

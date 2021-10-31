@@ -7,23 +7,22 @@ objectdef obj_Base_Configuration
 		SetName:Set[${name}]
 		if !${BaseConfig.BaseRef.FindSet[${This.SetName}](exists)}
 		{
-			UI:Update["Configuration", " ${This.SetName} settings missing - initializing", "o"]
+			Logger:Log["Configuration", " ${This.SetName} settings missing - initializing", "o"]
 			BaseConfig.BaseRef:AddSet[${This.SetName}]
 			This:Set_Default_Values[]
 		}
-		UI:Update["Configuration", " ${This.SetName}: Initialized", "-g"]
+		Logger:Log["Configuration", " ${This.SetName}: Initialized", "-g"]
 	}
 
 	member:settingsetref CommonRef()
 	{
 		return ${BaseConfig.BaseRef.FindSet[${This.SetName}]}
 	}
-	
+
 	method Set_Default_Values()
 	{
-		
-	}
 
+	}
 }
 
 
@@ -50,12 +49,10 @@ objectdef obj_Configuration_BaseConfig
 		{
 			LavishSettings[TehbotSettings]:AddSet[${Me.Name}]
 		}
-		
-
 
 		if !${CONFIG_PATH.FileExists["${CONFIG_PATH}/${CONFIG_FILE}"]}
 		{
-			UI:Update["Configuration", "Configuration file is ${CONFIG_FILE}", "g", TRUE]
+			Logger:Log["Configuration", "Configuration file is ${CONFIG_FILE}", "g", TRUE]
 			LavishSettings[TehbotSettings]:Import["${CONFIG_PATH}/${CONFIG_FILE}"]
 		}
 
@@ -67,7 +64,7 @@ objectdef obj_Configuration_BaseConfig
 		{
 			BaseRef:Set[${LavishSettings[TehbotSettings].FindSet[${Me.Name}]}]
 		}
-		
+
 	}
 
 	method Shutdown()
@@ -95,10 +92,6 @@ objectdef obj_Configuration
 }
 
 
-
-
-
-
 objectdef obj_Configuration_Common
 {
 	variable string SetName = "Common"
@@ -107,10 +100,10 @@ objectdef obj_Configuration_Common
 	{
 		if !${BaseConfig.BaseRef.FindSet[${This.SetName}](exists)}
 		{
-			UI:Update["Configuration", " ${This.SetName} settings missing - initializing", "o"]
+			Logger:Log["Configuration", " ${This.SetName} settings missing - initializing", "o"]
 			This:Set_Default_Values[]
 		}
-		UI:Update["Configuration", " ${This.SetName}: Initialized", "-g"]
+		Logger:Log["Configuration", " ${This.SetName}: Initialized", "-g"]
 	}
 
 	member:settingsetref CommonRef()

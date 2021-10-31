@@ -90,7 +90,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 		}
 		elseif ${Me.InSpace}
 		{
-			UI:Update["Salvage", " Salvage mini module has no equipments to do anything", "r"]
+			Logger:Log["Salvage", " Salvage mini module has no equipments to do anything", "r"]
 		}
 
 		; Ship.ModuleList.Count is NULL at early stage
@@ -212,7 +212,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 							Ship.ModuleList_TractorBeams:DeactivateOn[${wreckIterator.Value.ID}]
 						}
 
-						UI:Update["Salvage", "Activating salvager - \ap${wreckIterator.Value.Name}"]
+						Logger:Log["Salvage", "Activating salvager - \ap${wreckIterator.Value.Name}"]
 						Ship.ModuleList_Salvagers:ActivateOne[${wreckIterator.Value.ID}]
 						return FALSE
 					}
@@ -229,7 +229,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 						if !${Ship.ModuleList_TractorBeams.IsActiveOn[${wreckIterator.Value.ID}]} && \
 						   ${Ship.ModuleList_TractorBeams.InactiveCount} > 0
 						{
-							UI:Update["Salvage", "Activating tractor beam - \ap${wreckIterator.Value.Name}"]
+							Logger:Log["Salvage", "Activating tractor beam - \ap${wreckIterator.Value.Name}"]
 							Ship.ModuleList_TractorBeams:ActivateOne[${wreckIterator.Value.ID}]
 							return FALSE
 						}
@@ -319,7 +319,7 @@ objectdef obj_LootCans inherits obj_StateQueue
 				; BUG of ISXEVE: Finding windows, getting items and looting all are not working for Wrecks, only for cargos.
 				if !${EVEWindow[Inventory].ChildWindow[${wreckIterator.Value}](exists)}
 				{
-					UI:Update["Salvage", "Opening - \ap${wreckIterator.Value.Name}"]
+					Logger:Log["Salvage", "Opening - \ap${wreckIterator.Value.Name}"]
 					wreckIterator.Value:Open
 					return FALSE
 				}

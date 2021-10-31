@@ -113,7 +113,7 @@ function main(string Character="")
 	declarevariable Drones obj_Drones script
 
 
-	UI:Update["Tehbot", "Module initialization complete", "y"]
+	Logger:Log["Tehbot", "Module initialization complete", "y"]
 
 	if ${Config.Common.AutoStart}
 	{
@@ -121,7 +121,7 @@ function main(string Character="")
 	}
 	else
 	{
-		UI:Update["Tehbot", "Paused", "r"]
+		Logger:Log["Tehbot", "Paused", "r"]
 	}
 
 

@@ -504,7 +504,7 @@ objectdef obj_Cargo inherits obj_StateQueue
 		if ${This.BuildAction.Bookmark.Length} == 0 || \
 			${This.BuildAction.LocationType.Length} == 0
 		{
-			UI:Update["obj_Cargo", "Attempted to queue an incomplete Load cargo action", "r"]
+			Logger:Log["obj_Cargo", "Attempted to queue an incomplete Load cargo action", "r"]
 			return
 		}
 
@@ -520,7 +520,7 @@ objectdef obj_Cargo inherits obj_StateQueue
 		if ${This.BuildAction.Bookmark.Length} == 0 || \
 			${This.BuildAction.LocationType.Length} == 0
 		{
-			UI:Update["obj_Cargo", "Attempted to queue an incomplete Unload cargo action", "r"]
+			Logger:Log["obj_Cargo", "Attempted to queue an incomplete Unload cargo action", "r"]
 			return
 		}
 
@@ -535,7 +535,7 @@ objectdef obj_Cargo inherits obj_StateQueue
 	{
 		if ${This.BuildAction.Bookmark.Length} == 0
 		{
-			UI:Update["obj_Cargo", "Attempted to queue an incomplete Move cargo action", "r"]
+			Logger:Log["obj_Cargo", "Attempted to queue an incomplete Move cargo action", "r"]
 			return
 		}
 
@@ -573,24 +573,24 @@ objectdef obj_Cargo inherits obj_StateQueue
 
 		if ${EVE.Bookmark[${This.CargoQueue.Peek.Bookmark}](exists)}
 		{
-			UI:Update["Cargo", "Processing \ao${This.CargoQueue.Peek.Action}", "g"]
-			UI:Update["Cargo", " Location: \ag${This.CargoQueue.Peek.Bookmark}", "-g"]
+			Logger:Log["Cargo", "Processing \ao${This.CargoQueue.Peek.Action}", "g"]
+			Logger:Log["Cargo", " Location: \ag${This.CargoQueue.Peek.Bookmark}", "-g"]
 		}
 		if ${EVE.Station[${This.CargoQueue.Peek.Bookmark}](exists)}
 		{
-			UI:Update["Cargo", "Processing \ao${This.CargoQueue.Peek.Action}\ag", "g"]
-			UI:Update["Cargo", " Location: \ag${EVE.Station[${This.CargoQueue.Peek.Bookmark}].Name}", "-g"]
+			Logger:Log["Cargo", "Processing \ao${This.CargoQueue.Peek.Action}\ag", "g"]
+			Logger:Log["Cargo", " Location: \ag${EVE.Station[${This.CargoQueue.Peek.Bookmark}].Name}", "-g"]
 		}
 
 		switch ${This.CargoQueue.Peek.Action}
 		{
 			case Unload
-				UI:Update["Cargo", " Source: \ag${This.CargoQueue.Peek.Source}", "-g"]
-				UI:Update["Cargo", " Destination: \ag${This.CargoQueue.Peek.LocationType}\a-g - \ao${This.CargoQueue.Peek.LocationSubType}\a-g - \ao${This.CargoQueue.Peek.Container}", "-g"]
+				Logger:Log["Cargo", " Source: \ag${This.CargoQueue.Peek.Source}", "-g"]
+				Logger:Log["Cargo", " Destination: \ag${This.CargoQueue.Peek.LocationType}\a-g - \ao${This.CargoQueue.Peek.LocationSubType}\a-g - \ao${This.CargoQueue.Peek.Container}", "-g"]
 				break
 			case Load
-				UI:Update["Cargo", " Source: \ag${This.CargoQueue.Peek.LocationType}\a-g - \ao${This.CargoQueue.Peek.LocationSubType}\a-g - \ao${This.CargoQueue.Peek.Container}", "-g"]
-				UI:Update["Cargo", " Destination: \agShip", "-g"]
+				Logger:Log["Cargo", " Source: \ag${This.CargoQueue.Peek.LocationType}\a-g - \ao${This.CargoQueue.Peek.LocationSubType}\a-g - \ao${This.CargoQueue.Peek.Container}", "-g"]
+				Logger:Log["Cargo", " Destination: \agShip", "-g"]
 				break
 		}
 
@@ -677,14 +677,14 @@ objectdef obj_Cargo inherits obj_StateQueue
 				{
 					if !${EVEWindow[Inventory].ChildWindow[${Container}](exists)}
 					{
-						UI:Update["obj_Cargo", "Opening ${This.CargoQueue.Peek.Container}", "g"]
+						Logger:Log["obj_Cargo", "Opening ${This.CargoQueue.Peek.Container}", "g"]
 						Entity[${Container}]:Open
 						return FALSE
 					}
 					if ${EVEWindow[Inventory].ChildWindow[${Container}].UsedCapacity} == -1 || \
 						${EVEWindow[Inventory].ChildWindow[${Container}].Capacity} <= 0
 					{
-						UI:Update["obj_Cargo", "Container information invalid, activating", "g"]
+						Logger:Log["obj_Cargo", "Container information invalid, activating", "g"]
 						EVEWindow[Inventory].ChildWindow[${Container}]:MakeActive
 						return FALSE
 					}
@@ -701,7 +701,7 @@ objectdef obj_Cargo inherits obj_StateQueue
 			}
 			else
 			{
-				UI:Update["obj_Cargo", "Cargo action Stack failed - Container not found", "r"]
+				Logger:Log["obj_Cargo", "Cargo action Stack failed - Container not found", "r"]
 				return TRUE
 			}
 
@@ -757,14 +757,14 @@ objectdef obj_Cargo inherits obj_StateQueue
 				{
 					if !${EVEWindow[Inventory].ChildWindow[${Container}](exists)}
 					{
-						UI:Update["obj_Cargo", "Opening ${This.CargoQueue.Peek.Container}", "g"]
+						Logger:Log["obj_Cargo", "Opening ${This.CargoQueue.Peek.Container}", "g"]
 						Entity[${Container}]:Open
 						return FALSE
 					}
 					if ${EVEWindow[Inventory].ChildWindow[${Container}].UsedCapacity} == -1 || \
 						${EVEWindow[Inventory].ChildWindow[${Container}].Capacity} <= 0
 					{
-						UI:Update["obj_Cargo", "Container information invalid, activating", "g"]
+						Logger:Log["obj_Cargo", "Container information invalid, activating", "g"]
 						EVEWindow[Inventory].ChildWindow[${Container}]:MakeActive
 						return FALSE
 					}
@@ -776,7 +776,7 @@ objectdef obj_Cargo inherits obj_StateQueue
 			}
 			else
 			{
-				UI:Update["obj_Cargo", "Cargo action Unload failed - Container not found", "r"]
+				Logger:Log["obj_Cargo", "Cargo action Unload failed - Container not found", "r"]
 				return TRUE
 			}
 		}
@@ -817,14 +817,14 @@ objectdef obj_Cargo inherits obj_StateQueue
 				{
 					if !${EVEWindow[Inventory].ChildWindow[${Container}](exists)}
 					{
-						UI:Update["obj_Cargo", "Opening ${This.CargoQueue.Peek.Container}", "g"]
+						Logger:Log["obj_Cargo", "Opening ${This.CargoQueue.Peek.Container}", "g"]
 						Entity[${Container}]:Open
 						return FALSE
 					}
 					if ${EVEWindow[Inventory].ChildWindow[${Container}].UsedCapacity} == -1 || \
 						${EVEWindow[Inventory].ChildWindow[${Container}].Capacity} <= 0
 					{
-						UI:Update["obj_Cargo", "Container information invalid, activating", "g"]
+						Logger:Log["obj_Cargo", "Container information invalid, activating", "g"]
 						EVEWindow[Inventory].ChildWindow[${Container}]:MakeActive
 						return FALSE
 					}
@@ -836,7 +836,7 @@ objectdef obj_Cargo inherits obj_StateQueue
 			}
 			else
 			{
-				UI:Update["obj_Cargo", "Cargo action Load failed - Container not found", "r"]
+				Logger:Log["obj_Cargo", "Cargo action Load failed - Container not found", "r"]
 				return TRUE
 			}
 		}
