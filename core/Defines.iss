@@ -72,3 +72,5 @@
 #define DRONE_RACE_MINMATAR 																					2
 #define DRONE_RACE_AMARR 																						4
 #define DRONE_RACE_GALLENTE 																					8
+
+#define LOG_STANDARD                                                                                            1

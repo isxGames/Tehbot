@@ -45,6 +45,7 @@ namespace TehbotUpdater
 					"core/obj_TargetList.iss",
 					"core/obj_Tehbot.iss",
 					"core/obj_TehbotUI.iss",
+					"core/obj_Logger.iss",
 					"data/DroneData.xml",
 					"data/NPCData.xml",
 					"data/MissionDataExample.iss",
