@@ -695,7 +695,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		ActiveNPCs:RequestUpdate
 		NPCs:RequestUpdate
 		Lootables:RequestUpdate
-		Ship.ModuleList_ActiveResists:Activate
+		Ship.ModuleList_ActiveResists:ActivateAll
 		variable index:bookmark BookmarkIndex
 
 		if ${Me.ToEntity.Mode} == 3
@@ -773,24 +773,30 @@ objectdef obj_Mission inherits obj_StateQueue
 							if ${Ship.ModuleList_Siege.ActiveCount}
 							{
 								; UI:Update["Mission", "Deactivate siege module due to approaching"]
-								Ship.ModuleList_Siege:Deactivate
+								Ship.ModuleList_Siege:DeactivateAll
 							}
 							Entity[${currentLootContainer}]:Approach[1000]
 							This:InsertState["PerformMission"]
 							approachTimer:Set[${Math.Calc[${LavishScript.RunningTime} + 10000]}]
 							return TRUE
 						}
+
 						if ${Ship.ModuleList_TractorBeams.Count} && \
 							${Entity[${currentLootContainer}].Distance} < ${Ship.ModuleList_TractorBeams.Range} && \
 							${Entity[${currentLootContainer}].Distance} < ${MyShip.MaxTargetRange} && \
 							(${Entity[${currentLootContainer}].GroupID} == GROUP_WRECK || ${Entity[${currentLootContainer}].GroupID} == GROUP_CARGOCONTAINER)
 						{
-							if ${Entity[${currentLootContainer}].IsLockedTarget} && ${Ship.ModuleList_TractorBeams.GetActiveOn[${currentLootContainer}]} < 1
+							if ${Entity[${currentLootContainer}].IsLockedTarget} && !${Ship.ModuleList_TractorBeams.IsActiveOn[${currentLootContainer}]}
 							{
-								Ship.ModuleList_TractorBeams:Activate[${currentLootContainer}]
-								Ship.ModuleList_TractorBeams:DeactivateNotOn[${currentLootContainer}]
-								This:InsertState["PerformMission"]
-								return TRUE
+								if ${Ship.ModuleList_TractorBeams.InactiveCount} > 0
+								{
+									Ship.ModuleList_TractorBeams:ActivateOne[${currentLootContainer}]
+								}
+								else
+								{
+									Ship.ModuleList_TractorBeams:DeactivateOneNotOn[${currentLootContainer}]
+								}
+								return FALSE
 							}
 							elseif !${Entity[${currentLootContainer}].IsLockedTarget} && !${Entity[${currentLootContainer}].BeingTargeted}
 							{
@@ -1062,7 +1068,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			if ${Ship.ModuleList_Siege.ActiveCount}
 			{
 				; UI:Update["Mission", "Deactivate siege module due to no target"]
-				Ship.ModuleList_Siege:Deactivate
+				Ship.ModuleList_Siege:DeactivateAll
 			}
 			UI:Update["Mission", "Approaching distanced target: \ar${ActiveNPCs.TargetList.Get[1].Name}", "g"]
 			ActiveNPCs.TargetList.Get[1]:Approach
@@ -1072,28 +1078,24 @@ objectdef obj_Mission inherits obj_StateQueue
 
 		if ${currentTarget} != 0 && ${Entity[${currentTarget}]} && !${Entity[${currentTarget}].IsMoribund}
 		{
-			Ship.ModuleList_Siege:Activate
+			Ship.ModuleList_Siege:ActivateOne
 			if ${Ship.ModuleList_Weapon.Range} > ${Entity[${currentTarget}].Distance} || !${Config.RangeLimit}
 			{
 				Ship.ModuleList_Weapon:ActivateAll[${currentTarget}]
-				Ship.ModuleList_Weapon:DeactivateNotOn[${currentTarget}]
 				Ship.ModuleList_TrackingComputer:ActivateAll[${currentTarget}]
 			}
 			if ${Entity[${currentTarget}].Distance} <= ${Ship.ModuleList_TargetPainter.Range}
 			{
-				Ship.ModuleList_TargetPainter:Activate[${currentTarget}]
-				Ship.ModuleList_TargetPainter:DeactivateNotOn[${currentTarget}]
+				Ship.ModuleList_TargetPainter:ActivateAll[${currentTarget}]
 			}
 			; 'Effectiveness Falloff' is not read by ISXEVE, but 20km is a generally reasonable range to activate the module
 			if ${Entity[${currentTarget}].Distance} <= ${Math.Calc[${Ship.ModuleList_StasisGrap.Range} + 20000]}
 			{
-				Ship.ModuleList_StasisGrap:Activate[${currentTarget}]
-				Ship.ModuleList_StasisGrap:DeactivateNotOn[${currentTarget}]
+				Ship.ModuleList_StasisGrap:ActivateAll[${currentTarget}]
 			}
 			if ${Entity[${currentTarget}].Distance} <= ${Ship.ModuleList_StasisWeb.Range}
 			{
-				Ship.ModuleList_StasisWeb:Activate[${currentTarget}]
-				Ship.ModuleList_StasisWeb:DeactivateNotOn[${currentTarget}]
+				Ship.ModuleList_StasisWeb:ActivateAll[${currentTarget}]
 			}
 		}
 
@@ -1116,7 +1118,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				if ${Ship.ModuleList_Siege.ActiveCount}
 				{
 					; UI:Update["Mission", "Deactivate siege module due to approaching"]
-					Ship.ModuleList_Siege:Deactivate
+					Ship.ModuleList_Siege:DeactivateAll
 				}
 				NPCs.TargetList.Get[1]:Approach
 			}
@@ -1141,7 +1143,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				if ${Ship.ModuleList_Siege.ActiveCount}
 				{
 					; UI:Update["Mission", "Deactivate siege module due to approaching"]
-					Ship.ModuleList_Siege:Deactivate
+					Ship.ModuleList_Siege:DeactivateAll
 				}
 				Entity[${missionAttackTarget}]:Approach
 			}
@@ -1232,7 +1234,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			if ${Ship.ModuleList_Siege.ActiveCount}
 			{
 				; UI:Update["Mission", "Deactivate siege module due to approaching"]
-				Ship.ModuleList_Siege:Deactivate
+				Ship.ModuleList_Siege:DeactivateAll
 			}
 
 			if ${Lootables.TargetList.Used} && ${Config.SalvagePrefix.NotNULLOrEmpty}
@@ -1316,7 +1318,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			if ${Ship.ModuleList_Siege.ActiveCount}
 			{
 				; UI:Update["Mission", "Deactivate siege module due to mission complete"]
-				Ship.ModuleList_Siege:Deactivate
+				Ship.ModuleList_Siege:DeactivateAll
 			}
 
 			if ${DroneControl.ActiveDrones.Used} > 0
@@ -2215,20 +2217,19 @@ objectdef obj_Mission inherits obj_StateQueue
 			{
 				if ${Ship.ModuleList_Regen_Shield.InactiveCount} && ((${MyShip.ShieldPct} < 100 && ${MyShip.CapacitorPct} > ${AutoModule.Config.ActiveShieldCap}) || ${AutoModule.Config.ShieldBoost})
 				{
-					Ship.ModuleList_Regen_Shield:ActivateCount[${Ship.ModuleList_Regen_Shield.InactiveCount}]
+					Ship.ModuleList_Regen_Shield:ActivateAll
 				}
 				if ${Ship.ModuleList_Regen_Shield.ActiveCount} && (${MyShip.ShieldPct} == 100 || ${MyShip.CapacitorPct} < ${AutoModule.Config.ActiveShieldCap}) && !${AutoModule.Config.ShieldBoost}
 				{
-					Ship.ModuleList_Regen_Shield:DeactivateCount[${Ship.ModuleList_Regen_Shield.ActiveCount}]
+					Ship.ModuleList_Regen_Shield:DeactivateAll
 				}
-				if ${Ship.ModuleList_Repair_Armor.InactiveCount} && ((${MyShip.ArmorPct} < 100 && ${MyShip.CapacitorPct} > ${AutoModule.Config.ActiveArmorCap}) || ${AutoModule.Config.ArmorRepair}) && ${LavishScript.RunningTime} > ${lastArmorRepActivate}
+				if ${Ship.ModuleList_Repair_Armor.InactiveCount} && ((${MyShip.ArmorPct} < 100 && ${MyShip.CapacitorPct} > ${AutoModule.Config.ActiveArmorCap}) || ${AutoModule.Config.ArmorRepair})
 				{
-					Ship.ModuleList_Repair_Armor:ActivateCount[1]
-					lastArmorRepActivate:Set[${Math.Calc[${LavishScript.RunningTime} + 3000]}]
+					Ship.ModuleList_Repair_Armor:ActivateAll
 				}
 				if ${Ship.ModuleList_Repair_Armor.ActiveCount} && (${MyShip.ArmorPct} == 100 || ${MyShip.CapacitorPct} < ${AutoModule.Config.ActiveArmorCap}) && !${AutoModule.Config.ArmorRepair}
 				{
-					Ship.ModuleList_Repair_Armor:DeactivateCount[${Ship.ModuleList_Repair_Armor.ActiveCount}]
+					Ship.ModuleList_Repair_Armor:DeactivateAll
 				}
 
 				if ${ammo.Length}

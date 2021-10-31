@@ -965,7 +965,7 @@ objectdef obj_Approach inherits obj_StateQueue
 		{
 			UI:Update["Move", "Within ${ComBot.MetersToKM_Str[${distance}]} of ${Entity[${ID}].Name}", "g"]
 			EVE:Execute[CmdStopShip]
-			Ship.ModuleList_AB_MWD:Deactivate
+			Ship.ModuleList_AB_MWD:DeactivateAll
 			return TRUE
 		}
 

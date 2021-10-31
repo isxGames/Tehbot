@@ -213,7 +213,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 						}
 
 						UI:Update["Salvage", "Activating salvager - \ap${wreckIterator.Value.Name}"]
-						Ship.ModuleList_Salvagers:Activate[${wreckIterator.Value.ID}]
+						Ship.ModuleList_Salvagers:ActivateOne[${wreckIterator.Value.ID}]
 						return FALSE
 					}
 
@@ -230,7 +230,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 						   ${Ship.ModuleList_TractorBeams.InactiveCount} > 0
 						{
 							UI:Update["Salvage", "Activating tractor beam - \ap${wreckIterator.Value.Name}"]
-							Ship.ModuleList_TractorBeams:Activate[${wreckIterator.Value.ID}]
+							Ship.ModuleList_TractorBeams:ActivateOne[${wreckIterator.Value.ID}]
 							return FALSE
 						}
 					}

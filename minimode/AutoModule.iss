@@ -1,6 +1,6 @@
 /*
 
-ComBot  Copyright © 2012  Tehtsuo and Vendan
+ComBot  Copyright ï¿½ 2012  Tehtsuo and Vendan
 
 This file is part of ComBot.
 
@@ -152,11 +152,11 @@ objectdef obj_AutoModule inherits obj_StateQueue
 
 		if ${Ship.ModuleList_Regen_Shield.InactiveCount} && ((${MyShip.ShieldPct} < ${Config.ActiveShieldBoost} && ${MyShip.CapacitorPct} > ${Config.ActiveShieldCap}) || ${Config.ShieldBoost})
 		{
-			Ship.ModuleList_Regen_Shield:ActivateCount[${Ship.ModuleList_Regen_Shield.InactiveCount}]
+			Ship.ModuleList_Regen_Shield:ActivateAll
 		}
 		if ${Ship.ModuleList_Regen_Shield.ActiveCount} && (${MyShip.ShieldPct} > ${Config.ActiveShieldBoost} || ${MyShip.CapacitorPct} < ${Config.ActiveShieldCap}) && !${Config.ShieldBoost}
 		{
-			Ship.ModuleList_Regen_Shield:DeactivateCount[${Ship.ModuleList_Regen_Shield.ActiveCount}]
+			Ship.ModuleList_Regen_Shield:DeactivateAll
 		}
 		if (${MyShip.ShieldPct} > ${Config.ActiveShieldBoost} || ${MyShip.CapacitorPct} < ${Config.ActiveShieldCap}) && !${Config.ShieldBoost}
 		{
@@ -176,51 +176,51 @@ objectdef obj_AutoModule inherits obj_StateQueue
 
 		}
 
-
 		if ${Ship.ModuleList_Repair_Armor.InactiveCount} && ((${MyShip.ArmorPct} < ${Config.ActiveArmorRepair} && ${MyShip.CapacitorPct} > ${Config.ActiveArmorCap}) || ${Config.ArmorRepair}) && ${LavishScript.RunningTime} > ${lastArmorRepActivate}
 		{
-			Ship.ModuleList_Repair_Armor:ActivateCount[1]
+			Ship.ModuleList_Repair_Armor:ActivateAll
 			lastArmorRepActivate:Set[${Math.Calc[${LavishScript.RunningTime} + 3000]}]
 		}
+
 		if ${Ship.ModuleList_Repair_Armor.ActiveCount} && (${MyShip.ArmorPct} > ${Config.ActiveArmorRepair} || ${MyShip.CapacitorPct} < ${Config.ActiveArmorCap}) && !${Config.ArmorRepair}
 		{
-			Ship.ModuleList_Repair_Armor:DeactivateCount[${Ship.ModuleList_Repair_Armor.ActiveCount}]
+			Ship.ModuleList_Repair_Armor:DeactivateAll
 		}
 
 		if ${Ship.ModuleList_ActiveResists.Count} && ${Config.ActiveHardeners}
 		{
-			Ship.ModuleList_ActiveResists:ActivateCount[${Ship.ModuleList_ActiveResists.Count}]
+			Ship.ModuleList_ActiveResists:ActivateAll
 		}
 
 		if ${Ship.ModuleList_GangLinks.ActiveCount} < ${Ship.ModuleList_GangLinks.Count} && ${Me.ToEntity.Mode} != 3 && ${Config.GangLink}
 		{
-			Ship.ModuleList_GangLinks:ActivateCount[${Math.Calc[${Ship.ModuleList_GangLinks.Count} - ${Ship.ModuleList_GangLinks.ActiveCount}]}]
+			Ship.ModuleList_GangLinks:ActivateAll
 		}
 
 		if ${Ship.ModuleList_SensorBoost.ActiveCount} < ${Ship.ModuleList_SensorBoost.Count} && ${Config.SensorBoosters}
 		{
-			Ship.ModuleList_SensorBoost:ActivateCount[${Math.Calc[${Ship.ModuleList_SensorBoost.Count} - ${Ship.ModuleList_SensorBoost.ActiveCount}]}]
+			Ship.ModuleList_SensorBoost:ActivateAll
 		}
 
 		if ${Ship.ModuleList_AutoTarget.ActiveCount} < ${Ship.ModuleList_AutoTarget.Count} && ${Config.AutoTarget}
 		{
-			Ship.ModuleList_AutoTarget:ActivateCount[${Math.Calc[${Ship.ModuleList_AutoTarget.Count} - ${Ship.ModuleList_AutoTarget.ActiveCount}]}]
+			Ship.ModuleList_AutoTarget:ActivateAll
 		}
 
 		if ${Ship.ModuleList_TrackingComputer.ActiveCount} < ${Ship.ModuleList_TrackingComputer.Count} && ${Config.TrackingComputers}
 		{
-			Ship.ModuleList_TrackingComputer:ActivateCount[${Math.Calc[${Ship.ModuleList_TrackingComputer.Count} - ${Ship.ModuleList_TrackingComputer.ActiveCount}]}]
+			Ship.ModuleList_TrackingComputer:ActivateAll
 		}
 
 		if ${Ship.ModuleList_ECCM.ActiveCount} < ${Ship.ModuleList_ECCM.Count} && ${Config.ECCM}
 		{
-			Ship.ModuleList_ECCM:ActivateCount[${Math.Calc[${Ship.ModuleList_ECCM.Count} - ${Ship.ModuleList_ECCM.ActiveCount}]}]
+			Ship.ModuleList_ECCM:ActivateAll
 		}
 
 		if ${Ship.ModuleList_DroneControlUnit.ActiveCount} < ${Ship.ModuleList_DroneControlUnit.Count} && ${Config.DroneControlUnit}
 		{
 			UI:Update["AutoModule", "Activating DroneControlUnit", "g"]
-			Ship.ModuleList_DroneControlUnit:ActivateCount[${Math.Calc[${Ship.ModuleList_DroneControlUnit.Count} - ${Ship.ModuleList_DroneControlUnit.ActiveCount}]}, FALSE]
+			Ship.ModuleList_DroneControlUnit:ActivateAll
 		}
 
 		return FALSE

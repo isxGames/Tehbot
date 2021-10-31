@@ -11,47 +11,47 @@ objectdef obj_Module
 			ModuleBaseModules:Set[${ModuleID}, ${ModuleID}]
 		}
 	}
-	
+
 	member:int64 CurrentTarget()
 	{
 		return ${ModuleBaseModules[${ModuleID}].CurrentTarget}
 	}
-	
+
 	member:bool IsActive()
 	{
 		return ${ModuleBaseModules[${ModuleID}].IsActive}
 	}
-	
+
 	member:bool IsDeactivating()
 	{
 		return ${ModuleBaseModules[${ModuleID}].IsDeactivating}
 	}
-	
+
 	member:bool IsActiveOn(int64 checkTarget)
 	{
 		return ${ModuleBaseModules[${ModuleID}].IsActiveOn[${checkTarget}]}
 	}
-	
+
 	method Deactivate()
 	{
 		ModuleBaseModules[${ModuleID}]:Deactivate
 	}
-	
-	method Activate(int64 newTarget=-1, bool DoDeactivate=TRUE, int DeactivatePercent=100)
+
+	method Activate(int64 newTarget=-1, int deactivateAfterCyclePercent=-1)
 	{
-		ModuleBaseModules[${ModuleID}]:Activate[${newTarget}, ${DoDeactivate}, ${DeactivatePercent}]
+		ModuleBaseModules[${ModuleID}]:Activate[${newTarget}, ${deactivateAfterCyclePercent}]
 	}
-	
+
 	member:bool LoadMiningCrystal(string OreType)
 	{
 		return ${ModuleBaseModules[${ModuleID}].LoadMiningCrystal[${OreType.Escape}]}
 	}
-	
+
 	member:float Range()
 	{
 		return ${ModuleBaseModules[${ModuleID}].Range}
 	}
-	
+
 	member:string GetFallthroughObject()
 	{
 		return "MyShip.Module[${ModuleID}]"

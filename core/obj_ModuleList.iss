@@ -1,13 +1,13 @@
 objectdef obj_ModuleList
 {
 	variable index:obj_Module Modules
-	
+
 	method Insert(int64 ID)
 	{
 		Modules:Insert[${ID}]
 	}
-	
-	member:int GetInactive()
+
+	method ActivateOne(int64 target=-1, int deactivateAfterCyclePercent=-1)
 	{
 		variable iterator ModuleIterator
 		Modules:GetIterator[ModuleIterator]
@@ -15,37 +15,9 @@ objectdef obj_ModuleList
 		{
 			do
 			{
-				if !${ModuleIterator.Value.IsActive} && !${ModuleIterator.Value.IsReloading}
+				if !${ModuleIterator.Value.IsActive}
 				{
-					return ${ModuleIterator.Key}
-				}
-			}
-			while ${ModuleIterator:Next(exists)}
-		}
-		return -1
-	}
-	
-	method Activate(int64 target=-1, bool DoDeactivate=TRUE, int DeactivatePercent=100)
-	{
-		This:ActivateCount[1, ${target}, ${DoDeactivate}, ${DeactivatePercent}]
-	}
-	
-	method ActivateCount(int count, int64 target=-1, bool DoDeactivate=TRUE, int DeactivatePercent=100)
-	{
-		variable int activatedCount = 0
-		variable iterator ModuleIterator
-		Modules:GetIterator[ModuleIterator]
-		if ${ModuleIterator:First(exists)}
-		{
-			do
-			{
-				if !${ModuleIterator.Value.IsActiveOn[${target}]}
-				{
-					ModuleIterator.Value:Activate[${target}, ${DoDeactivate}, ${DeactivatePercent}]
-					activatedCount:Inc
-				}
-				if ${activatedCount} >= ${count}
-				{
+					ModuleIterator.Value:Activate[${target}, ${deactivateAfterCyclePercent}]
 					return
 				}
 			}
@@ -53,7 +25,7 @@ objectdef obj_ModuleList
 		}
 	}
 
-	method ActivateAll(int64 target=-1, bool DoDeactivate=TRUE, int DeactivatePercent=100)
+	method ActivateAll(int64 target=-1, int deactivateAfterCyclePercent=-1)
 	{
 		variable iterator ModuleIterator
 		Modules:GetIterator[ModuleIterator]
@@ -61,46 +33,14 @@ objectdef obj_ModuleList
 		{
 			do
 			{
-				if !${ModuleIterator.Value.IsActiveOn[${target}]}
-				{
-					ModuleIterator.Value:Activate[${target}, ${DoDeactivate}, ${DeactivatePercent}]
-					activatedCount:Inc
-				}
+				; Will deactivate the module if the current target is not the same
+				ModuleIterator.Value:Activate[${target}, ${deactivateAfterCyclePercent}]
 			}
 			while ${ModuleIterator:Next(exists)}
 		}
 	}
 
-	
-	method Deactivate(int64 target=-1)
-	{
-		This:DeactivateCount[1, ${target}]
-	}
-	
-	method DeactivateCount(int count, int64 target=-1)
-	{
-		variable int deactivatedCount = 0
-		variable iterator ModuleIterator
-		Modules:GetIterator[ModuleIterator]
-		if ${ModuleIterator:First(exists)}
-		{
-			do
-			{
-				if ${ModuleIterator.Value.IsActiveOn[${target}]} || ${target} == -1
-				{
-					ModuleIterator.Value:Deactivate
-					deactivatedCount:Inc
-				}
-				if ${deactivatedCount} >= ${count}
-				{
-					return
-				}
-			}
-			while ${ModuleIterator:Next(exists)}
-		}
-	}
-
-	method DeactivateAll(int64 target=-1)
+	method DeactivateAll()
 	{
 		variable iterator ModuleIterator
 		Modules:GetIterator[ModuleIterator]
@@ -108,23 +48,17 @@ objectdef obj_ModuleList
 		{
 			do
 			{
-				if ${ModuleIterator.Value.IsActiveOn[${target}]} || ${target} == -1
+				if ${ModuleIterator.Value.IsActive}
 				{
 					ModuleIterator.Value:Deactivate
 				}
 			}
 			while ${ModuleIterator:Next(exists)}
 		}
-	}	
-	
-	method DeactivateNotOn(int64 target=-1)
-	{
-		This:DeactivateNotOnCount[1, ${target}]
 	}
 
-	method DeactivateNotOnCount(int count, int64 target=-1)
+	method DeactivateOneNotOn(int64 target=-1)
 	{
-		variable int deactivatedCount = 0
 		variable iterator ModuleIterator
 		Modules:GetIterator[ModuleIterator]
 		if ${ModuleIterator:First(exists)}
@@ -134,25 +68,15 @@ objectdef obj_ModuleList
 				if !${ModuleIterator.Value.IsActiveOn[${target}]} && ${ModuleIterator.Value.IsActive}
 				{
 					ModuleIterator.Value:Deactivate
-					deactivatedCount:Inc
-				}
-				if ${deactivatedCount} >= ${count}
-				{
 					return
 				}
 			}
 			while ${ModuleIterator:Next(exists)}
 		}
-	}	
+	}
 
 	method DeactivateOn(int64 target=-1)
 	{
-		This:DeactivateOnCount[1, ${target}]
-	}
-
-	method DeactivateOnCount(int count, int64 target=-1)
-	{
-		variable int deactivatedCount = 0
 		variable iterator ModuleIterator
 		Modules:GetIterator[ModuleIterator]
 		if ${ModuleIterator:First(exists)}
@@ -162,22 +86,12 @@ objectdef obj_ModuleList
 				if ${ModuleIterator.Value.IsActiveOn[${target}]}
 				{
 					ModuleIterator.Value:Deactivate
-					deactivatedCount:Inc
-				}
-				if ${deactivatedCount} >= ${count}
-				{
-					return
 				}
 			}
 			while ${ModuleIterator:Next(exists)}
 		}
 	}
 
-	method Reactivate(int ModuleID, int64 target=-1)
-	{
-		Modules[${ModuleID}]:Activate[${target}]
-	}
-	
 	member:bool IsActiveOn(int64 checkTarget)
 	{
 		variable iterator ModuleIterator
@@ -195,7 +109,12 @@ objectdef obj_ModuleList
 		}
 		return FALSE
 	}
-	
+
+	member:int Count()
+	{
+		return ${Modules.Used}
+	}
+
 	member:int ActiveCount()
 	{
 		variable int countActive=0
@@ -214,7 +133,7 @@ objectdef obj_ModuleList
 		}
 		return ${countActive}
 	}
-	
+
 	member:int ActiveCountOn(int64 checkTarget)
 	{
 		variable int countActive=0
@@ -233,49 +152,7 @@ objectdef obj_ModuleList
 		}
 		return ${countActive}
 	}
-	
-	member:int Count()
-	{
-		return ${Modules.Used}
-	}
-	
-	member:int GetActiveOn(int64 target)
-	{
-		variable iterator ModuleIterator
-		Modules:GetIterator[ModuleIterator]
-		if ${ModuleIterator:First(exists)}
-		{
-			do
-			{
-				if ${ModuleIterator.Value.IsActiveOn[${target}]}
-				{
-					return ${ModuleIterator.Key}
-				}
-			}
-			while ${ModuleIterator:Next(exists)}
-		}
-		return -1
-	}
-	
-	member:int GetActiveNotOn(int64 target)
-	{
-		variable iterator ModuleIterator
-		Modules:GetIterator[ModuleIterator]
-		if ${ModuleIterator:First(exists)}
-		{
-			do
-			{
-				if !${ModuleIterator.Value.IsActiveOn[${target}]} && ${ModuleIterator.Value.IsActive}
-				{
-					return ${ModuleIterator.Key}
-				}
-			}
-			while ${ModuleIterator:Next(exists)}
-		}
-		return -1
-	}
-	
-	
+
 	member:int InactiveCount()
 	{
 		variable iterator ModuleIterator
@@ -294,12 +171,12 @@ objectdef obj_ModuleList
 		}
 		return ${countInactive}
 	}
-	
+
 	member:float Range()
 	{
 		return ${Modules.Get[1].Range}
 	}
-	
+
 	member:float OptimalRange()
 	{
 		return ${Modules.Get[1].OptimalRange}
