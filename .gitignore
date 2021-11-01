@@ -2,5 +2,4 @@ data/*
 !data/*.xml
 !data/MissionDataExample.iss
 config/*.xml
-config/logs/*.log
 reference/*
