@@ -299,7 +299,8 @@ objectdef obj_Mission inherits obj_StateQueue
 					Logger:Log["Mission", "Unknown mission \ao${missionIterator.Value.Name}", "g"]
 					if ${Me.StationID} != ${EVE.Agent[${agentIndex}].StationID}
 					{
-						Logger:Log["Mission", "Going to the agent station anyway", "g"]								This:InsertState["Cleanup"]
+						Logger:Log["Mission", "Going to the agent station anyway", "g"]
+						This:InsertState["Cleanup"]
 						This:InsertState["CheckForWork"]
 						This:InsertState["InteractAgent", 1500, "OFFER"]
 						return TRUE
