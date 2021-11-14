@@ -255,8 +255,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				{
 					if ${Config.DeclineLowSec} && ${missionJournalText.Find["low security system"]}
 					{
-						Logger:Log["Mission", "Declining low security mission", "g"]
-						Logger:Log["Mission", " ${missionIterator.Value.Name}", "o"]
+						Logger:Log["Mission", "Declining low security mission \ao${missionIterator.Value.Name}", "g"]
 						This:InsertState["Cleanup"]
 						This:InsertState["CheckForWork"]
 						This:InsertState["InteractAgent", 1500, "DECLINE"]
@@ -953,8 +952,14 @@ objectdef obj_Mission inherits obj_StateQueue
 		; ActiveNPCs:RequestUpdate
 		; echo list is ${ActiveNPCs.LockedTargetList.Used}
 		; finalized target not locked.
-		if !${Entity[${currentTarget}]} || ${Entity[${currentTarget}].IsMoribund} || !(${Entity[${currentTarget}].IsLockedTarget} || ${Entity[${currentTarget}].BeingTargeted}) || (${maxAttackTime} > 0 && ${LavishScript.RunningTime} > ${maxAttackTime})
+		if !${Entity[${currentTarget}]} || ${Entity[${currentTarget}].IsMoribund} || !(${Entity[${currentTarget}].IsLockedTarget} || ${Entity[${currentTarget}].BeingTargeted})
 		{
+			currentTarget:Set[0]
+			maxAttackTime:Set[0]
+		}
+		elseif (${maxAttackTime} > 0 && ${LavishScript.RunningTime} > ${maxAttackTime})
+		{
+			Logger:Log["Mission", "Resseting target for the current one is taking too long.", "g"]
 			currentTarget:Set[0]
 			maxAttackTime:Set[0]
 		}
