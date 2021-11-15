@@ -158,7 +158,7 @@ objectdef obj_Configuration_Mission
 
 objectdef obj_Mission inherits obj_StateQueue
 {
-	variable int agentIndex = 0
+	variable int currentAgentIndex = 0
 	variable string missionAttackTarget
 	variable string ammo
 	variable string secondaryAmmo
@@ -327,7 +327,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 	member:bool CheckForWork()
 	{
-		agentIndex:Set[${EVE.Agent[${Config.Agent}].Index}]
+		currentAgentIndex:Set[${EVE.Agent[${Config.Agent}].Index}]
 
 		variable index:agentmission missions
 		variable iterator missionIterator
@@ -338,18 +338,18 @@ objectdef obj_Mission inherits obj_StateQueue
 		{
 			do
 			{
-				if ${missionIterator.Value.AgentID} != ${EVE.Agent[${agentIndex}].ID}
+				if ${missionIterator.Value.AgentID} != ${EVE.Agent[${currentAgentIndex}].ID}
 				{
 					continue
 				}
 
-				if !${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}](exists)}
+				if !${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${currentAgentIndex}]}](exists)}
 				{
 					missionIterator.Value:GetDetails
 					return FALSE
 				}
 
-				variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Escape}
+				variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${currentAgentIndex}]}].HTML.Escape}
 
 				if !${missionJournalText.NotNULLOrEmpty} || ${missionJournalText.Length} < 1000
 				{
@@ -403,7 +403,7 @@ objectdef obj_Mission inherits obj_StateQueue
 					}
 
 					Logger:Log["Mission", "Unknown mission \ao${missionIterator.Value.Name}", "g"]
-					if ${Me.StationID} != ${EVE.Agent[${agentIndex}].StationID}
+					if ${Me.StationID} != ${EVE.Agent[${currentAgentIndex}].StationID}
 					{
 						Logger:Log["Mission", "Going to the agent station anyway", "g"]
 						This:InsertState["Cleanup"]
@@ -1296,18 +1296,18 @@ objectdef obj_Mission inherits obj_StateQueue
 		{
 			do
 			{
-				if ${missionIterator.Value.AgentID} != ${EVE.Agent[${agentIndex}].ID}
+				if ${missionIterator.Value.AgentID} != ${EVE.Agent[${currentAgentIndex}].ID}
 				{
 					continue
 				}
 
-				if !${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}](exists)}
+				if !${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${currentAgentIndex}]}](exists)}
 				{
 					missionIterator.Value:GetDetails
 					return FALSE
 				}
 
-				variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${agentIndex}]}].HTML.Escape}
+				variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${currentAgentIndex}]}].HTML.Escape}
 				if !${missionJournalText.NotNULLOrEmpty} || ${missionJournalText.Length} < 1000
 				{
 					missionIterator.Value:GetDetails
@@ -1407,9 +1407,9 @@ objectdef obj_Mission inherits obj_StateQueue
 			EVEWindow[AgentBrowser]:Close
 			return FALSE
 		}
-		if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}](exists)}
+		if ${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}](exists)}
 		{
-			EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}]:Close
+			EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}]:Close
 			return FALSE
 		}
 		if ${EVEWindow[ByCaption, Mission journal](exists)}
@@ -1441,31 +1441,31 @@ objectdef obj_Mission inherits obj_StateQueue
 			}
 		}
 
-		if ${Me.StationID} != ${EVE.Agent[${agentIndex}].StationID}
+		if ${Me.StationID} != ${EVE.Agent[${currentAgentIndex}].StationID}
 		{
 			Logger:Log["Mission", "Need to be at agent station to complete mission", "g"]
-			Logger:Log["Mission", "Setting course for \ao${EVE.Station[${EVE.Agent[${agentIndex}].StationID}].Name}", "g"]
-			Move:Agent[${agentIndex}]
+			Logger:Log["Mission", "Setting course for \ao${EVE.Station[${EVE.Agent[${currentAgentIndex}].StationID}].Name}", "g"]
+			Move:Agent[${currentAgentIndex}]
 			This:InsertState["CompleteMission", 1500]
 			This:InsertState["Traveling"]
 			return TRUE
 		}
 
-		if !${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}](exists)}
+		if !${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}](exists)}
 		{
-			EVE.Agent[${agentIndex}]:StartConversation
+			EVE.Agent[${currentAgentIndex}]:StartConversation
 			return FALSE
 		}
 
-		if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"](exists)}
+		if ${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["View Mission"](exists)}
 		{
-			EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"]:Press
+			EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["View Mission"]:Press
 			return FALSE
 		}
 
-		if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Complete Mission"](exists)}
+		if ${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["Complete Mission"](exists)}
 		{
-			EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Complete Mission"]:Press
+			EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["Complete Mission"]:Press
 			relay "all" -event Tehbot_SalvageBookmark ${Me.ID}
 		}
 
@@ -1477,7 +1477,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		if ${missionIterator:First(exists)}
 			do
 			{
-				if ${missionIterator.Value.AgentID} == ${EVE.Agent[${agentIndex}].ID} && ${missionIterator.Value.State} == 2
+				if ${missionIterator.Value.AgentID} == ${EVE.Agent[${currentAgentIndex}].ID} && ${missionIterator.Value.State} == 2
 					return FALSE
 			}
 			while ${missionIterator:Next(exists)}
@@ -1501,74 +1501,74 @@ objectdef obj_Mission inherits obj_StateQueue
 
 	member:bool InteractAgent(string Action)
 	{
-		if ${Me.StationID} != ${EVE.Agent[${agentIndex}].StationID}
+		if ${Me.StationID} != ${EVE.Agent[${currentAgentIndex}].StationID}
 		{
-			Move:Bookmark[${EVE.Agent[${agentIndex}].StationID}]
+			Move:Bookmark[${EVE.Agent[${currentAgentIndex}].StationID}]
 			This:InsertState["InteractAgent", 1500, ${Action}]
 			This:InsertState["Traveling"]
 			return TRUE
 		}
 
-		if !${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}](exists)}
+		if !${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}](exists)}
 		{
-			EVE.Agent[${agentIndex}]:StartConversation
+			EVE.Agent[${currentAgentIndex}]:StartConversation
 			return FALSE
 		}
 
 		switch ${Action}
 		{
 			case OFFER
-				if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"](exists)}
+				if ${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["View Mission"](exists)}
 				{
-					EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"]:Press
+					EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["View Mission"]:Press
 					return TRUE
 				}
-				if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Request Mission"](exists)}
+				if ${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["Request Mission"](exists)}
 				{
-					EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Request Mission"]:Press
+					EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["Request Mission"]:Press
 					return TRUE
 				}
 
 				break
 			case ACCEPT
-				if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Request Mission"](exists)}
+				if ${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["Request Mission"](exists)}
 				{
-					EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Request Mission"]:Press
+					EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["Request Mission"]:Press
 					return FALSE
 				}
-				if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"](exists)}
+				if ${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["View Mission"](exists)}
 				{
-					EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"]:Press
+					EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["View Mission"]:Press
 					return FALSE
 				}
-				if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Accept"](exists)}
+				if ${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["Accept"](exists)}
 				{
-					EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Accept"]:Press
+					EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["Accept"]:Press
 					return FALSE
 				}
-				if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Close"](exists)}
+				if ${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["Close"](exists)}
 				{
-					EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Close"]:Press
+					EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["Close"]:Press
 					return TRUE
 				}
 				break
 			case DECLINE
-				if !${Agents.CanDeclineMission[${EVE.Agent[${agentIndex}].Name}]}
+				if !${Agents.CanDeclineMission[${EVE.Agent[${currentAgentIndex}].Name}]}
 				{
-					; variable int waitMillisecond = ${Math.Calc[${Agents.SecondsTillDeclineable[${EVE.Agent[${agentIndex}].Name}]} * 1000]}
-					Logger:Log["Mission", "Wait for ${Agents.SecondsTillDeclineable[${EVE.Agent[${agentIndex}].Name}]} seconds till agents are available.", "g"]
+					; variable int waitMillisecond = ${Math.Calc[${Agents.SecondsTillDeclineable[${EVE.Agent[${currentAgentIndex}].Name}]} * 1000]}
+					Logger:Log["Mission", "Wait for ${Agents.SecondsTillDeclineable[${EVE.Agent[${currentAgentIndex}].Name}]} seconds till agents are available.", "g"]
 					This:InsertState["CheckForWork"]
-					This:InsertState["WaitTill", ${Agents.NextDeclineableTime[${EVE.Agent[${agentIndex}].Name}]}]
+					This:InsertState["WaitTill", ${Agents.NextDeclineableTime[${EVE.Agent[${currentAgentIndex}].Name}]}]
 					return TRUE
 				}
-				if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"](exists)}
+				if ${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["View Mission"](exists)}
 				{
-					EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"]:Press
+					EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["View Mission"]:Press
 					return FALSE
 				}
-				if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Decline"](exists)}
+				if ${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["Decline"](exists)}
 				{
-					EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Decline"]:Press
+					EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["Decline"]:Press
 					This:InsertState["CatchDeclineWarning", 1500]
 					return TRUE
 				}
