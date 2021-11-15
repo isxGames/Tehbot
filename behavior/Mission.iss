@@ -1,3 +1,109 @@
+objectdef obj_Configuration_Agents
+{
+	variable string SetName = "Agents"
+
+	method Initialize()
+	{
+		if !${BaseConfig.BaseRef.FindSet[${This.SetName}](exists)}
+		{
+			Logger:Log["Warning: ${This.SetName} settings missing - initializing"]
+			This:Set_Default_Values[]
+		}
+		Logger:Log["Configuration", " ${This.SetName}: Initialized", "-g"]
+	}
+
+	member:settingsetref AgentsRef()
+	{
+		return ${BaseConfig.BaseRef.FindSet[${This.SetName}]}
+	}
+
+	member:settingsetref AgentRef(string name)
+	{
+		return ${This.AgentsRef.FindSet[${name}]}
+	}
+
+	method Set_Default_Values()
+	{
+		BaseConfig.BaseRef:AddSet[${This.SetName}]
+		This.AgentsRef:AddSet["Fykalia Adaferid"]
+		This.AgentRef["Fykalia Adaferid"]:AddSetting[AgentIndex, 9591]
+		This.AgentRef["Fykalia Adaferid"]:AddSetting[AgentID, 3018920]
+		This.AgentRef["Fykalia Adaferid"]:AddSetting[NextDeclineableTime, ${Mission.EVETimestamp}]
+	}
+
+	member:int AgentIndex(string name)
+	{
+		;Logger:Log["obj_Configuration_Agents: AgentIndex ${name}"]
+		return ${This.AgentRef[${name}].FindSetting[AgentIndex, 9591]}
+	}
+
+	method SetAgentIndex(string name, int value)
+	{
+		;Logger:Log["obj_Configuration_Agents: SetAgentIndex ${name} ${value}"]
+		if !${This.AgentsRef.FindSet[${name}](exists)}
+		{
+			This.AgentsRef:AddSet[${name}]
+		}
+
+		This.AgentRef[${name}]:AddSetting[AgentIndex, ${value}]
+	}
+
+	member:int AgentID(string name)
+	{
+		;Logger:Log["obj_Configuration_Agents: AgentID ${name}"]
+		return ${This.AgentRef[${name}].FindSetting[AgentID, 3018920]}
+	}
+
+	method SetAgentID(string name, int value)
+	{
+		;Logger:Log["obj_Configuration_Agents: SetAgentID ${name} ${value}"]
+		if !${This.AgentsRef.FindSet[${name}](exists)}
+		{
+			This.AgentsRef:AddSet[${name}]
+		}
+
+		This.AgentRef[${name}]:AddSetting[AgentID, ${value}]
+	}
+
+	member:int NextDeclineableTime(string name)
+	{
+		Logger:Log["obj_Configuration_Agents", "NextDeclineableTime ${name} ${This.AgentRef[${name}].FindSetting[NextDeclineableTime, 0]}"]
+		return ${This.AgentRef[${name}].FindSetting[NextDeclineableTime, 0]}
+	}
+
+	member:int SecondsTillDeclineable(string name)
+	{
+		; echo ${This.NextDeclineableTime[${name}]} "<" ${Mission.EVETimestamp}
+		; echo current eve time ${Mission.EVETimestamp}
+		; echo ${This.NextDeclineableTime[${name}]} "<" ${EVETime.AsInt64} "=" ${EVETime.DateAndTime} "=" ${EVETime.Date} "=" ${EVETime.Time} "="
+		if ${This.NextDeclineableTime[${name}]} < ${Mission.EVETimestamp}
+		{
+			return 0
+		}
+		return ${Math.Calc[${This.NextDeclineableTime[${name}]} - ${Mission.EVETimestamp}]}
+	}
+
+	member:bool CanDeclineMission(string name)
+	{
+		if ${This.NextDeclineableTime[${name}]} < ${Mission.EVETimestamp}
+		{
+			return TRUE
+		}
+		return FALSE
+	}
+
+	method SetNextDeclineableTime(string name, int value)
+	{
+		Logger:Log["obj_Configuration_Agents", "SetNextDeclineableTime ${name} ${value}"]
+		if !${This.AgentsRef.FindSet[${name}](exists)}
+		{
+			This.AgentsRef:AddSet[${name}]
+		}
+
+		This.AgentRef[${name}]:AddSetting[NextDeclineableTime, ${value}]
+	}
+}
+
 objectdef obj_Configuration_Mission
 {
 	variable string SetName = "Mission"
@@ -93,6 +199,7 @@ objectdef obj_Mission inherits obj_StateQueue
 	variable obj_TargetList Lootables
 
 	variable obj_Configuration_Mission Config
+	variable obj_Configuration_Agents Agents
 	variable obj_MissionUI LocalUI
 
 
@@ -1446,6 +1553,14 @@ objectdef obj_Mission inherits obj_StateQueue
 				}
 				break
 			case DECLINE
+				if !${Agents.CanDeclineMission[${EVE.Agent[${agentIndex}].Name}]}
+				{
+					; variable int waitMillisecond = ${Math.Calc[${Agents.SecondsTillDeclineable[${EVE.Agent[${agentIndex}].Name}]} * 1000]}
+					Logger:Log["Mission", "Wait for ${Agents.SecondsTillDeclineable[${EVE.Agent[${agentIndex}].Name}]} seconds till agents are available.", "g"]
+					This:InsertState["CheckForWork"]
+					This:InsertState["WaitTill", ${Agents.NextDeclineableTime[${EVE.Agent[${agentIndex}].Name}]}]
+					return TRUE
+				}
 				if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"](exists)}
 				{
 					EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"]:Press
@@ -1454,13 +1569,82 @@ objectdef obj_Mission inherits obj_StateQueue
 				if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Decline"](exists)}
 				{
 					EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Decline"]:Press
-					variable time NextTime = ${Time.Timestamp}
-					NextTime.Hour:Inc[4]
-					NextTime:Update
-					Config:Save
+					This:InsertState["CatchDeclineWarning", 1500]
 					return TRUE
 				}
 				break
+		}
+		return TRUE
+	}
+
+	member:bool CatchDeclineWarning()
+	{
+		if ${EVEWindow[byName, modal](exists)} && ${EVEWindow[byName, modal].Text.Find["if you decline a mission"]}
+		{
+			variable string prefix = "If you decline a mission before "
+			variable string text = ${EVEWindow[byName, modal].Text.Mid[${prefix.Length}, 18]}
+
+			variable string dataText = ${text.Token[1, " "]}
+			variable string timeText = ${text.Token[2, " "]}
+
+			variable int year = ${dataText.Token[1, "."]}
+			variable int month = ${dataText.Token[2, "."]}
+			variable int day = ${dataText.Token[3, "."]}
+			variable int hour = ${timeText.Token[1, ":"]}
+			variable int minute = ${timeText.Token[2, ":"]}
+
+			variable time nextDeclineableTime
+			nextDeclineableTime.YearPtr:Set[${Math.Calc[${year} - 1900]}]
+			nextDeclineableTime.MonthPtr:Set[${Math.Calc[${month} - 1]}]
+			nextDeclineableTime.Day:Set[${day}]
+			nextDeclineableTime.Hour:Set[${hour}]
+			nextDeclineableTime.Minute:Set[${minute}]
+			nextDeclineableTime:Update
+
+			EVEWindow[byName, modal]:ClickButtonNo
+			Agents:SetNextDeclineableTime[${Config.Agent}, ${nextDeclineableTime.Timestamp}]
+			Agents:Save
+
+			; Logger:Log["Mission", "agent ${Config.Agent} next declineable time ${Agents.NextDeclineableTime[${Config.Agent}]}"]
+			; Logger:Log["Mission", "agent ${Config.Agent} availability: ${Agents.CanDeclineMission[${Config.Agent}]}"]
+			; Logger:Log["Mission", "agent ${Config.Agent} wait time: ${Agents.SecondsTillDeclineable[${Config.Agent}]}"]
+
+			Client:Wait[1000]
+
+			return FALSE
+		}
+		This:InsertState["CheckForWork"]
+		return TRUE
+	}
+
+	member:int EVETimestamp()
+	{
+		variable string text = ${EVETime.DateAndTime}
+		variable string dataText = ${text.Token[1, " "]}
+		variable string timeText = ${text.Token[2, " "]}
+
+		variable int year = ${dataText.Token[1, "."]}
+		variable int month = ${dataText.Token[2, "."]}
+		variable int day = ${dataText.Token[3, "."]}
+		variable int hour = ${timeText.Token[1, ":"]}
+		variable int minute = ${timeText.Token[2, ":"]}
+
+		variable time timeObj
+		timeObj.YearPtr:Set[${Math.Calc[${year} - 1900]}]
+		timeObj.MonthPtr:Set[${Math.Calc[${month} - 1]}]
+		timeObj.Day:Set[${day}]
+		timeObj.Hour:Set[${hour}]
+		timeObj.Minute:Set[${minute}]
+		; timeObj.Hour:Dec[${delayHours}]
+		timeObj:Update
+		return ${timeObj.Timestamp}
+	}
+
+	member:bool WaitTill(int timestamp)
+	{
+		if ${This.EVETimestamp} < ${timestamp}
+		{
+			return FALSE
 		}
 		return TRUE
 	}
@@ -2351,8 +2535,6 @@ objectdef obj_Mission inherits obj_StateQueue
 
 objectdef obj_MissionUI inherits obj_State
 {
-	variable index:being Agents
-
 	method Initialize()
 	{
 		This[parent]:Initialize
