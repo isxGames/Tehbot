@@ -67,15 +67,13 @@ objectdef obj_Configuration_Agents
 
 	member:int NextDeclineableTime(string name)
 	{
-		Logger:Log["obj_Configuration_Agents", "NextDeclineableTime ${name} ${This.AgentRef[${name}].FindSetting[NextDeclineableTime, 0]}"]
+		Logger:Log["obj_Configuration_Agents", "NextDeclineableTime ${name}  ${This.AgentRef[${name}].FindSetting[NextDeclineableTime, 0]}", "", LOG_DEBUG]
 		return ${This.AgentRef[${name}].FindSetting[NextDeclineableTime, 0]}
 	}
 
 	member:int SecondsTillDeclineable(string name)
 	{
-		; echo ${This.NextDeclineableTime[${name}]} "<" ${Mission.EVETimestamp}
-		; echo current eve time ${Mission.EVETimestamp}
-		; echo ${This.NextDeclineableTime[${name}]} "<" ${EVETime.AsInt64} "=" ${EVETime.DateAndTime} "=" ${EVETime.Date} "=" ${EVETime.Time} "="
+		Logger:Log["obj_Configuration_Agents", "SecondsTillDeclineable ${name}", "", LOG_DEBUG]
 		if ${This.NextDeclineableTime[${name}]} < ${Mission.EVETimestamp}
 		{
 			return 0
@@ -85,6 +83,7 @@ objectdef obj_Configuration_Agents
 
 	member:bool CanDeclineMission(string name)
 	{
+		Logger:Log["obj_Configuration_Agents", "CanDeclineMission ${name}", "", LOG_DEBUG]
 		if ${This.NextDeclineableTime[${name}]} < ${Mission.EVETimestamp}
 		{
 			return TRUE
@@ -94,7 +93,7 @@ objectdef obj_Configuration_Agents
 
 	method SetNextDeclineableTime(string name, int value)
 	{
-		Logger:Log["obj_Configuration_Agents", "SetNextDeclineableTime ${name} ${value}"]
+		Logger:Log["obj_Configuration_Agents", "SetNextDeclineableTime ${name} ${value}", "", LOG_DEBUG]
 		if !${This.AgentsRef.FindSet[${name}](exists)}
 		{
 			This.AgentsRef:AddSet[${name}]
@@ -141,7 +140,6 @@ objectdef obj_Configuration_Mission
 	Setting(string, MunitionStorage, SetMunitionStorage)
 	Setting(string, MunitionStorageFolder, SetMunitionStorageFolder)
 	Setting(string, DroneType, SetDroneType)
-	Setting(string, Agent, SetAgent)
 	Setting(string, MissionFile, SetMissionFile)
 	Setting(string, KineticAmmo, SetKineticAmmo)
 	Setting(string, ThermalAmmo, SetThermalAmmo)
@@ -151,7 +149,6 @@ objectdef obj_Configuration_Mission
 	Setting(string, ThermalAmmoSecondary, SetThermalAmmoSecondary)
 	Setting(string, EMAmmoSecondary, SetEMAmmoSecondary)
 	Setting(string, ExplosiveAmmoSecondary, SetExplosiveAmmoSecondary)
-	Setting(int, Level, SetLevel)
 	Setting(int, AmmoAmountToLoad, SetAmmoAmountToLoad)
 	Setting(bool, DeclineLowSec, SetDeclineLowSec)
 }
@@ -176,6 +173,7 @@ objectdef obj_Mission inherits obj_StateQueue
 	variable int maxAttackTime
 	variable int switchTargetAfter = 120
 
+	variable index:string AgentList
 	variable collection:string ValidMissions
 	variable collection:string AttackTarget
 	variable collection:string LootContainers
@@ -236,6 +234,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 	method Start()
 	{
+		AgentList:Clear
 		ValidMissions:Clear
 		LootContainers:Clear
 		ItemsRequired:Clear
@@ -259,6 +258,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			This:QueueState["UpdateNPCs"]
 			This:QueueState["ReportMissionConfigs"]
 			This:QueueState["Cleanup"]
+			This:QueueState["PickAgent"]
 			This:QueueState["CheckForWork"]
 			EVE:RefreshBookmarks
 		}
@@ -327,8 +327,6 @@ objectdef obj_Mission inherits obj_StateQueue
 
 	member:bool CheckForWork()
 	{
-		currentAgentIndex:Set[${EVE.Agent[${Config.Agent}].Index}]
-
 		variable index:agentmission missions
 		variable iterator missionIterator
 
@@ -1358,7 +1356,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				BookmarkIndex:Collapse
 
 				if !${BookmarkIndex.Used}
-					Lootables.TargetList.Get[1]:CreateBookmark["${Config.SalvagePrefix} ${Config.Agent} ${Me.Name} ${EVETime.Time.Left[5]}", "", "Corporation Locations", 1]
+					Lootables.TargetList.Get[1]:CreateBookmark["${Config.SalvagePrefix} ${EVE.Agent[${currentAgentIndex}].Name} ${Me.Name} ${EVETime.Time.Left[5]}", "", "Corporation Locations", 1]
 			}
 
 			currentTarget:Set[0]
@@ -1379,7 +1377,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			BookmarkIndex:Collapse
 
 			if !${BookmarkIndex.Used}
-				Lootables.TargetList.Get[1]:CreateBookmark["${Config.SalvagePrefix} ${Config.Agent} ${EVETime.Time.Left[5]}", "", "Corporation Locations", 1]
+				Lootables.TargetList.Get[1]:CreateBookmark["${Config.SalvagePrefix} ${EVE.Agent[${currentAgentIndex}].Name} ${EVETime.Time.Left[5]}", "", "Corporation Locations", 1]
 		}
 
 		currentTarget:Set[0]
@@ -1478,13 +1476,16 @@ objectdef obj_Mission inherits obj_StateQueue
 			do
 			{
 				if ${missionIterator.Value.AgentID} == ${EVE.Agent[${currentAgentIndex}].ID} && ${missionIterator.Value.State} == 2
+				{
 					return FALSE
+				}
 			}
 			while ${missionIterator:Next(exists)}
 
 		if !${Config.Halt} && !${halt}
 		{
 			This:InsertState["CheckForWork"]
+			This:InsertState["PickAgent"]
 			This:InsertState["InteractAgent", 1500, "OFFER"]
 			This:InsertState["SalvageCheck"]
 			This:InsertState["RefreshBookmarks"]
@@ -1555,10 +1556,8 @@ objectdef obj_Mission inherits obj_StateQueue
 			case DECLINE
 				if !${Agents.CanDeclineMission[${EVE.Agent[${currentAgentIndex}].Name}]}
 				{
-					; variable int waitMillisecond = ${Math.Calc[${Agents.SecondsTillDeclineable[${EVE.Agent[${currentAgentIndex}].Name}]} * 1000]}
-					Logger:Log["Mission", "Wait for ${Agents.SecondsTillDeclineable[${EVE.Agent[${currentAgentIndex}].Name}]} seconds till agents are available.", "g"]
 					This:InsertState["CheckForWork"]
-					This:InsertState["WaitTill", ${Agents.NextDeclineableTime[${EVE.Agent[${currentAgentIndex}].Name}]}]
+					This:InsertState["PickAgent"]
 					return TRUE
 				}
 				if ${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["View Mission"](exists)}
@@ -1602,12 +1601,12 @@ objectdef obj_Mission inherits obj_StateQueue
 			nextDeclineableTime:Update
 
 			EVEWindow[byName, modal]:ClickButtonNo
-			Agents:SetNextDeclineableTime[${Config.Agent}, ${nextDeclineableTime.Timestamp}]
+			Agents:SetNextDeclineableTime[${EVE.Agent[${currentAgentIndex}].Name}, ${nextDeclineableTime.Timestamp}]
 			Agents:Save
 
-			; Logger:Log["Mission", "agent ${Config.Agent} next declineable time ${Agents.NextDeclineableTime[${Config.Agent}]}"]
-			; Logger:Log["Mission", "agent ${Config.Agent} availability: ${Agents.CanDeclineMission[${Config.Agent}]}"]
-			; Logger:Log["Mission", "agent ${Config.Agent} wait time: ${Agents.SecondsTillDeclineable[${Config.Agent}]}"]
+			; Logger:Log["Mission", "agent ${EVE.Agent[${currentAgentIndex}].Name} next declineable time ${Agents.NextDeclineableTime[${EVE.Agent[${currentAgentIndex}].Name}]}"]
+			; Logger:Log["Mission", "agent ${EVE.Agent[${currentAgentIndex}].Name} availability: ${Agents.CanDeclineMission[${EVE.Agent[${currentAgentIndex}].Name}]}"]
+			; Logger:Log["Mission", "agent ${EVE.Agent[${currentAgentIndex}].Name} wait time: ${Agents.SecondsTillDeclineable[${EVE.Agent[${currentAgentIndex}].Name}]}"]
 
 			Client:Wait[1000]
 
@@ -1640,12 +1639,20 @@ objectdef obj_Mission inherits obj_StateQueue
 		return ${timeObj.Timestamp}
 	}
 
-	member:bool WaitTill(int timestamp)
+	member:bool WaitTill(int timestamp, bool start = TRUE)
 	{
+		if ${start}
+		{
+			Logger:Log["Mission", "Start waiting until ${timestamp}.", "g"]
+		}
+
 		if ${This.EVETimestamp} < ${timestamp}
 		{
-			return FALSE
+			This:InsertState["WaitTill", 1000, "${timestamp}, FALSE"]
+			return TRUE
 		}
+
+		Logger:Log["Mission", "Finished waiting.", "g"]
 		return TRUE
 	}
 
@@ -2382,7 +2389,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		if ${BookmarkIterator:First(exists)}
 			do
 			{
-				if ${BookmarkIterator.Value.Label.Find[${Config.Agent}]}
+				if ${BookmarkIterator.Value.Label.Find[${EVE.Agent[${currentAgentIndex}].Name}]}
 				{
 					totalBookmarks:Inc
 				}
@@ -2515,6 +2522,230 @@ objectdef obj_Mission inherits obj_StateQueue
 		}
 
 		return ${itemQuantity}
+	}
+
+	member:bool PickAgent()
+	{
+		; This method is called when:
+		; 1. Starting script.
+		; 2. Current active agent becomes unavailable(invalid offer and can't decline).
+		; 3. Finishes current mission.
+
+		if !${AgentList.Used}
+		{
+			Logger:Log["Mission", "AgentList not set.", "r", LOG_CRITICAL]
+			halt:Set[TRUE]
+			return TRUE
+		}
+
+		variable iterator agentIterator
+		variable index:agentmission missions
+		EVE:GetAgentMissions[missions]
+		variable iterator missionIterator
+		variable int agentIndex = 0
+		variable bool offered = FALSE
+
+		; Firstly get offer from all the specified agents in the same station.
+		if ${Me.InStation}
+		{
+			AgentList:GetIterator[agentIterator]
+			do
+			{
+				; Somehow direct initialization does not work.
+				agentIndex:Set[${EVE.Agent[${agentIterator.Value}].Index}]
+
+				if ${agentIndex} == 0
+				{
+					Logger:Log["Mission", "Failed to find agent index for ${agentIterator.Value}.", "r", LOG_CRITICAL]
+					halt:Set[TRUE]
+					return TRUE
+				}
+
+				offered:Set[FALSE]
+
+				if ${Me.StationID} != ${EVE.Agent[${agentIndex}].StationID}
+				{
+					continue
+				}
+
+				missions:GetIterator[missionIterator]
+				if ${missionIterator:First(exists)}
+				{
+					do
+					{
+						if ${missionIterator.Value.AgentID} == ${EVE.Agent[${agentIndex}].ID}
+						{
+							offered:Set[TRUE]
+							break
+						}
+					}
+					while ${missionIterator:Next(exists)}
+				}
+
+				if !${offered}
+				{
+					if !${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}](exists)}
+					{
+						EVE.Agent[${agentIndex}]:StartConversation
+						return FALSE
+					}
+					if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"](exists)}
+					{
+						EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["View Mission"]:Press
+						return FALSE
+					}
+					if ${EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Request Mission"](exists)}
+					{
+						EVEWindow[agentinteraction_${EVE.Agent[${agentIndex}].ID}].Button["Request Mission"]:Press
+						return FALSE
+					}
+				}
+			}
+			while ${agentIterator:Next(exists)}
+		}
+
+		; Then proceed to pick optimal agent.
+		variable int validOfferAgentCandidateIndex = 0
+		variable int validOfferAgentCandidateDistance = 0
+
+		variable int noOfferAgentCandidateIndex = 0
+		variable int noOfferAgentCandidateDistance = 0
+
+		variable int invalidOfferAgentCandidateIndex = 0
+		variable int invalidOfferAgentCandidateDistance = 0
+		variable int invalidOfferAgentCandidateDeclineWaitTime = 0
+		variable int agentDistance = 0
+
+		AgentList:GetIterator[agentIterator]
+		do
+		{
+			agentIndex:Set[${EVE.Agent[${agentIterator.Value}].Index}]
+
+			; Logger:Log["Mission", "Founding mission for ${EVE.Agent[${agentIndex}].Name}.", "", LOG_DEBUG]
+			; The distance seems to be the shortest path which can go throw low sec no matter the in game setting.
+			agentDistance:Set[${EVE.Station[${EVE.Agent[${agentIndex}].StationID}].SolarSystem.JumpsTo}]
+			if ${Me.InStation} && (${Me.StationID} == ${EVE.Agent[${agentIndex}].StationID})
+			{
+				agentDistance:Set[-1]
+			}
+
+			offered:Set[FALSE]
+			missions:GetIterator[missionIterator]
+			if ${missionIterator:First(exists)}
+			{
+				do
+				{
+					if ${missionIterator.Value.AgentID} == ${EVE.Agent[${agentIndex}].ID}
+					{
+						; accepted
+						if ${missionIterator.Value.State} == 2
+						{
+							Logger:Log["Mission", "Found ongoing mission for agent ${EVE.Agent[${agentIndex}].Name}, skip picking agents."]
+							currentAgentIndex:Set[${agentIndex}]
+							return TRUE
+						}
+
+						Logger:Log["Mission", "Found mission for ${EVE.Agent[${agentIndex}].Name} ${missionIterator.Value.Name}.", "", LOG_DEBUG]
+						offered:Set[TRUE]
+
+						if ${InvalidMissions.Contains[${missionIterator.Value.Name}]}
+						{
+							variable int agentDeclineWaitTime
+							agentDeclineWaitTime:Set[${Agents.SecondsTillDeclineable[${EVE.Agent[${agentIndex}].Name}]}]
+
+							if ${invalidOfferAgentCandidateIndex} == 0 || \
+								(${invalidOfferAgentCandidateDeclineWaitTime} > ${agentDeclineWaitTime}) || \
+								((${invalidOfferAgentCandidateDeclineWaitTime} == ${agentDeclineWaitTime}) && (${invalidOfferAgentCandidateDistance} > ${agentDistance}))
+							{
+								invalidOfferAgentCandidateIndex:Set[${agentIndex}]
+								invalidOfferAgentCandidateDeclineWaitTime:Set[${agentDeclineWaitTime}]
+								invalidOfferAgentCandidateDistance:Set[${agentDistance}]
+
+								Logger:Log["Mission", "Agent with invalid offer ${EVE.Agent[${agentIndex}].Name} is ${agentDistance} jumps away and can decline again in ${invalidOfferAgentCandidateDeclineWaitTime} secs.", "g"]
+							}
+						}
+						else
+						{
+							if ${validOfferAgentCandidateIndex} == 0 || ${validOfferAgentCandidateDistance} > ${agentDistance}
+							{
+								validOfferAgentCandidateIndex:Set[${agentIndex}]
+								validOfferAgentCandidateDistance:Set[${agentDistance}]
+							}
+
+							Logger:Log["Mission", "Agent with valid offer ${EVE.Agent[${agentIndex}].Name} is ${agentDistance} jumps away.", "g"]
+						}
+
+						; No multiple missions from the same agent.
+						break
+					}
+				}
+				while ${missionIterator:Next(exists)}
+			}
+
+			if !${offered}
+			{
+				Logger:Log["Mission", "Agent without offer ${EVE.Agent[${agentIndex}].Name} is ${agentDistance} jumps away.", "g"]
+
+				if ${noOfferAgentCandidateIndex} == 0 || ${noOfferAgentCandidateDistance} > ${agentDistance}
+				{
+					noOfferAgentCandidateIndex:Set[${agentIndex}]
+					noOfferAgentCandidateDistance:Set[${agentDistance}]
+				}
+			}
+		}
+		while ${agentIterator:Next(exists)}
+
+
+		; Priority:
+		; 1. Agents within 2 jumps with invalid offers which can be declined now. - if exists, it's guaranteed to be the current candidate.
+		; (Previous steps guaranteed that agents in the same station have offers)
+		; 2. Agents with valid offers.
+		; 3. Agents without offer.
+		; 4. Agents with invalid offers which may needs waiting.
+		; For 1 to 3, pick the nearest agent.
+		; For 4, pick the agent with the earliest decline time and then the shortest distance.
+		if ${invalidOfferAgentCandidateIndex} != 0 && ${invalidOfferAgentCandidateDistance} < 3 && ${invalidOfferAgentCandidateDeclineWaitTime} == 0
+		{
+			currentAgentIndex:Set[${invalidOfferAgentCandidateIndex}]
+			Logger:Log["Mission", "Prioritizing declining mission from agent ${EVE.Agent[${currentAgentIndex}].Name} to refresh the decline timer."]
+		}
+		elseif ${validOfferAgentCandidateIndex} != 0
+		{
+			currentAgentIndex:Set[${validOfferAgentCandidateIndex}]
+			Logger:Log["Mission", "Do offered mission for agent ${EVE.Agent[${currentAgentIndex}].Name}."]
+		}
+		elseif ${noOfferAgentCandidateIndex} != 0
+		{
+			currentAgentIndex:Set[${noOfferAgentCandidateIndex}]
+			Logger:Log["Mission", "Request mission from agent ${EVE.Agent[${currentAgentIndex}].Name}."]
+		}
+		elseif ${invalidOfferAgentCandidateIndex} != 0
+		{
+			currentAgentIndex:Set[${invalidOfferAgentCandidateIndex}]
+			if ${invalidOfferAgentCandidateDeclineWaitTime} > 0
+			{
+				; Schedule waiting AFTER travelling to the agent when necessary.
+				variable time waitUntil
+				waitUntil:Set[${Agents.NextDeclineableTime[${EVE.Agent[${currentAgentIndex}].Name}]}]
+				Logger:Log["Mission", "Moving to agent ${EVE.Agent[${currentAgentIndex}].Name} and then wait until ${waitUntil.Date} ${waitUntil.Time}", "g"]
+				This:InsertState["WaitTill", ${Agents.NextDeclineableTime[${EVE.Agent[${currentAgentIndex}].Name}]}]
+
+				if ${invalidOfferAgentCandidateDistance} > -1
+				{
+					Move:Agent[${currentAgentIndex}]
+					This:InsertState["Traveling"]
+				}
+			}
+		}
+		else
+		{
+			Logger:Log["Mission", "Failed to pick agent.", "r", LOG_CRITICAL]
+			halt:Set[TRUE]
+			return TRUE
+		}
+
+		Logger:Log["Mission", "Picked agent ${EVE.Agent[${currentAgentIndex}].Name}."]
+		return TRUE
 	}
 
 	method DeepCopyIndex(string From, string To)
