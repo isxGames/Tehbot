@@ -806,6 +806,28 @@ objectdef obj_Mission inherits obj_StateQueue
 	variable bool notDone = FALSE
 	member:bool PerformMission(int nextwaitcomplete = 0)
 	{
+		; Flee to agent if not warpscrambled && (in egg or (low hp && (TODO) not pvp fight) or module damaged)
+		if !${MyShip.ToEntity.IsWarpScrambled}
+		{
+			if ${MyShip.ToEntity.Type.Equal["Capsule"]}
+			{
+				Logger:Log["Mission", "I am in egg, I should flee.", "r", LOG_CRITICAL]
+				This:Clear
+				This:QueueState["FleeToAgent", 1000, "FALSE, 99999"]
+				return TRUE
+			}
+			elseif ${MyShip.ShieldPct} < 0 || ${MyShip.ArmorPct} < 50 || ${MyShip.StructurePct} < 100
+			{
+				Logger:Log["Mission", "Low HP - Shield: ${MyShip.ShieldPct}%, Armor: ${MyShip.ArmorPct}%, Hull: ${MyShip.StructurePct}%, I should flee.", "r", LOG_CRITICAL]
+				This:Clear
+				This:QueueState["FleeToAgent", 1000, "FALSE, 0"]
+				This:QueueState["Cleanup"]
+				This:QueueState["CheckForWork"]
+				EVE:RefreshBookmarks
+				return TRUE
+			}
+		}
+
 		variable iterator itemIterator
 		This:BuildActiveNPC
 		ActiveNPCs:RequestUpdate
@@ -1439,6 +1461,43 @@ objectdef obj_Mission inherits obj_StateQueue
 		return TRUE
 	}
 
+	member:bool FleeToAgent(bool waitForDrones = FALSE, int wait = 0)
+	{
+		if ${Me.InSpace}
+		{
+			if ${Ship.ModuleList_Siege.ActiveCount}
+			{
+				Ship.ModuleList_Siege:DeactivateAll
+			}
+
+			if ${DroneControl.ActiveDrones.Used} > 0
+			{
+				DroneControl:Recall
+				if ${waitForDrones}
+				{
+					return FALSE
+				}
+			}
+
+			if ${Me.StationID} != ${EVE.Agent[${currentAgentIndex}].StationID}
+			{
+				Logger:Log["Mission", "Fleeing to agent station and then wait for ${wait} seconds", "g", LOG_CRITICAL]
+				Logger:Log["Mission", "Setting course for \ao${EVE.Station[${EVE.Agent[${currentAgentIndex}].StationID}].Name}", "g"]
+				Move:Agent[${currentAgentIndex}]
+				if ${wait} > 0
+				{
+					This:InsertState["WaitTill", 1000, ${This.EVETimestamp:Inc[${wait}]}]
+				}
+				This:InsertState["Traveling"]
+				return TRUE
+			}
+		}
+		else
+		{
+			Logger:Log["Mission", "Fleeing while in station?", "g", LOG_DEBUG]
+		}
+	}
+
 	member:bool CompleteMission()
 	{
 		if ${Me.InSpace}
@@ -1660,7 +1719,9 @@ objectdef obj_Mission inherits obj_StateQueue
 	{
 		if ${start}
 		{
-			Logger:Log["Mission", "Start waiting until ${timestamp}.", "g"]
+			variable time waitUntil
+			waitUntil:Set[${timestamp}]
+			Logger:Log["Mission", "Start waiting until ${waitUntil.Date} ${waitUntil.Time24}.", "g"]
 		}
 
 		if ${This.EVETimestamp} < ${timestamp}
@@ -2779,7 +2840,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				; Schedule waiting AFTER travelling to the agent when necessary.
 				variable time waitUntil
 				waitUntil:Set[${Agents.NextDeclineableTime[${EVE.Agent[${currentAgentIndex}].Name}]}]
-				Logger:Log["Mission", "Moving to agent ${EVE.Agent[${currentAgentIndex}].Name} and then wait until ${waitUntil.Date} ${waitUntil.Time}", "g"]
+				Logger:Log["Mission", "Moving to agent ${EVE.Agent[${currentAgentIndex}].Name} and then wait until ${waitUntil.Date} ${waitUntil.Time24}", "g"]
 				This:InsertState["WaitTill", ${Agents.NextDeclineableTime[${EVE.Agent[${currentAgentIndex}].Name}]}]
 
 				if ${invalidOfferAgentCandidateDistance} > -1
