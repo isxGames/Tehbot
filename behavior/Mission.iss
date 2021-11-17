@@ -173,7 +173,17 @@ objectdef obj_Mission inherits obj_StateQueue
 	variable int maxAttackTime
 	variable int switchTargetAfter = 120
 
+	; Used when picking agents
 	variable index:string AgentList
+	variable set CheckedAgent
+	variable int validOfferAgentCandidateIndex = 0
+	variable int validOfferAgentCandidateDistance = 0
+	variable int noOfferAgentCandidateIndex = 0
+	variable int noOfferAgentCandidateDistance = 0
+	variable int invalidOfferAgentCandidateIndex = 0
+	variable int invalidOfferAgentCandidateDistance = 0
+	variable int invalidOfferAgentCandidateDeclineWaitTime = 0
+
 	variable collection:string ValidMissions
 	variable collection:string AttackTarget
 	variable collection:string LootContainers
@@ -322,6 +332,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 	member:bool CheckForWork()
 	{
+		Logger:Log["Mission", "CheckForWork \ao${EVE.Agent[${currentAgentIndex}].Name} ", "", LOG_DEBUG]
 		variable index:agentmission missions
 		variable iterator missionIterator
 
@@ -336,15 +347,20 @@ objectdef obj_Mission inherits obj_StateQueue
 					continue
 				}
 
+				missionIterator.Value:GetDetails
 				if !${EVEWindow[ByCaption, Mission journal - ${EVE.Agent[${currentAgentIndex}].Name}](exists)}
 				{
+					if ${EVEWindow[ByCaption, Mission journal](exists)}
+					{
+						; Close journal of other mission.
+						EVEWindow[ByCaption, Mission journal]:Close
+					}
 					missionIterator.Value:GetDetails
 					return FALSE
 				}
 
 				variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${EVE.Agent[${currentAgentIndex}].Name}].HTML.Escape}
-
-				if !${missionJournalText.NotNULLOrEmpty} || ${missionJournalText.Length} < 1000
+				if !${missionJournalText.NotNULLOrEmpty} || !${missionJournalText.Find["The following rewards will be yours if you complete this mission"]}
 				{
 					missionIterator.Value:GetDetails
 					return FALSE
@@ -1294,14 +1310,20 @@ objectdef obj_Mission inherits obj_StateQueue
 					continue
 				}
 
+				missionIterator.Value:GetDetails
 				if !${EVEWindow[ByCaption, Mission journal - ${EVE.Agent[${currentAgentIndex}].Name}](exists)}
 				{
+					if ${EVEWindow[ByCaption, Mission journal](exists)}
+					{
+						; Close journal of other mission.
+						EVEWindow[ByCaption, Mission journal]:Close
+					}
 					missionIterator.Value:GetDetails
 					return FALSE
 				}
 
 				variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${EVE.Agent[${currentAgentIndex}].Name}].HTML.Escape}
-				if !${missionJournalText.NotNULLOrEmpty} || ${missionJournalText.Length} < 1000
+				if !${missionJournalText.NotNULLOrEmpty} || !${missionJournalText.Find["The following rewards will be yours if you complete this mission"]}
 				{
 					missionIterator.Value:GetDetails
 					return FALSE
@@ -2519,6 +2541,18 @@ objectdef obj_Mission inherits obj_StateQueue
 		return ${itemQuantity}
 	}
 
+	method ResetAgentPickingStatus()
+	{
+		CheckedAgent:Clear
+		validOfferAgentCandidateIndex:Set[0]
+		validOfferAgentCandidateDistance:Set[0]
+		noOfferAgentCandidateIndex:Set[0]
+		noOfferAgentCandidateDistance:Set[0]
+		invalidOfferAgentCandidateIndex:Set[0]
+		invalidOfferAgentCandidateDistance:Set[0]
+		invalidOfferAgentCandidateDeclineWaitTime:Set[0]
+	}
+
 	member:bool PickAgent()
 	{
 		; This method is called when:
@@ -2602,21 +2636,20 @@ objectdef obj_Mission inherits obj_StateQueue
 		}
 
 		; Then proceed to pick optimal agent.
-		variable int validOfferAgentCandidateIndex = 0
-		variable int validOfferAgentCandidateDistance = 0
-
-		variable int noOfferAgentCandidateIndex = 0
-		variable int noOfferAgentCandidateDistance = 0
-
-		variable int invalidOfferAgentCandidateIndex = 0
-		variable int invalidOfferAgentCandidateDistance = 0
-		variable int invalidOfferAgentCandidateDeclineWaitTime = 0
 		variable int agentDistance = 0
 
 		AgentList:GetIterator[agentIterator]
 		do
 		{
-			agentIndex:Set[${EVE.Agent[${agentIterator.Value}].Index}]
+			agentName:Set[${agentIterator.Value}]
+
+			if ${CheckedAgent.Contains[${agentName}]}
+			{
+				; Avoid dead loop when opening journals of checked agent.
+				continue
+			}
+
+			agentIndex:Set[${EVE.Agent[${agentName}].Index}]
 
 			; Logger:Log["Mission", "Founding mission for ${agentName}.", "", LOG_DEBUG]
 			; The distance seems to be the shortest path which can go throw low sec no matter the in game setting.
@@ -2639,13 +2672,33 @@ objectdef obj_Mission inherits obj_StateQueue
 						{
 							Logger:Log["Mission", "Found ongoing mission for agent ${agentName}, skip picking agents."]
 							currentAgentIndex:Set[${agentIndex}]
+							This:ResetAgentPickingStatus
 							return TRUE
+						}
+
+						missionIterator.Value:GetDetails
+						if !${EVEWindow[ByCaption, Mission journal - ${agentName}](exists)}
+						{
+							if ${EVEWindow[ByCaption, Mission journal](exists)}
+							{
+								EVEWindow[ByCaption, Mission journal]:Close
+							}
+							missionIterator.Value:GetDetails
+							return FALSE
+						}
+
+						; Can't reliablely copy the string to vairable due to Lavish script bug.
+						; variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${agentName}].HTML.Escape}
+						if !${EVEWindow[ByCaption, Mission journal - ${agentName}].HTML.Escape.Find["The following rewards will be yours if you complete this mission"]}
+						{
+							missionIterator.Value:GetDetails
+							return FALSE
 						}
 
 						Logger:Log["Mission", "Found mission for ${agentName} ${missionIterator.Value.Name}.", "", LOG_DEBUG]
 						offered:Set[TRUE]
 
-						if ${InvalidMissions.Contains[${missionIterator.Value.Name}]}
+						if ${InvalidMissions.Contains[${missionIterator.Value.Name}]} || (${Config.DeclineLowSec} && ${EVEWindow[ByCaption, Mission journal - ${agentName}].HTML.Escape.Find["low security system"]})
 						{
 							variable int agentDeclineWaitTime
 							agentDeclineWaitTime:Set[${Agents.SecondsTillDeclineable[${agentName}]}]
@@ -2689,6 +2742,8 @@ objectdef obj_Mission inherits obj_StateQueue
 					noOfferAgentCandidateDistance:Set[${agentDistance}]
 				}
 			}
+
+			CheckedAgent:Add[${agentName}]
 		}
 		while ${agentIterator:Next(exists)}
 
@@ -2704,7 +2759,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		if ${invalidOfferAgentCandidateIndex} != 0 && ${invalidOfferAgentCandidateDistance} < 3 && ${invalidOfferAgentCandidateDeclineWaitTime} == 0
 		{
 			currentAgentIndex:Set[${invalidOfferAgentCandidateIndex}]
-			Logger:Log["Mission", "Prioritizing declining mission from agent ${EVE.Agent[${currentAgentIndex}].Name} to refresh the decline timer."]
+			Logger:Log["Mission", "Prioritizing declining mission from agent ${EVE.Agent[${currentAgentIndex}].Name} to refresh the decline timer earlier."]
 		}
 		elseif ${validOfferAgentCandidateIndex} != 0
 		{
@@ -2738,10 +2793,12 @@ objectdef obj_Mission inherits obj_StateQueue
 		{
 			Logger:Log["Mission", "Failed to pick agent.", "r", LOG_CRITICAL]
 			halt:Set[TRUE]
+			This:ResetAgentPickingStatus
 			return TRUE
 		}
 
 		Logger:Log["Mission", "Picked agent ${EVE.Agent[${currentAgentIndex}].Name}."]
+		This:ResetAgentPickingStatus
 		return TRUE
 	}
 
