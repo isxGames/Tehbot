@@ -320,11 +320,6 @@ objectdef obj_Mission inherits obj_StateQueue
 		return FALSE
 	}
 
-	member:string AgentName(int ID)
-	{
-		return ${EVE.Agent[${ID}].Name}
-	}
-
 	member:bool CheckForWork()
 	{
 		variable index:agentmission missions
@@ -341,13 +336,13 @@ objectdef obj_Mission inherits obj_StateQueue
 					continue
 				}
 
-				if !${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${currentAgentIndex}]}](exists)}
+				if !${EVEWindow[ByCaption, Mission journal - ${EVE.Agent[${currentAgentIndex}].Name}](exists)}
 				{
 					missionIterator.Value:GetDetails
 					return FALSE
 				}
 
-				variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${currentAgentIndex}]}].HTML.Escape}
+				variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${EVE.Agent[${currentAgentIndex}].Name}].HTML.Escape}
 
 				if !${missionJournalText.NotNULLOrEmpty} || ${missionJournalText.Length} < 1000
 				{
@@ -1299,13 +1294,13 @@ objectdef obj_Mission inherits obj_StateQueue
 					continue
 				}
 
-				if !${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${currentAgentIndex}]}](exists)}
+				if !${EVEWindow[ByCaption, Mission journal - ${EVE.Agent[${currentAgentIndex}].Name}](exists)}
 				{
 					missionIterator.Value:GetDetails
 					return FALSE
 				}
 
-				variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${This.AgentName[${currentAgentIndex}]}].HTML.Escape}
+				variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${EVE.Agent[${currentAgentIndex}].Name}].HTML.Escape}
 				if !${missionJournalText.NotNULLOrEmpty} || ${missionJournalText.Length} < 1000
 				{
 					missionIterator.Value:GetDetails
@@ -2542,6 +2537,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		variable index:agentmission missions
 		EVE:GetAgentMissions[missions]
 		variable iterator missionIterator
+		variable string agentName
 		variable int agentIndex = 0
 		variable bool offered = FALSE
 
@@ -2551,12 +2547,13 @@ objectdef obj_Mission inherits obj_StateQueue
 			AgentList:GetIterator[agentIterator]
 			do
 			{
+				agentName:Set[${agentIterator.Value}]
 				; Somehow direct initialization does not work.
-				agentIndex:Set[${EVE.Agent[${agentIterator.Value}].Index}]
+				agentIndex:Set[${EVE.Agent[${agentName}].Index}]
 
 				if ${agentIndex} == 0
 				{
-					Logger:Log["Mission", "Failed to find agent index for ${agentIterator.Value}.", "r", LOG_CRITICAL]
+					Logger:Log["Mission", "Failed to find agent index for ${agentName}.", "r", LOG_CRITICAL]
 					halt:Set[TRUE]
 					return TRUE
 				}
@@ -2621,7 +2618,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		{
 			agentIndex:Set[${EVE.Agent[${agentIterator.Value}].Index}]
 
-			; Logger:Log["Mission", "Founding mission for ${EVE.Agent[${agentIndex}].Name}.", "", LOG_DEBUG]
+			; Logger:Log["Mission", "Founding mission for ${agentName}.", "", LOG_DEBUG]
 			; The distance seems to be the shortest path which can go throw low sec no matter the in game setting.
 			agentDistance:Set[${EVE.Station[${EVE.Agent[${agentIndex}].StationID}].SolarSystem.JumpsTo}]
 			if ${Me.InStation} && (${Me.StationID} == ${EVE.Agent[${agentIndex}].StationID})
@@ -2640,18 +2637,18 @@ objectdef obj_Mission inherits obj_StateQueue
 						; accepted
 						if ${missionIterator.Value.State} == 2
 						{
-							Logger:Log["Mission", "Found ongoing mission for agent ${EVE.Agent[${agentIndex}].Name}, skip picking agents."]
+							Logger:Log["Mission", "Found ongoing mission for agent ${agentName}, skip picking agents."]
 							currentAgentIndex:Set[${agentIndex}]
 							return TRUE
 						}
 
-						Logger:Log["Mission", "Found mission for ${EVE.Agent[${agentIndex}].Name} ${missionIterator.Value.Name}.", "", LOG_DEBUG]
+						Logger:Log["Mission", "Found mission for ${agentName} ${missionIterator.Value.Name}.", "", LOG_DEBUG]
 						offered:Set[TRUE]
 
 						if ${InvalidMissions.Contains[${missionIterator.Value.Name}]}
 						{
 							variable int agentDeclineWaitTime
-							agentDeclineWaitTime:Set[${Agents.SecondsTillDeclineable[${EVE.Agent[${agentIndex}].Name}]}]
+							agentDeclineWaitTime:Set[${Agents.SecondsTillDeclineable[${agentName}]}]
 
 							if ${invalidOfferAgentCandidateIndex} == 0 || \
 								(${invalidOfferAgentCandidateDeclineWaitTime} > ${agentDeclineWaitTime}) || \
@@ -2661,7 +2658,7 @@ objectdef obj_Mission inherits obj_StateQueue
 								invalidOfferAgentCandidateDeclineWaitTime:Set[${agentDeclineWaitTime}]
 								invalidOfferAgentCandidateDistance:Set[${agentDistance}]
 
-								Logger:Log["Mission", "Agent with invalid offer ${EVE.Agent[${agentIndex}].Name} is ${agentDistance} jumps away and can decline again in ${invalidOfferAgentCandidateDeclineWaitTime} secs.", "g"]
+								Logger:Log["Mission", "Agent with invalid offer ${agentName} is ${agentDistance} jumps away and can decline again in ${invalidOfferAgentCandidateDeclineWaitTime} secs.", "g"]
 							}
 						}
 						else
@@ -2672,7 +2669,7 @@ objectdef obj_Mission inherits obj_StateQueue
 								validOfferAgentCandidateDistance:Set[${agentDistance}]
 							}
 
-							Logger:Log["Mission", "Agent with valid offer ${EVE.Agent[${agentIndex}].Name} is ${agentDistance} jumps away.", "g"]
+							Logger:Log["Mission", "Agent with valid offer ${agentName} is ${agentDistance} jumps away.", "g"]
 						}
 
 						; No multiple missions from the same agent.
@@ -2684,7 +2681,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 			if !${offered}
 			{
-				Logger:Log["Mission", "Agent without offer ${EVE.Agent[${agentIndex}].Name} is ${agentDistance} jumps away.", "g"]
+				Logger:Log["Mission", "Agent without offer ${agentName} is ${agentDistance} jumps away.", "g"]
 
 				if ${noOfferAgentCandidateIndex} == 0 || ${noOfferAgentCandidateDistance} > ${agentDistance}
 				{
