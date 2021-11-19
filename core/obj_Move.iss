@@ -2,14 +2,13 @@ objectdef obj_Move inherits obj_StateQueue
 {
 	variable obj_Approach ApproachModule
 
-	variable bool Traveling=FALSE
+	variable bool Traveling = FALSE
 
 
 	method Initialize()
 	{
 		This[parent]:Initialize
 	}
-
 
 	method Warp(int64 ID, int Dist=0, bool FleetWarp=FALSE)
 	{
@@ -112,7 +111,6 @@ objectdef obj_Move inherits obj_StateQueue
 			Logger:Log["Move", "StationID: ${StationID}", "r"]
 		}
 	}
-
 
 
 	method Fleetmember(int64 ID, bool IgnoreGate=FALSE, int Distance=0)
@@ -233,7 +231,7 @@ objectdef obj_Move inherits obj_StateQueue
 		This:QueueState["SystemMove", 2000, ${SystemID}]
 	}
 
-	method Object(int64 ID, int Distance=0, bool FleetWarp=FALSE)
+	method Entity(int64 ID, int Distance=0, bool FleetWarp=FALSE)
 	{
 		if ${This.Traveling}
 		{
@@ -243,16 +241,11 @@ objectdef obj_Move inherits obj_StateQueue
 		Logger:Log["Move", "Movement queued", "o"]
 		Logger:Log["Move", " ${Entity[${ID}].Name}", "-g"]
 		This.Traveling:Set[TRUE]
-		This:QueueState["ObjectMove", 2000, "${ID},${Distance},${FleetWarp}"]
+		This:QueueState["EntityMove", 2000, "${ID}, ${Distance}, ${FleetWarp}"]
 	}
 
 	method Agent(string AgentName)
 	{
-		if ${This.Traveling}
-		{
-			return
-		}
-
 		if !${EVE.Agent[${AgentName}](exists)}
 		{
 			Logger:Log["Move", "Attempted to travel to an agent which does not exist", "r"]
@@ -260,10 +253,7 @@ objectdef obj_Move inherits obj_StateQueue
 			return
 		}
 
-		Logger:Log["Move", "Movement queued", "o"]
-		Logger:Log["Move", " ${AgentName}", "-g"]
-		This.Traveling:Set[TRUE]
-		This:InsertState["AgentMove", 2000, ${EVE.Agent[AgentName].Index}]
+		This:Agent[${EVE.Agent[${AgentName}].Index}]
 	}
 
 	method Agent(int AgentIndex)
@@ -728,7 +718,7 @@ objectdef obj_Move inherits obj_StateQueue
 			if ${Me.StationID} == ${EVE.Agent[${ID}].StationID}
 			{
 				Logger:Log["Move", "Docked", "o"]
-				Logger:Log["Move", " ${Agent[${ID}].Station}", "-g"]
+				Logger:Log["Move", " ${Me.Station.Name}", "-g"]
 				This.Traveling:Set[FALSE]
 				return TRUE
 			}
@@ -766,15 +756,13 @@ objectdef obj_Move inherits obj_StateQueue
 				Logger:Log["Move", "Docking", "o"]
 				Logger:Log["Move", " ${EVE.Agent[${ID}].Station}", "-g"]
 				This:DockAtStation[${EVE.Agent[${ID}].StationID}]
-				This.Traveling:Set[FALSE]
-				return TRUE
+				return FALSE
 			}
 		}
 	}
 
 	member:bool SystemMove(int64 ID)
 	{
-
 		if ${Me.InStation}
 		{
 			if ${Me.SolarSystemID} == ${ID}
@@ -811,15 +799,17 @@ objectdef obj_Move inherits obj_StateQueue
 		return TRUE
 	}
 
-	member:bool ObjectMove(int64 ID, int Distance=0, bool FleetWarp=FALSE)
+	; TODO leverage this method elsewhere
+	; TODO replace autopilot with this method with cloak-warp trick
+	member:bool EntityMove(int64 ID, int Distance=0, bool FleetWarp=FALSE)
 	{
-
 		if ${Me.InStation}
 		{
-			echo ObjectMove in station
 			if ${Me.StationID} == ${ID}
 			{
-				echo Returned out of ObjectMove
+				Logger:Log["Move", "Docked", "o"]
+				Logger:Log["Move", " ${Me.Station.Name}", "-g"]
+				This.Traveling:Set[FALSE]
 				return TRUE
 			}
 			Logger:Log["Move", "Undocking", "o"]
@@ -828,12 +818,7 @@ objectdef obj_Move inherits obj_StateQueue
 			return FALSE
 		}
 
-		if !${Client.InSpace}
-		{
-			return FALSE
-		}
-
-		if ${Me.ToEntity.Mode} == 3
+		if ${Me.ToEntity.Mode} == 3 || !${Client.InSpace}
 		{
 			return FALSE
 		}
@@ -849,7 +834,7 @@ objectdef obj_Move inherits obj_StateQueue
 			This:Warp[${ID}, ${Distance}, ${FleetWarp}]
 			return FALSE
 		}
-		elseif ${Entity[${ID}].GroupID} == 1404 || ${Entity[${ID}].GroupID} == 1406 || ${Entity[${ID}].GroupID} == 1657
+		elseif ${Entity[${ID}].CategoryID} == CATEGORYID_STATION || ${Entity[${ID}].CategoryID} == CATEGORYID_STRUCTURE
 		{
 			This:DockAtStation[${ID}]
 			return FALSE
@@ -858,7 +843,6 @@ objectdef obj_Move inherits obj_StateQueue
 		This.Traveling:Set[FALSE]
 		return TRUE
 	}
-
 
 
 	method Approach(int64 ID, int distance=0)
@@ -929,6 +913,13 @@ objectdef obj_Move inherits obj_StateQueue
 		{
 			This:Bookmark["${This.SavedSpot}"]
 		}
+	}
+
+	method Stop()
+	{
+		Logger:Log["Move", "Stopping."]
+		This.Traveling:Set[FALSE]
+		This:Clear
 	}
 
 }

@@ -191,19 +191,23 @@ objectdef obj_DroneControl inherits obj_StateQueue
 
 	method Start()
 	{
-		ActiveNPC.MaxRange:Set[${droneEngageRange}]
-		variable int MaxTarget = ${MyShip.MaxLockedTargets}
-		if ${Me.MaxLockedTargets} < ${MyShip.MaxLockedTargets}
-			MaxTarget:Set[${Me.MaxLockedTargets}]
-		MaxTarget:Dec[2]
+		if ${This.IsIdle}
+		{
+			ActiveNPC.MaxRange:Set[${droneEngageRange}]
+			variable int MaxTarget = ${MyShip.MaxLockedTargets}
+			if ${Me.MaxLockedTargets} < ${MyShip.MaxLockedTargets}
+				MaxTarget:Set[${Me.MaxLockedTargets}]
+			MaxTarget:Dec[2]
 
-		ActiveNPC.MinLockCount:Set[${MaxTarget}]
-		ActiveNPC.AutoLock:Set[TRUE]
-		This:QueueState["DroneControl"]
+			ActiveNPC.MinLockCount:Set[${MaxTarget}]
+			ActiveNPC.AutoLock:Set[TRUE]
+			This:QueueState["DroneControl"]
+		}
 	}
 
 	method Stop()
 	{
+		Logger:Log["DroneControl", "Stopping."]
 		ActiveNPC.AutoLock:Set[FALSE]
 		This:Clear
 	}
@@ -461,7 +465,7 @@ objectdef obj_DroneControl inherits obj_StateQueue
 		{
 			do
 			{
-				CurrentDroneHealth:Set[${Math.Calc[${DroneIterator.Value.ToEntity.ShieldPct} + ${DroneIterator.Value.ToEntity.ArmorPct} + ${DroneIterator.Value.ToEntity.StructurePct}]}]
+				CurrentDroneHealth:Set[${Math.Calc[${DroneIterator.Value.ToEntity.ShieldPct.Int} + ${DroneIterator.Value.ToEntity.ArmorPct.Int} + ${DroneIterator.Value.ToEntity.StructurePct.Int}]}]
 				if ${Drones.DroneHealth.Element[${DroneIterator.Value.ID}]} && ${CurrentDroneHealth} < ${Drones.DroneHealth.Element[${DroneIterator.Value.ID}]}
 				{
 					; echo recalling ID ${DroneIterator.Value.ID}

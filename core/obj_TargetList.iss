@@ -65,6 +65,17 @@ objectdef obj_TargetList inherits obj_StateQueue
 		NeedUpdate:Set[TRUE]
 	}
 
+	method AddPCTargetingMe()
+	{
+		This:AddQueryString["Distance < 150000 && IsTargetingMe && !IsFleetMember && IsPC && !IsMoribund"]
+		NeedUpdate:Set[TRUE]
+	}
+
+	method AddAllPC()
+	{
+		This:AddQueryString["Distance < 150000 && !IsFleetMember && IsPC && !IsMoribund"]
+		NeedUpdate:Set[TRUE]
+	}
 
 	method RequestUpdate()
 	{
@@ -468,7 +479,8 @@ objectdef obj_TargetList inherits obj_StateQueue
 							This:InsertState["Idle", 1000]
 							return TRUE
 						}
-						if !${EntityIterator.Value.IsLockedTarget} && !${EntityIterator.Value.BeingTargeted} && ${LockedAndLockingTargets.Used} < ${MinLockCount} && ${MaxTarget} > (${Me.TargetCount} + ${Me.TargetingCount}) && ${EntityIterator.Value.Distance} < ${MyShip.MaxTargetRange} && (${EntityIterator.Value.Distance} < ${MaxRange} || ${LockOutOfRange}) && ${TargetList_DeadDelay.Element[${EntityIterator.Value.ID}]} < ${LavishScript.RunningTime}
+						if !${EntityIterator.Value.ID.Equal[${MyShip.ID}]} \	/* Don't lock oneself */
+							&& !${EntityIterator.Value.IsLockedTarget} && !${EntityIterator.Value.BeingTargeted} && ${LockedAndLockingTargets.Used} < ${MinLockCount} && ${MaxTarget} > (${Me.TargetCount} + ${Me.TargetingCount}) && ${EntityIterator.Value.Distance} < ${MyShip.MaxTargetRange} && (${EntityIterator.Value.Distance} < ${MaxRange} || ${LockOutOfRange}) && ${TargetList_DeadDelay.Element[${EntityIterator.Value.ID}]} < ${LavishScript.RunningTime}
 						{
 							EntityIterator.Value:LockTarget
 							LockedAndLockingTargets:Add[${EntityIterator.Value.ID}]

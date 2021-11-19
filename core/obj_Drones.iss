@@ -362,20 +362,20 @@ objectdef obj_Drones inherits obj_StateQueue
 	{
 		if !${Entity[${ActivateTargetCache}].IsLockedTarget}
 		{
-			return FALSE
+			return TRUE
 		}
-		elseif ${Entity[${ActivateTargetCache}].IsActiveTarget}
+
+		if ${Entity[${ActivateTargetCache}].IsActiveTarget}
 		{
 			This:QueueState["EngageActiveTarget", -1, "${TypeQuery}, ${Force}, ${Count}"]
+			return TRUE
 		}
 		else
 		{
 			; echo switching
 			Entity[${ActivateTargetCache}]:MakeActiveTarget
-			This:InsertState["SwitchActiveTarget", -1, "${TypeQuery}, ${Force}, ${Count}"]
-			This:InsertState["Idle"]
+			return FALSE
 		}
-		return TRUE
 	}
 
 	member:bool EngageActiveTarget(string TypeQuery, bool Force = FALSE, int Count = -1)
@@ -401,7 +401,7 @@ objectdef obj_Drones inherits obj_StateQueue
 					break
 				}
 
-				if !${ReturningDrones.Contains[${DroneIterator.Value.ID}]}
+				if !${ReturningDrones.Contains[${DroneIterator.Value.ID}]} && !${DroneIterator.Value.Target.ID.Equal[${ActivateTargetCache}]}
 				{
 					; echo ${DroneIterator.Value.ID} engaging ${Entity[${ActivateTargetCache}].Name}
 					DronesToEngage:Insert[${DroneIterator.Value.ID}]
@@ -410,8 +410,10 @@ objectdef obj_Drones inherits obj_StateQueue
 			}
 			while ${DroneIterator:Next(exists)}
 		}
-		EVE:DronesEngageMyTarget[DronesToEngage]
-		This:QueueState["SwitchActiveTarget"]
+		if ${Selected} > 0
+		{
+			EVE:DronesEngageMyTarget[DronesToEngage]
+		}
 		return TRUE
 	}
 
@@ -440,7 +442,7 @@ objectdef obj_Drones inherits obj_StateQueue
 		{
 			do
 			{
-				variable float currentDroneHealth = ${Math.Calc[${DroneIterator.Value.ToEntity.ShieldPct} + ${DroneIterator.Value.ToEntity.ArmorPct} + ${DroneIterator.Value.ToEntity.StructurePct}]}
+				variable float currentDroneHealth = ${Math.Calc[${DroneIterator.Value.ToEntity.ShieldPct.Int} + ${DroneIterator.Value.ToEntity.ArmorPct.Int} + ${DroneIterator.Value.ToEntity.StructurePct.Int}]}
 				Drones.DroneHealth:Set[${DroneIterator.Value.ID}, ${currentDroneHealth.Int}]
 			}
 			while ${DroneIterator:Next(exists)}

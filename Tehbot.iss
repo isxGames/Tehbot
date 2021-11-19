@@ -52,6 +52,7 @@
 #include minimode/AutoThrust.iss
 #include minimode/DroneControl.iss
 #include minimode/InstaWarp.iss
+#include minimode/FightOrFlight.iss
 #include minimode/Salvage.iss
 #include minimode/UndockWarp.iss
 
@@ -88,6 +89,7 @@ function main(string Character="")
 	declarevariable AutoModule obj_AutoModule script
 	declarevariable AutoThrust obj_AutoThrust script
 	declarevariable InstaWarp obj_InstaWarp script
+	declarevariable FightOrFlight obj_FightOrFlight script
 	declarevariable UndockWarp obj_UndockWarp script
 	declarevariable Salvage obj_Salvage script
 	declarevariable DroneControl obj_DroneControl script

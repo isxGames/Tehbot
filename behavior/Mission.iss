@@ -228,6 +228,21 @@ objectdef obj_Mission inherits obj_StateQueue
 		Lootables:AddQueryString["(GroupID = GROUP_WRECK || GroupID = GROUP_CARGOCONTAINER) && !IsMoribund"]
 	}
 
+	method Log(string text)
+	{
+		Logger:Log["Mission", "${text.Escape}", "", LOG_STANDARD]
+	}
+
+	method LogDebug(string text)
+	{
+		Logger:Log["Mission", "${text.Escape}", "g"]
+	}
+
+	method LogCritical(string text)
+	{
+		Logger:Log["Mission", "${text.Escape}", "", LOG_CRITICAL]
+	}
+
 	method ScheduleHalt()
 	{
 		halt:Set[TRUE]
@@ -267,6 +282,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			Logger:Log["obj_Mission", "Started", "g"]
 			This:QueueState["UpdateNPCs"]
 			This:QueueState["ReportMissionConfigs"]
+			This:QueueState["Repair"]
 			This:QueueState["Cleanup"]
 			This:QueueState["PickAgent"]
 			This:QueueState["CheckForWork"]
@@ -276,6 +292,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 	method Stop()
 	{
+		Logger:Log["Mission", "Stopping."]
 		This:Clear
 	}
 
@@ -299,11 +316,13 @@ objectdef obj_Mission inherits obj_StateQueue
 
 	member:bool Repair()
 	{
-		if !${Client.InSpace}
+		if ${Me.InStation}
 		{
 			if !${EVEWindow[RepairShop](exists)}
 			{
 				MyShip.ToItem:GetRepairQuote
+				This:LogDebug["GetRepairQuote."]
+				This:InsertState["Repair", 2000]
 				return TRUE
 			}
 			else
@@ -311,23 +330,27 @@ objectdef obj_Mission inherits obj_StateQueue
 				if ${EVEWindow[byName, modal](exists)} && ${EVEWindow[byName, modal].Text.Find[Repairing these items]}
 				{
 					EVEWindow[byName, modal]:ClickButtonYes
-					Client:Wait[1000]
+					This:LogDebug["Repairing these items."]
+					This:InsertState["Repair", 2000]
 					return TRUE
 				}
 				if ${EVEWindow[byName,"Set Quantity"](exists)}
 				{
 					EVEWindow[byName,"Set Quantity"]:ClickButtonOK
-					Client:Wait[1000]
+					This:LogDebug["ClickButtonOK."]
+					This:InsertState["Repair", 2000]
 					return TRUE
 				}
 				if !${EVEWindow[RepairShop].TotalCost.Equal[0]}
 				{
 					EVEWindow[RepairShop]:RepairAll
-					return TRUE
+					This:LogDebug["RepairAlls."]
+					return FALSE
 				}
 			}
 		}
-		return FALSE
+
+		return TRUE
 	}
 
 	member:bool CheckForWork()
@@ -416,6 +439,7 @@ objectdef obj_Mission inherits obj_StateQueue
 					{
 						Logger:Log["Mission", "Going to the agent station anyway", "g"]
 						This:InsertState["Cleanup"]
+						This:InsertState["Repair"]
 						This:InsertState["CheckForWork"]
 						This:InsertState["InteractAgent", 1500, "OFFER"]
 						return TRUE
@@ -441,6 +465,7 @@ objectdef obj_Mission inherits obj_StateQueue
 								Logger:Log["Mission", "Mission Complete", "g"]
 								Logger:Log["Mission", " ${missionIterator.Value.Name}", "o"]
 								This:InsertState["Cleanup"]
+								This:InsertState["Repair"]
 								This:InsertState["CompleteMission", 1500]
 								return TRUE
 							}
@@ -806,28 +831,6 @@ objectdef obj_Mission inherits obj_StateQueue
 	variable bool notDone = FALSE
 	member:bool PerformMission(int nextwaitcomplete = 0)
 	{
-		; Flee to agent if not warpscrambled && (in egg or (low hp && (TODO) not pvp fight) or module damaged)
-		if !${MyShip.ToEntity.IsWarpScrambled}
-		{
-			if ${MyShip.ToEntity.Type.Equal["Capsule"]}
-			{
-				Logger:Log["Mission", "I am in egg, I should flee.", "r", LOG_CRITICAL]
-				This:Clear
-				This:QueueState["FleeToAgent", 1000, "FALSE, 99999"]
-				return TRUE
-			}
-			elseif ${MyShip.ShieldPct} < 0 || ${MyShip.ArmorPct} < 50 || ${MyShip.StructurePct} < 100
-			{
-				Logger:Log["Mission", "Low HP - Shield: ${MyShip.ShieldPct}%, Armor: ${MyShip.ArmorPct}%, Hull: ${MyShip.StructurePct}%, I should flee.", "r", LOG_CRITICAL]
-				This:Clear
-				This:QueueState["FleeToAgent", 1000, "FALSE, 0"]
-				This:QueueState["Cleanup"]
-				This:QueueState["CheckForWork"]
-				EVE:RefreshBookmarks
-				return TRUE
-			}
-		}
-
 		variable iterator itemIterator
 		This:BuildActiveNPC
 		ActiveNPCs:RequestUpdate
@@ -1368,6 +1371,7 @@ objectdef obj_Mission inherits obj_StateQueue
 								Logger:Log["Mission", "Mission Complete", "g"]
 								Logger:Log["Mission", " ${missionIterator.Value.Name}", "o"]
 								This:InsertState["Cleanup"]
+								This:InsertState["Repair"]
 								This:InsertState["CompleteMission", 1500]
 								return TRUE
 							}
@@ -1434,11 +1438,6 @@ objectdef obj_Mission inherits obj_StateQueue
 
 	member:bool Cleanup()
 	{
-		if ${Me.InStation} && ${This.Repair}
-		{
-			This:InsertState["Cleanup", 2000]
-			return TRUE
-		}
 		if ${EVEWindow[AgentBrowser](exists)}
 		{
 			EVEWindow[AgentBrowser]:Close
@@ -1459,43 +1458,6 @@ objectdef obj_Mission inherits obj_StateQueue
 			EVEWindow[RepairShop]:Close
 		}
 		return TRUE
-	}
-
-	member:bool FleeToAgent(bool waitForDrones = FALSE, int wait = 0)
-	{
-		if ${Me.InSpace}
-		{
-			if ${Ship.ModuleList_Siege.ActiveCount}
-			{
-				Ship.ModuleList_Siege:DeactivateAll
-			}
-
-			if ${DroneControl.ActiveDrones.Used} > 0
-			{
-				DroneControl:Recall
-				if ${waitForDrones}
-				{
-					return FALSE
-				}
-			}
-
-			if ${Me.StationID} != ${EVE.Agent[${currentAgentIndex}].StationID}
-			{
-				Logger:Log["Mission", "Fleeing to agent station and then wait for ${wait} seconds", "g", LOG_CRITICAL]
-				Logger:Log["Mission", "Setting course for \ao${EVE.Station[${EVE.Agent[${currentAgentIndex}].StationID}].Name}", "g"]
-				Move:Agent[${currentAgentIndex}]
-				if ${wait} > 0
-				{
-					This:InsertState["WaitTill", 1000, ${This.EVETimestamp:Inc[${wait}]}]
-				}
-				This:InsertState["Traveling"]
-				return TRUE
-			}
-		}
-		else
-		{
-			Logger:Log["Mission", "Fleeing while in station?", "g", LOG_DEBUG]
-		}
 	}
 
 	member:bool CompleteMission()
@@ -1573,6 +1535,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		halt:Set[FALSE]
 		This:InsertState["DropOffLoot"]
 		This:InsertState["Cleanup"]
+		This:InsertState["Repair"]
 		return TRUE
 	}
 
@@ -1580,7 +1543,7 @@ objectdef obj_Mission inherits obj_StateQueue
 	{
 		if ${Me.StationID} != ${EVE.Agent[${currentAgentIndex}].StationID}
 		{
-			Move:Bookmark[${EVE.Agent[${currentAgentIndex}].StationID}]
+			Move:Agent[${currentAgentIndex}]
 			This:InsertState["InteractAgent", 1500, ${Action}]
 			This:InsertState["Traveling"]
 			return TRUE
@@ -1684,7 +1647,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			; Logger:Log["Mission", "agent ${EVE.Agent[${currentAgentIndex}].Name} availability: ${Agents.CanDeclineMission[${EVE.Agent[${currentAgentIndex}].Name}]}"]
 			; Logger:Log["Mission", "agent ${EVE.Agent[${currentAgentIndex}].Name} wait time: ${Agents.SecondsTillDeclineable[${EVE.Agent[${currentAgentIndex}].Name}]}"]
 
-			Client:Wait[1000]
+			; Client:Wait[1000]
 
 			return FALSE
 		}
@@ -1712,7 +1675,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		timeObj.Minute:Set[${minute}]
 		; timeObj.Hour:Dec[${delayHours}]
 		timeObj:Update
-		return ${timeObj.Timestamp}
+		return ${timeObj.Timestamp.Signed}
 	}
 
 	member:bool WaitTill(int timestamp, bool start = TRUE)
@@ -2490,19 +2453,24 @@ objectdef obj_Mission inherits obj_StateQueue
 		{
 			if ${Me.InSpace}
 			{
-				if ${Ship.ModuleList_Regen_Shield.InactiveCount} && ((${MyShip.ShieldPct} < 100 && ${MyShip.CapacitorPct} > ${AutoModule.Config.ActiveShieldCap}) || ${AutoModule.Config.ShieldBoost})
+				if ${Ship.ModuleList_Siege.ActiveCount}
+				{
+					Ship.ModuleList_Siege:DeactivateAll
+				}
+
+				if ${Ship.ModuleList_Regen_Shield.InactiveCount} && ((${MyShip.ShieldPct.Int} < 100 && ${MyShip.CapacitorPct.Int} > ${AutoModule.Config.ActiveShieldCap}) || ${AutoModule.Config.ShieldBoost})
 				{
 					Ship.ModuleList_Regen_Shield:ActivateAll
 				}
-				if ${Ship.ModuleList_Regen_Shield.ActiveCount} && (${MyShip.ShieldPct} == 100 || ${MyShip.CapacitorPct} < ${AutoModule.Config.ActiveShieldCap}) && !${AutoModule.Config.ShieldBoost}
+				if ${Ship.ModuleList_Regen_Shield.ActiveCount} && (${MyShip.ShieldPct.Int} == 100 || ${MyShip.CapacitorPct.Int} < ${AutoModule.Config.ActiveShieldCap}) && !${AutoModule.Config.ShieldBoost}
 				{
 					Ship.ModuleList_Regen_Shield:DeactivateAll
 				}
-				if ${Ship.ModuleList_Repair_Armor.InactiveCount} && ((${MyShip.ArmorPct} < 100 && ${MyShip.CapacitorPct} > ${AutoModule.Config.ActiveArmorCap}) || ${AutoModule.Config.ArmorRepair})
+				if ${Ship.ModuleList_Repair_Armor.InactiveCount} && ((${MyShip.ArmorPct.Int} < 100 && ${MyShip.CapacitorPct.Int} > ${AutoModule.Config.ActiveArmorCap}) || ${AutoModule.Config.ArmorRepair})
 				{
 					Ship.ModuleList_Repair_Armor:ActivateAll
 				}
-				if ${Ship.ModuleList_Repair_Armor.ActiveCount} && (${MyShip.ArmorPct} == 100 || ${MyShip.CapacitorPct} < ${AutoModule.Config.ActiveArmorCap}) && !${AutoModule.Config.ArmorRepair}
+				if ${Ship.ModuleList_Repair_Armor.ActiveCount} && (${MyShip.ArmorPct.Int} == 100 || ${MyShip.CapacitorPct.Int} < ${AutoModule.Config.ActiveArmorCap}) && !${AutoModule.Config.ArmorRepair}
 				{
 					Ship.ModuleList_Repair_Armor:DeactivateAll
 				}
@@ -2697,6 +2665,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		}
 
 		; Then proceed to pick optimal agent.
+		offered:Set[FALSE]
 		variable int agentDistance = 0
 
 		AgentList:GetIterator[agentIterator]
@@ -2728,6 +2697,8 @@ objectdef obj_Mission inherits obj_StateQueue
 				{
 					if ${missionIterator.Value.AgentID} == ${EVE.Agent[${agentIndex}].ID}
 					{
+						This:LogDebug["Found mission for agent ${agentName}."]
+
 						; accepted
 						if ${missionIterator.Value.State} == 2
 						{

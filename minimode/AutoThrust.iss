@@ -88,7 +88,7 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 			if ${Config.Approach}
 			{
 				if ${Ship.ModuleList_AB_MWD.ActiveCount} && \
-					${MyShip.CapacitorPct} <= ${Config.Approach_Threshold}
+					${MyShip.CapacitorPct.Int} <= ${Config.Approach_Threshold}
 				{
 					Ship.ModuleList_AB_MWD:DeactivateAll
 					return FALSE
@@ -102,7 +102,7 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 			if ${Config.Orbit}
 			{
 				if ${Ship.ModuleList_AB_MWD.ActiveCount} && \
-					${MyShip.CapacitorPct} <= ${Config.Orbit_Threshold}
+					${MyShip.CapacitorPct.Int} <= ${Config.Orbit_Threshold}
 				{
 					Ship.ModuleList_AB_MWD:DeactivateAll
 					return FALSE
@@ -115,7 +115,7 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 			if ${Config.KeepAtRange}
 			{
 				if ${Ship.ModuleList_AB_MWD.ActiveCount} && \
-					${MyShip.CapacitorPct} <= ${Config.KeepAtRange_Threshold}
+					${MyShip.CapacitorPct.Int} <= ${Config.KeepAtRange_Threshold}
 				{
 					Ship.ModuleList_AB_MWD:DeactivateAll
 					return FALSE
@@ -129,7 +129,7 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 			if ${Config.Velocity}
 			{
 				if ${Ship.ModuleList_AB_MWD.ActiveCount} && \
-					${MyShip.CapacitorPct} <= ${Config.Velocity_Threshold}
+					${MyShip.CapacitorPct.Int} <= ${Config.Velocity_Threshold}
 				{
 					Ship.ModuleList_AB_MWD:DeactivateAll
 					return FALSE
@@ -157,7 +157,7 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 
 		if ${Config.Approach} && \
 			!${Ship.ModuleList_AB_MWD.ActiveCount} && \
-			${MyShip.CapacitorPct} > ${Config.Approach_Threshold} && \
+			${MyShip.CapacitorPct.Int} > ${Config.Approach_Threshold} && \
 			${Me.ToEntity.Mode} == 1 && \
 			${Me.ToEntity.FollowRange} == 50
 		{
@@ -166,7 +166,7 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 		}
 		if ${Config.Orbit} && \
 			!${Ship.ModuleList_AB_MWD.ActiveCount} && \
-			${MyShip.CapacitorPct} > ${Config.Orbit_Threshold} && \
+			${MyShip.CapacitorPct.Int} > ${Config.Orbit_Threshold} && \
 			${Me.ToEntity.Mode} == 4
 		{
 				Ship.ModuleList_AB_MWD:ActivateOne
@@ -174,7 +174,7 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 		}
 		if ${Config.KeepAtRange} && \
 			!${Ship.ModuleList_AB_MWD.ActiveCount} && \
-			${MyShip.CapacitorPct} > ${Config.KeepAtRange_Threshold} && \
+			${MyShip.CapacitorPct.Int} > ${Config.KeepAtRange_Threshold} && \
 			${Me.ToEntity.Mode} == 1 && \
 			${Me.ToEntity.FollowRange} > 50
 		{
@@ -184,7 +184,7 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 
 		if ${Config.Velocity} && \
 			!${Ship.ModuleList_AB_MWD.ActiveCount} && \
-			${MyShip.CapacitorPct} > ${Config.Velocity_Threshold} && \
+			${MyShip.CapacitorPct.Int} > ${Config.Velocity_Threshold} && \
 			${Me.ToEntity.MaxVelocity} > 0 && \
 			${Math.Calc[${Me.ToEntity.Velocity} / ${Me.ToEntity.MaxVelocity}]} >= ${Math.Calc[${Config.Velocity_Trigger} * .01]}
 		{

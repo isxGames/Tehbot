@@ -59,6 +59,8 @@ namespace TehbotUpdater
 					"minimode/DroneControl.xml",
 					"minimode/InstaWarp.iss",
 					"minimode/InstaWarp.xml",
+					"minimode/FightOrFlight.iss",
+					"minimode/FightOrFlight.xml",
 					"minimode/Salvage.iss",
 					"minimode/Salvage.xml",
 					"minimode/UndockWarp.iss",

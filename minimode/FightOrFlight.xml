@@ -6,7 +6,7 @@
 		<Color>FFFFFFFF</Color>
 	</template>
 
-	<window name='Tehbot_DroneControl'>
+	<window name='Tehbot_FightOrFlight'>
 		<Visible>1</Visible>
 		<BackGroundColor></BackGroundColor>
 		<Border>0</Border>
@@ -20,13 +20,13 @@
 			<Border>0</Border>
 			<BackgroundColor>FF000000</BackgroundColor>
 			<Children>
-				<Text name='Tehbot_DroneControl_TitleBar_Title'>
+				<Text name='Tehbot_FightOrFlight_TitleBar_Title'>
 					<X>0</X>
 					<Y>3</Y>
 					<Width>100%</Width>
 					<Height>40</Height>
 					<Alignment>Center</Alignment>
-					<Text>DroneControl Configuration</Text>
+					<Text>FightOrFlight Configuration</Text>
 				</Text>
 				<button	Name='Close'>
 					<X>r80</X>
@@ -35,13 +35,13 @@
 					<Height>40</Height>
 					<Text>Close</Text>
 					<OnLeftClick>
-						ui -unload "&filepath;/DroneControl"
+						ui -unload "&filepath;/FightOrFlight"
 					</OnLeftClick>
 				</button>
 			</Children>
 		</TitleBar>
-		<Children name="Tehbot_DroneControl_Children">
-			<Frame name="Tehbot_DroneControl_Frame">
+		<Children name="Tehbot_FightOrFlight_Children">
+			<Frame name="Tehbot_FightOrFlight_Frame">
 				<X>0</X>
 				<Y>30</Y>
 				<Width>100%</Width>
@@ -49,15 +49,15 @@
 				<BackgroundColor>FF000000</BackgroundColor>
 				<Border>1</Border>
 				<BorderColor>FFFFFFFF</BorderColor>
-				<Children name="Tehbot_DroneControl_Frame_Children">
-					<Text name='obj_DroneControlInformation'>
+				<Children name="Tehbot_FightOrFlight_Frame_Children">
+					<Text name='obj_GridWatcherInformation'>
 						<Font template='Information.Font' />
 						<X>1%</X>
 						<Y>1%</Y>
 						<Width>98%</Width>
 						<Height>18%</Height>
 						<Wrap />
-						<Text>DroneControl is a mini-mode that continously scans surrounding space for enemies and attacks them. This module will only attack frigates and destroyers that approach within 15km.</Text>
+						<Text>FightOrFlight is a MiniMode to detect and respond to threats. Fleeing is prefered but it will fight gankers when there is no choice.</Text>
 					</Text>
 				</Children>
 			</Frame>
