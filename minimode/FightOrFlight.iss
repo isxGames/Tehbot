@@ -8,6 +8,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 	variable obj_TargetList PCs
 	variable obj_TargetList NPCs
 	variable collection:int AttackTimestamp
+	variable int64 currentTarget = 0
 
 	method Initialize()
 	{
@@ -94,10 +95,21 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 				if ${attackerIterator.Value.IsPC}
 				{
 					This:LogCritical["Being attacked by player: \ar${attackerIterator.Value.Name} in a ${attackerIterator.Value.Type}"]
-					AttackTimestamp:Set[${attackerIterator.Value.Name}, ${This.EVETimestamp}]
+
+					if ${AttackTimestamp.Element[${attackerIterator.Value.ID}](exists)}
+					{
+						variable int lastAttackTimestamp
+						lastAttackTimestamp:Set[${AttackTimestamp.Element[${attackerIterator.Value.ID}]}]
+						This:LogDebug["lastattacktimestamp ${lastAttackTimestamp}"]
+						variable int secondsSinceAttacked
+						secondsSinceAttacked:Set[${Math.Calc[${This.EVETimestamp} - ${lastAttackTimestamp}]}]
+						This:LogDebug["secondsSinceAttacked ${secondsSinceAttacked}"]
+					}
+
+					AttackTimestamp:Set[${attackerIterator.Value.ID}, ${This.EVETimestamp}]
+					This:LogDebug["Update attack timer ${attackerIterator.Value.ID} -- ${This.EVETimestamp}"]
 					detected:Set[TRUE]
 				}
-
 			}
 			while ${attackerIterator:Next(exists)}
 		}
@@ -202,14 +214,16 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 
 			PCs.MinLockCount:Set[${MaxTarget}]
 			PCs.AutoLock:Set[TRUE]
+			; TODO verify this is working.
 
 			This:DetectGankers
 			; When attacked, enter Engage phase
 			if ${IsAttackedByGankers}
 			{
 				This:LogDebug["Entering engage ganker stage."]
-				; TODO
-				return FALSE
+				Ship.ModuleList_Siege:ActivateOne
+				This:QueueState["EngageGankers"]
+				return TRUE
 			}
 		}
 
@@ -264,6 +278,163 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		; TODO flee when module offline.(put online).
 
 		return FALSE
+	}
+
+	member:bool EngageGankers()
+	{
+		if ${Me.InStation} || !${Me.InSpace}
+		{
+			This:QueueState["FightOrFlight"]
+			return TRUE
+		}
+
+		This:DetectWarpScrambleStatus
+		if ${IsWarpScrambled}
+		{
+			This:LogDebug["WarpScrambled by gankers."]
+		}
+
+		if !${IsWarpScrambled} && ${MyShip.ToEntity.Type.Equal["Capsule"]}
+		{
+			This:Log["I am in egg, I should flee."]
+			This:QueueState["FleeToStation"]
+			This:QueueState["FightOrFlight"]
+			return TRUE
+		}
+
+		${Config.Common.Tehbot_Mode}:Stop
+
+		This:BuildPC
+		PCs:RequestUpdate
+		variable int MaxTarget = ${MyShip.MaxLockedTargets}
+		if ${Me.MaxLockedTargets} < ${MyShip.MaxLockedTargets}
+			MaxTarget:Set[${Me.MaxLockedTargets}]
+		PCs.MinLockCount:Set[${MaxTarget}]
+		PCs.AutoLock:Set[TRUE]
+
+		Ship.ModuleList_Siege:ActivateOne
+
+		This:DetectGankers
+		;;;;;;;;;;;;;;;;;;;;PickTarget;;;;;;;;;;;;;;;;;;;;
+		if !${Entity[${currentTarget}]} || ${Entity[${currentTarget}].IsMoribund} || !(${Entity[${currentTarget}].IsLockedTarget} || ${Entity[${currentTarget}].BeingTargeted})
+		{
+			currentTarget:Set[0]
+		}
+
+		variable iterator lockedTargetIterator
+		variable iterator activeNeuterIterator
+		Ship:BuildActiveNeuterList
+
+		if ${currentTarget} != 0
+		{
+			if ${Ship.ActiveNeuterList.Used}
+			{
+				if !${Ship.ActiveNeuterSet.Contains[${currentTarget}]}
+				{
+					; The only jammer we want to priortize is energy neutralizer.
+					Ship.ActiveNeuterList:GetIterator[activeNeuterIterator]
+					do
+					{
+						if ${Entity[${activeNeuterIterator.Value}].IsLockedTarget}
+						{
+							currentTarget:Set[${activeNeuterIterator.Value}]
+							This:Log["Switching target to active neutralizer \ar${Entity[${currentTarget}].Name}"]
+							break
+						}
+					}
+					while ${activeNeuterIterator:Next(exists)}
+				}
+			}
+		}
+		elseif ${PCs.LockedTargetList.Used}
+		{
+			; Need to re-pick from locked target
+			if ${Ship.ActiveNeuterList.Used}
+			{
+				Ship.ActiveNeuterList:GetIterator[activeNeuterIterator]
+				do
+				{
+					if ${Entity[${activeNeuterIterator.Value}].IsLockedTarget}
+					{
+						currentTarget:Set[${activeNeuterIterator.Value}]
+						This:Log["Targeting active neutralizer \ar${Entity[${currentTarget}].Name}"]
+						break
+					}
+				}
+				while ${activeNeuterIterator:Next(exists)}
+			}
+
+			if ${currentTarget} == 0
+			{
+				; Priortize the slowest target which is not capsule.
+				variable int64 CapsuleTarget = 0
+				PCs.LockedTargetList:GetIterator[lockedTargetIterator]
+				do
+				{
+					variable int lastAttackTimestamp
+					lastAttackTimestamp:Set[${AttackTimestamp.Element[${lockedTargetIterator.Value.ID}]}]
+					variable int secondsSinceAttacked
+					secondsSinceAttacked:Set[${Math.Calc[${This.EVETimestamp} - ${lastAttackTimestamp}]}]
+					This:LogDebug["Seconds since attacker last attacked: \ar${secondsSinceAttacked}"]
+					if ${secondsSinceAttacked} >= 300
+					{
+						continue
+					}
+
+					if ${lockedTargetIterator.Value.Type.Equal["Capsule"]}
+					{
+						CapsuleTarget:Set[${lockedTargetIterator.Value}]
+					}
+					elseif ${currentTarget} == 0 || ${Entity[${currentTarget}].Velocity} > ${Entity[${lockedTargetIterator.Value}].Velocity}
+					{
+						currentTarget:Set[${lockedTargetIterator.Value}]
+					}
+				}
+				while ${lockedTargetIterator:Next(exists)}
+
+				if ${currentTarget} == 0
+				{
+					currentTarget:Set[${CapsuleTarget}]
+				}
+			}
+			This:Log["Primary target: \ar${Entity[${currentTarget}].Name}"]
+		}
+
+		;;;;;;;;;;;;;;;;;;;;Shoot;;;;;;;;;;;;;;;;;;;;;
+		if ${currentTarget} != 0 && ${Entity[${currentTarget}]} && !${Entity[${currentTarget}].IsMoribund}
+		{
+			Ship.ModuleList_Siege:ActivateOne
+			if ${Ship.ModuleList_Weapon.Range} > ${Entity[${currentTarget}].Distance}
+			{
+				This:LogDebug["Pew Pew: \ar${Entity[${currentTarget}].Name}"]
+				Ship.ModuleList_Weapon:ActivateAll[${currentTarget}]
+				Ship.ModuleList_TrackingComputer:ActivateAll[${currentTarget}]
+			}
+			if ${Entity[${currentTarget}].Distance} <= ${Ship.ModuleList_TargetPainter.Range}
+			{
+				Ship.ModuleList_TargetPainter:ActivateAll[${currentTarget}]
+			}
+			; 'Effectiveness Falloff' is not read by ISXEVE, but 20km is a generally reasonable range to activate the module
+			if ${Entity[${currentTarget}].Distance} <= ${Math.Calc[${Ship.ModuleList_StasisGrap.Range} + 20000]}
+			{
+				Ship.ModuleList_StasisGrap:ActivateAll[${currentTarget}]
+			}
+			if ${Entity[${currentTarget}].Distance} <= ${Ship.ModuleList_StasisWeb.Range}
+			{
+				Ship.ModuleList_StasisWeb:ActivateAll[${currentTarget}]
+			}
+		}
+
+		This:DetectOtherPilots
+		if ${IsOtherPilotsDetected}
+		{
+			; Remain vigilant once entered engage stage.
+			return FALSE
+		}
+
+		${Config.Common.Tehbot_Mode}:Start
+		This:QueueState["FightOrFlight"]
+		return TRUE
 	}
 
 	member:int LocalHostilePilots()

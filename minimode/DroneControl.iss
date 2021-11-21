@@ -485,31 +485,31 @@ objectdef obj_DroneControl inherits obj_StateQueue
 		}
 
 		variable iterator lockedTargetIterator
-		variable iterator activateJammerIterator
-		Ship:BuildActivateJammerList
+		variable iterator activeJammerIterator
+		Ship:BuildActiveJammerList
 
 		if ${currentTarget} != 0
 		{
 			; Finalized decision
 			variable bool finalized
 			finalized:Set[FALSE]
-			if ${Ship.ActivateJammerList.Used}
+			if ${Ship.ActiveJammerList.Used}
 			{
-				if !${Ship.ActivateJammerSet.Contains[${currentTarget}]}
+				if !${Ship.ActiveJammerSet.Contains[${currentTarget}]}
 				{
 					; Being jammed but the jammer is not the current target
-					Ship.ActivateJammerList:GetIterator[activateJammerIterator]
+					Ship.ActiveJammerList:GetIterator[activeJammerIterator]
 					do
 					{
-						if ${Entity[${activateJammerIterator.Value}].IsLockedTarget} && ${Entity[${activateJammerIterator.Value}].Distance} < ${droneEngageRange}
+						if ${Entity[${activeJammerIterator.Value}].IsLockedTarget} && ${Entity[${activeJammerIterator.Value}].Distance} < ${droneEngageRange}
 						{
-							currentTarget:Set[${activateJammerIterator.Value}]
+							currentTarget:Set[${activeJammerIterator.Value}]
 							Logger:Log["DroneControl", "Switching target to activate jammer \ar${Entity[${currentTarget}].Name}"]
 							finalized:Set[TRUE]
 							break
 						}
 					}
-					while ${activateJammerIterator:Next(exists)}
+					while ${activeJammerIterator:Next(exists)}
 				}
 				else
 				{
@@ -536,19 +536,19 @@ objectdef obj_DroneControl inherits obj_StateQueue
 		elseif ${ActiveNPC.LockedTargetList.Used}
 		{
 			; Need to re-pick from locked target
-			if ${Ship.ActivateJammerList.Used}
+			if ${Ship.ActiveJammerList.Used}
 			{
-				Ship.ActivateJammerList:GetIterator[activateJammerIterator]
+				Ship.ActiveJammerList:GetIterator[activeJammerIterator]
 				do
 				{
-					if ${Entity[${activateJammerIterator.Value}].IsLockedTarget} && ${Entity[${activateJammerIterator.Value}].Distance} < ${droneEngageRange}
+					if ${Entity[${activeJammerIterator.Value}].IsLockedTarget} && ${Entity[${activeJammerIterator.Value}].Distance} < ${droneEngageRange}
 					{
-						currentTarget:Set[${activateJammerIterator.Value}]
+						currentTarget:Set[${activeJammerIterator.Value}]
 						Logger:Log["DroneControl", "Targeting activate jammer \ar${Entity[${currentTarget}].Name}"]
 						break
 					}
 				}
-				while ${activateJammerIterator:Next(exists)}
+				while ${activeJammerIterator:Next(exists)}
 			}
 
 			if ${currentTarget} == 0

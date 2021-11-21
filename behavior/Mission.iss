@@ -1106,32 +1106,32 @@ objectdef obj_Mission inherits obj_StateQueue
 		}
 
 		variable iterator lockedTargetIterator
-		variable iterator activateJammerIterator
-		Ship:BuildActivateJammerList
+		variable iterator activeJammerIterator
+		Ship:BuildActiveJammerList
 
 		if ${currentTarget} != 0
 		{
 			; Finalized decision
 			variable bool finalized
 			finalized:Set[FALSE]
-			if ${Ship.ActivateJammerList.Used}
+			if ${Ship.ActiveJammerList.Used}
 			{
-				if !${Ship.ActivateJammerSet.Contains[${currentTarget}]}
+				if !${Ship.ActiveJammerSet.Contains[${currentTarget}]}
 				{
 					; Being jammed but the jammer is not the current target
-					Ship.ActivateJammerList:GetIterator[activateJammerIterator]
+					Ship.ActiveJammerList:GetIterator[activeJammerIterator]
 					do
 					{
-						if ${Entity[${activateJammerIterator.Value}].IsLockedTarget}
+						if ${Entity[${activeJammerIterator.Value}].IsLockedTarget}
 						{
-							currentTarget:Set[${activateJammerIterator.Value}]
+							currentTarget:Set[${activeJammerIterator.Value}]
 							maxAttackTime:Set[${Math.Calc[${LavishScript.RunningTime} + (${switchTargetAfter} * 1000)]}]
 							Logger:Log["Mission", "Switching target to activate jammer \ar${Entity[${currentTarget}].Name}", "g"]
 							finalized:Set[TRUE]
 							break
 						}
 					}
-					while ${activateJammerIterator:Next(exists)}
+					while ${activeJammerIterator:Next(exists)}
 				}
 				else
 				{
@@ -1159,20 +1159,20 @@ objectdef obj_Mission inherits obj_StateQueue
 		elseif ${ActiveNPCs.LockedTargetList.Used}
 		{
 			; Need to re-pick from locked target
-			if ${Ship.ActivateJammerList.Used}
+			if ${Ship.ActiveJammerList.Used}
 			{
-				Ship.ActivateJammerList:GetIterator[activateJammerIterator]
+				Ship.ActiveJammerList:GetIterator[activeJammerIterator]
 				do
 				{
-					if ${Entity[${activateJammerIterator.Value}].IsLockedTarget}
+					if ${Entity[${activeJammerIterator.Value}].IsLockedTarget}
 					{
-						currentTarget:Set[${activateJammerIterator.Value}]
+						currentTarget:Set[${activeJammerIterator.Value}]
 						maxAttackTime:Set[${Math.Calc[${LavishScript.RunningTime} + (${switchTargetAfter} * 1000)]}]
 						Logger:Log["Mission", "Targeting activate jammer \ar${Entity[${currentTarget}].Name}", "g"]
 						break
 					}
 				}
-				while ${activateJammerIterator:Next(exists)}
+				while ${activeJammerIterator:Next(exists)}
 			}
 
 			if ${currentTarget} == 0
