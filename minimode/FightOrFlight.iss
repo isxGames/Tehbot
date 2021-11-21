@@ -4,6 +4,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 	variable bool IsWarpScrambled = FALSE
 	variable bool IsOtherPilotsDetected = FALSE
 	variable bool IsAttackedByGankers = FALSE
+	variable bool IsEngagingGankers = FALSE
 
 	variable obj_TargetList PCs
 	variable obj_TargetList NPCs
@@ -162,6 +163,8 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		; 	return FALSE
 		; }
 
+		IsEngagingGankers:Set[FALSE]
+
 		if ${Me.InStation} && !${This.LocalSafe}
 		{
 			This:Log["Detected many hostile pilots in local, wait until they are gone."]
@@ -208,7 +211,8 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 				while ${npcIterator:Next(exists)}
 			}
 
-			variable int MaxTarget = ${MyShip.MaxLockedTargets}
+			variable int MaxTarget
+			MaxTarget:Set[${MyShip.MaxLockedTargets}]
 			if ${Me.MaxLockedTargets} < ${MyShip.MaxLockedTargets}
 				MaxTarget:Set[${Me.MaxLockedTargets}]
 
@@ -288,6 +292,8 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			return TRUE
 		}
 
+		IsEngagingGankers:Set[TRUE]
+
 		This:DetectWarpScrambleStatus
 		if ${IsWarpScrambled}
 		{
@@ -306,7 +312,8 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 
 		This:BuildPC
 		PCs:RequestUpdate
-		variable int MaxTarget = ${MyShip.MaxLockedTargets}
+		variable int MaxTarget
+		MaxTarget:Set[${MyShip.MaxLockedTargets}]
 		if ${Me.MaxLockedTargets} < ${MyShip.MaxLockedTargets}
 			MaxTarget:Set[${Me.MaxLockedTargets}]
 		PCs.MinLockCount:Set[${MaxTarget}]
@@ -434,6 +441,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 
 		${Config.Common.Tehbot_Mode}:Start
 		This:QueueState["FightOrFlight"]
+		IsEngagingGankers:Set[FALSE]
 		return TRUE
 	}
 

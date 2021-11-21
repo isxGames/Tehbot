@@ -88,10 +88,10 @@ objectdef obj_Salvage inherits obj_StateQueue
 		{
 			group:Set["((Group = \"Cargo Container\") && (Distance >= 2500))"]
 		}
-		elseif ${Me.InSpace}
-		{
-			Logger:Log["Salvage", " Salvage mini module has no equipments to do anything", "r"]
-		}
+		; elseif ${Me.InSpace}
+		; {
+		; 	Logger:Log["Salvage", " Salvage mini module has no equipments to do anything", "r"]
+		; }
 
 		; Ship.ModuleList.Count is NULL at early stage
 		variable string canLoot = "&& !IsWreckEmpty && !IsWreckViewed"
@@ -175,7 +175,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 
 	member:bool Salvage()
 	{
-		if !${Client.InSpace} || ${Me.ToEntity.Mode} == 3
+		if !${Client.InSpace} || ${Me.ToEntity.Mode} == 3 || ${MyShip.CapacitorPct.Int} < 35 || ${FightOrFlight.IsEngagingGankers}
 		{
 			return FALSE
 		}
@@ -212,8 +212,8 @@ objectdef obj_Salvage inherits obj_StateQueue
 							Ship.ModuleList_TractorBeams:DeactivateOn[${wreckIterator.Value.ID}]
 						}
 
-						Logger:Log["Salvage", "Activating salvager - \ap${wreckIterator.Value.Name}"]
-						Ship.ModuleList_Salvagers:ActivateOne[${wreckIterator.Value.ID}]
+							Logger:Log["Salvage", "Activating salvager - \ap${wreckIterator.Value.Name}"]
+							Ship.ModuleList_Salvagers:ActivateOne[${wreckIterator.Value.ID}]
 						return FALSE
 					}
 
