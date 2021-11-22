@@ -86,7 +86,10 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			while ${pilotIterator:Next(exists)}
 		}
 
-		This:LogDebug["Detected ${detected} other pilot nearby."]
+		if ${detected} >= 1
+		{
+			This:LogDebug["Detected ${detected} other pilot nearby."]
+		}
 
 		if ${detected} >= ${threshold}
 		{
@@ -173,11 +176,11 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 	member:bool FightOrFlight()
 	{
 		; Do not disturb manual operation.
-		; if ${${Config.Common.Tehbot_Mode}.IsIdle}
-		; {
-		; 	; This:LogDebug["Bot is not running."]
-		; 	return FALSE
-		; }
+		if ${${Config.Common.Tehbot_Mode}.IsIdle}
+		{
+			; This:LogDebug["Bot is not running."]
+			return FALSE
+		}
 
 		IsEngagingGankers:Set[FALSE]
 

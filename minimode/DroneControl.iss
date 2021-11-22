@@ -103,6 +103,19 @@ objectdef obj_DroneControl inherits obj_StateQueue
 					return ${DroneType}
 				}
 		}
+
+		; Fallback for PVP
+		DroneType:Set[${Drones.Data.FindType["Light Scout Drones"]}]
+		if ${DroneType} != -1
+		{
+			return ${DroneType}
+		}
+
+		DroneType:Set[${Drones.Data.FindType["Medium Scout Drones"]}]
+		if ${DroneType} != -1
+		{
+			return ${DroneType}
+		}
 	}
 
 	member:int SentryCount()
@@ -193,6 +206,7 @@ objectdef obj_DroneControl inherits obj_StateQueue
 	{
 		if ${This.IsIdle}
 		{
+			Logger:Log["DroneControl", "Starting."]
 			ActiveNPC.MaxRange:Set[${droneEngageRange}]
 			variable int MaxTarget = ${MyShip.MaxLockedTargets}
 			if ${Me.MaxLockedTargets} < ${MyShip.MaxLockedTargets}
@@ -346,7 +360,7 @@ objectdef obj_DroneControl inherits obj_StateQueue
 		; Add potential jammers.
 		seperator:Set[""]
 		groups:Set[""]
-		PriorityTargets.Scramble:GetIterator[groupIterator]
+		PrioritizedTargets.Scramble:GetIterator[groupIterator]
 		if ${groupIterator:First(exists)}
 		{
 			do
@@ -360,7 +374,7 @@ objectdef obj_DroneControl inherits obj_StateQueue
 
 		seperator:Set[""]
 		groups:Set[""]
-		PriorityTargets.Neut:GetIterator[groupIterator]
+		PrioritizedTargets.Neut:GetIterator[groupIterator]
 		if ${groupIterator:First(exists)}
 		{
 			do
@@ -374,7 +388,7 @@ objectdef obj_DroneControl inherits obj_StateQueue
 
 		seperator:Set[""]
 		groups:Set[""]
-		PriorityTargets.ECM:GetIterator[groupIterator]
+		PrioritizedTargets.ECM:GetIterator[groupIterator]
 		if ${groupIterator:First(exists)}
 		{
 			do
@@ -428,7 +442,6 @@ objectdef obj_DroneControl inherits obj_StateQueue
 		}
 
 		ActiveNPC.MinLockCount:Set[${Config.LockCount}]
-		variable iterator TargetIterator
 
 		if !${Client.InSpace}
 		{
@@ -477,7 +490,6 @@ objectdef obj_DroneControl inherits obj_StateQueue
 			while ${DroneIterator:Next(exists)}
 		}
 
-		ActiveNPC.LockedAndLockingTargetList:GetIterator[TargetIterator]
 
 		if !${Entity[${currentTarget}](exists)} || ${Entity[${currentTarget}].IsMoribund} || (!${Entity[${currentTarget}].IsLockedTarget} && !${Entity[${currentTarget}].BeingTargeted}) || ${Entity[${currentTarget}].Distance} > ${droneEngageRange}
 		{
@@ -493,7 +505,15 @@ objectdef obj_DroneControl inherits obj_StateQueue
 			; Finalized decision
 			variable bool finalized
 			finalized:Set[FALSE]
-			if ${Ship.ActiveJammerList.Used}
+
+			if ${FightOrFlight.IsEngagingGankers} && !${FightOrFlight.currentTarget.Equal[0]} && !${FightOrFlight.currentTarget.Equal[${currentTarget}]}
+			{
+				currentTarget:Set[${FightOrFlight.currentTarget}]
+				Logger:Log["DroneControl", "Switching target to ganker \ar${Entity[${currentTarget}].Name}"]
+				finalized:Set[TRUE]
+			}
+
+			if !${finalized} && ${Ship.ActiveJammerList.Used}
 			{
 				if !${Ship.ActiveJammerSet.Contains[${currentTarget}]}
 				{
@@ -533,6 +553,11 @@ objectdef obj_DroneControl inherits obj_StateQueue
 				while ${lockedTargetIterator:Next(exists)}
 			}
 		}
+		elseif ${FightOrFlight.IsEngagingGankers} && !${FightOrFlight.currentTarget.Equal[0]}
+		{
+			currentTarget:Set[${FightOrFlight.currentTarget}]
+			Logger:Log["DroneControl", "Engaging ganker \ar${Entity[${currentTarget}].Name}"]
+		}
 		elseif ${ActiveNPC.LockedTargetList.Used}
 		{
 			; Need to re-pick from locked target
@@ -557,16 +582,19 @@ objectdef obj_DroneControl inherits obj_StateQueue
 				do
 				{
 					if ${Entity[${lockedTargetIterator.Value}].Distance} < ${droneEngageRange} && \
-					   (!${Entity[${currentTarget}](exists)} || \
-					   (!${Ship.IsHardToDealWithTarget[${currentTarget}]} && (${Ship.IsHardToDealWithTarget[${lockedTargetIterator.Value}]} || ${Entity[${currentTarget}].Distance} > ${Entity[${lockedTargetIterator.Value}].Distance})))
+					(!${Entity[${currentTarget}](exists)} || \
+					(!${Ship.IsHardToDealWithTarget[${currentTarget}]} && (${Ship.IsHardToDealWithTarget[${lockedTargetIterator.Value}]} || ${Entity[${currentTarget}].Distance} > ${Entity[${lockedTargetIterator.Value}].Distance})))
 					{
 						currentTarget:Set[${lockedTargetIterator.Value}]
 					}
 				}
 				while ${lockedTargetIterator:Next(exists)}
 			}
+
 			if ${currentTarget} != 0
+			{
 				Logger:Log["DroneControl", "Primary target: \ar${Entity[${currentTarget}].Name}"]
+			}
 		}
 
 		if ${currentTarget} != 0
