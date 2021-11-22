@@ -55,13 +55,13 @@ objectdef obj_TargetList inherits obj_StateQueue
 
 	method AddTargetingMe()
 	{
-		This:AddQueryString["Distance < 150000 && IsTargetingMe && IsNPC && !IsMoribund"]
+		This:AddQueryString["Distance < 150000 && IsTargetingMe && IsNPC && !IsMoribund && !(Name =- \"CONCORD\")"]
 		NeedUpdate:Set[TRUE]
 	}
 
 	method AddNotTargetingMe()
 	{
-		This:AddQueryString["Distance < 150000 && !IsTargetingMe && IsNPC && CategoryID = 11 && !IsMoribund"]
+		This:AddQueryString["Distance < 150000 && !IsTargetingMe && IsNPC && CategoryID = 11 && !IsMoribund && !(Name =- \"CONCORD\")"]
 		NeedUpdate:Set[TRUE]
 	}
 
@@ -128,7 +128,7 @@ objectdef obj_TargetList inherits obj_StateQueue
 
 	method AddAllNPCs()
 	{
-		variable string QueryString="CategoryID = CATEGORYID_ENTITY && IsNPC && !IsMoribund && !("
+		variable string QueryString="CategoryID = CATEGORYID_ENTITY && IsNPC && !IsMoribund && !(Name =- \"CONCORD\") && !("
 
 		;Exclude Groups here
 		QueryString:Concat["GroupID = GROUP_CONCORDDRONE ||"]
