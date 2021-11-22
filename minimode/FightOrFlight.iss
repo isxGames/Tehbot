@@ -55,7 +55,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		PCs:AddAllPC
 	}
 
-	method DetectOtherPilots()
+	method DetectOtherPilots(int threshold = 3)
 	{
 		This:BuildPC
 		PCs:RequestUpdate
@@ -68,18 +68,27 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			do
 			{
 				; Oh it's me.
-				if ${pilotIterator.Value.ID.Equal[${MyShip.ID}]} || ${pilotIterator.Value.Type.Equal["Capsule"]} || ${pilotIterator.Value.Type.Find["Shuttle"]} || ${pilotIterator.Value.Mode} == 3
+				if ${pilotIterator.Value.ID.Equal[${MyShip.ID}]} || ${pilotIterator.Value.Mode} == 3
 				{
 					continue
 				}
+
+				; Lock and destroy everything only in vigilant mode.
+				if (${threshold} > 1) && (${pilotIterator.Value.Type.Equal["Capsule"]} || ${pilotIterator.Value.Type.Find["Shuttle"]})
+				{
+					continue
+				}
+
 				detected:Inc[1]
-				This:LogDebug["Detected other pilot nearby: \ar ${pilotIterator.Value.Name} ${pilotIterator.Value.Type} ${pilotIterator.Value.IsTargetingMe} ${pilotIterator.Value.IsLockedTarget} ${pilotIterator.Value.ToAttacker.IsCurrentlyAttacking}"]
+				; This:LogDebug["${pilotIterator.Value.IsTargetingMe} ${pilotIterator.Value.IsLockedTarget} ${pilotIterator.Value.ToAttacker.IsCurrentlyAttacking}"]
 
 			}
 			while ${pilotIterator:Next(exists)}
 		}
 
-		if ${detected} > 2
+		This:LogDebug["Detected ${detected} other pilot nearby."]
+
+		if ${detected} >= ${threshold}
 		{
 			IsOtherPilotsDetected:Set[TRUE]
 		}
@@ -104,15 +113,15 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 				{
 					This:LogCritical["Being attacked by player: \ar${attackerIterator.Value.Name} in a ${attackerIterator.Value.Type}"]
 
-					if ${AttackTimestamp.Element[${attackerIterator.Value.Name.Escape}](exists)}
-					{
-						variable int lastAttackTimestamp
-						lastAttackTimestamp:Set[${AttackTimestamp.Element[${attackerIterator.Value.Name.Escape}]}]
-						This:LogDebug["lastattacktimestamp ${lastAttackTimestamp}"]
-						variable int secondsSinceAttacked
-						secondsSinceAttacked:Set[${Math.Calc[${Utility.EVETimestamp} - ${lastAttackTimestamp}]}]
-						This:LogDebug["secondsSinceAttacked ${secondsSinceAttacked}"]
-					}
+					; if ${AttackTimestamp.Element[${attackerIterator.Value.Name.Escape}](exists)}
+					; {
+					; 	variable int lastAttackTimestamp
+					; 	lastAttackTimestamp:Set[${AttackTimestamp.Element[${attackerIterator.Value.Name.Escape}]}]
+					; 	This:LogDebug["lastattacktimestamp ${lastAttackTimestamp}"]
+					; 	variable int secondsSinceAttacked
+					; 	secondsSinceAttacked:Set[${Math.Calc[${Utility.EVETimestamp} - ${lastAttackTimestamp}]}]
+					; 	This:LogDebug["secondsSinceAttacked ${secondsSinceAttacked}"]
+					; }
 
 					AttackTimestamp:Set[${attackerIterator.Value.Name.Escape}, ${Utility.EVETimestamp}]
 					This:LogDebug["Update attack timer ${attackerIterator.Value.Name.Escape} -- ${Utility.EVETimestamp}"]
@@ -194,52 +203,26 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			return FALSE
 		}
 
-		This:DetectOtherPilots
-		if ${IsOtherPilotsDetected}
+		This:DetectGankers
+		; When attacked, enter Engage phase
+		if ${IsAttackedByGankers}
 		{
-			Mission.NPCs.AutoLock:Set[FALSE]
-			Mission.ActiveNPCs.AutoLock:Set[FALSE]
-
-			; When other players detected, lock PC and unlock other NPCs
-			variable iterator npcIterator
-			NPCs:AddAllNPCs
-			NPCs:RequestUpdate
-			NPCs.LockedTargetList:GetIterator[npcIterator]
-			if ${npcIterator:First(exists)}
-			{
-				do
-				{
-					if ${npcIterator.Value.ID(exists)} && ${npcIterator.Value.IsNPC} && ${npcIterator.Value.IsLockedTarget}
-					{
-						This:LogDebug["Unlocking NPC ${npcIterator.Value.Name}."]
-						Entity[${npcIterator.Value.ID}]:UnlockTarget
-					}
-				}
-				while ${npcIterator:Next(exists)}
-			}
-
-			variable int MaxTarget
-			MaxTarget:Set[${MyShip.MaxLockedTargets}]
-			if ${Me.MaxLockedTargets} < ${MyShip.MaxLockedTargets}
-				MaxTarget:Set[${Me.MaxLockedTargets}]
-
-			PCs.MinLockCount:Set[${MaxTarget}]
-			PCs.AutoLock:Set[TRUE]
-			; TODO verify this is working.
-
-			This:DetectGankers
-			; When attacked, enter Engage phase
-			if ${IsAttackedByGankers}
-			{
-				This:LogDebug["Entering engage ganker stage."]
-				Ship.ModuleList_Siege:ActivateOne
-				This:QueueState["EngageGankers"]
-				return TRUE
-			}
+			This:LogCritical["Entering engage ganker stage."]
+			Ship.ModuleList_Siege:ActivateOne
+			This:QueueState["EngageGankers"]
+			return TRUE
 		}
 
-		Mission.NPCs.AutoLock:Set[TRUE]
-		Mission.ActiveNPCs.AutoLock:Set[TRUE]
+		This:DetectOtherPilots[3]
+		if ${IsOtherPilotsDetected}
+		{
+			This:UnlockNPCsAndLockPCs
+		}
+		else
+		{
+			Mission.NPCs.AutoLock:Set[TRUE]
+			Mission.ActiveNPCs.AutoLock:Set[TRUE]
+		}
 
 		; Flee to a station in the system if not warpscrambled && (in egg or (low hp && not pvp fight) or module offline)
 		; ${Me.ToEntity.IsWarpScrambled} is bugged.
@@ -301,6 +284,8 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 
 		IsEngagingGankers:Set[TRUE]
 
+		${Config.Common.Tehbot_Mode}:Stop
+
 		This:DetectWarpScrambleStatus
 		if ${IsWarpScrambled}
 		{
@@ -315,16 +300,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			return TRUE
 		}
 
-		${Config.Common.Tehbot_Mode}:Stop
-
-		This:BuildPC
-		PCs:RequestUpdate
-		variable int MaxTarget
-		MaxTarget:Set[${MyShip.MaxLockedTargets}]
-		if ${Me.MaxLockedTargets} < ${MyShip.MaxLockedTargets}
-			MaxTarget:Set[${Me.MaxLockedTargets}]
-		PCs.MinLockCount:Set[${MaxTarget}]
-		PCs.AutoLock:Set[TRUE]
+		This:UnlockNPCsAndLockPCs
 
 		Ship.ModuleList_Siege:ActivateOne
 
@@ -420,7 +396,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			Ship.ModuleList_Siege:ActivateOne
 			if ${Ship.ModuleList_Weapon.Range} > ${Entity[${currentTarget}].Distance}
 			{
-				This:LogDebug["Pew Pew: \ar${Entity[${currentTarget}].Name}"]
+				; This:LogDebug["Pew Pew: \ar${Entity[${currentTarget}].Name}"]
 				Ship.ModuleList_Weapon:ActivateAll[${currentTarget}]
 				Ship.ModuleList_TrackingComputer:ActivateAll[${currentTarget}]
 			}
@@ -439,7 +415,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			}
 		}
 
-		This:DetectOtherPilots
+		This:DetectOtherPilots[1]
 		if ${IsOtherPilotsDetected}
 		{
 			; Remain vigilant once entered engage stage.
@@ -566,5 +542,39 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		}
 
 		return TRUE
+	}
+
+	method UnlockNPCsAndLockPCs()
+	{
+		Mission.NPCs.AutoLock:Set[FALSE]
+		Mission.ActiveNPCs.AutoLock:Set[FALSE]
+
+		variable iterator npcIterator
+		NPCs:AddAllNPCs
+		NPCs:RequestUpdate
+		NPCs.LockedTargetList:GetIterator[npcIterator]
+		if ${npcIterator:First(exists)}
+		{
+			do
+			{
+				if ${npcIterator.Value.ID(exists)} && ${npcIterator.Value.IsNPC} && ${npcIterator.Value.IsLockedTarget}
+				{
+					This:LogDebug["Unlocking NPC ${npcIterator.Value.Name}."]
+					Entity[${npcIterator.Value.ID}]:UnlockTarget
+				}
+			}
+			while ${npcIterator:Next(exists)}
+		}
+
+		variable int MaxTarget
+		MaxTarget:Set[${MyShip.MaxLockedTargets}]
+		if ${Me.MaxLockedTargets} < ${MyShip.MaxLockedTargets}
+			MaxTarget:Set[${Me.MaxLockedTargets}]
+
+		This:BuildPC
+		PCs:RequestUpdate
+		PCs.MinLockCount:Set[${MaxTarget}]
+		PCs.AutoLock:Set[TRUE]
+		; TODO verify this is working.
 	}
 }
