@@ -28,7 +28,7 @@ objectdef obj_Configuration_Agents
 		This.AgentsRef:AddSet["Fykalia Adaferid"]
 		This.AgentRef["Fykalia Adaferid"]:AddSetting[AgentIndex, 9591]
 		This.AgentRef["Fykalia Adaferid"]:AddSetting[AgentID, 3018920]
-		This.AgentRef["Fykalia Adaferid"]:AddSetting[NextDeclineableTime, ${Mission.EVETimestamp}]
+		This.AgentRef["Fykalia Adaferid"]:AddSetting[NextDeclineableTime, ${Utility.EVETimestamp}]
 	}
 
 	member:int AgentIndex(string name)
@@ -74,17 +74,17 @@ objectdef obj_Configuration_Agents
 	member:int SecondsTillDeclineable(string name)
 	{
 		Logger:Log["obj_Configuration_Agents", "SecondsTillDeclineable ${name}", "", LOG_DEBUG]
-		if ${This.NextDeclineableTime[${name}]} < ${Mission.EVETimestamp}
+		if ${This.NextDeclineableTime[${name}]} < ${Utility.EVETimestamp}
 		{
 			return 0
 		}
-		return ${Math.Calc[${This.NextDeclineableTime[${name}]} - ${Mission.EVETimestamp}]}
+		return ${Math.Calc[${This.NextDeclineableTime[${name}]} - ${Utility.EVETimestamp}]}
 	}
 
 	member:bool CanDeclineMission(string name)
 	{
 		Logger:Log["obj_Configuration_Agents", "CanDeclineMission ${name}", "", LOG_DEBUG]
-		if ${This.NextDeclineableTime[${name}]} < ${Mission.EVETimestamp}
+		if ${This.NextDeclineableTime[${name}]} < ${Utility.EVETimestamp}
 		{
 			return TRUE
 		}
@@ -366,7 +366,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				{
 					if ${Config.DeclineLowSec} && ${missionJournalText.Find["low security system"]}
 					{
-						Logger:Log["Mission", "Declining low security mission \ao${missionIterator.Value.Name}", "g"]
+						Logger:Log["Mission", "Declining low security mission \ao${missionIterator.Value.Name.Trim}", "g"]
 						This:InsertState["Cleanup"]
 						This:InsertState["CheckForWork"]
 						This:InsertState["InteractAgent", 1500, "DECLINE"]
@@ -379,7 +379,7 @@ objectdef obj_Mission inherits obj_StateQueue
 						{
 							if ${missionJournalText.Find[${ValidMissions.CurrentKey} Objectives]}
 							{
-								Logger:Log["Mission", "Accepting mission \ao${missionIterator.Value.Name}", "g"]
+								Logger:Log["Mission", "Accepting mission \ao${missionIterator.Value.Name.Trim}", "g"]
 								This:InsertState["Cleanup"]
 								This:InsertState["CheckForWork"]
 								This:InsertState["InteractAgent", 1500, "ACCEPT"]
@@ -396,7 +396,7 @@ objectdef obj_Mission inherits obj_StateQueue
 						{
 							if ${missionJournalText.Find[${InvalidMissions.CurrentKey} Objectives]}
 							{
-								Logger:Log["Mission", "Declining mission \ao${missionIterator.Value.Name}", "g"]
+								Logger:Log["Mission", "Declining mission \ao${missionIterator.Value.Name.Trim}", "g"]
 								This:InsertState["Cleanup"]
 								This:InsertState["CheckForWork"]
 								This:InsertState["InteractAgent", 1500, "DECLINE"]
@@ -406,7 +406,7 @@ objectdef obj_Mission inherits obj_StateQueue
 						while ${InvalidMissions.NextKey(exists)}
 					}
 
-					Logger:Log["Mission", "Unknown mission \ao${missionIterator.Value.Name}", "g"]
+					Logger:Log["Mission", "Unknown mission \ao${missionIterator.Value.Name.Trim}", "g"]
 					if ${Me.StationID} != ${EVE.Agent[${currentAgentIndex}].StationID}
 					{
 						Logger:Log["Mission", "Going to the agent station anyway", "g"]
@@ -435,7 +435,7 @@ objectdef obj_Mission inherits obj_StateQueue
 							(!${missionJournalText.Find[${circlemarkIcon}]} || ${missionJournalText.Find[${circlemarkIcon}]} < ${missionJournalText.Find[${checkmarkIcon}]}))
 							{
 								Logger:Log["Mission", "Mission Complete", "g"]
-								Logger:Log["Mission", " ${missionIterator.Value.Name}", "o"]
+								Logger:Log["Mission", " ${missionIterator.Value.Name.Trim}", "o"]
 								This:InsertState["Cleanup"]
 								This:InsertState["Repair"]
 								This:InsertState["CompleteMission", 1500]
@@ -445,7 +445,7 @@ objectdef obj_Mission inherits obj_StateQueue
 							if ${missionJournalText.Find[${ValidMissions.CurrentKey} Objectives]}
 							{
 								Logger:Log["Mission", "Ongoing mission identified", "g"]
-								Logger:Log["Mission", " ${missionIterator.Value.Name}", "o"]
+								Logger:Log["Mission", " ${missionIterator.Value.Name.Trim}", "o"]
 
 								missionAttackTarget:Set[""]
 								if ${AttackTarget.Element[${ValidMissions.CurrentKey}](exists)}
@@ -1341,7 +1341,7 @@ objectdef obj_Mission inherits obj_StateQueue
 							(!${missionJournalText.Find[${circlemarkIcon}]} || ${missionJournalText.Find[${circlemarkIcon}]} < ${missionJournalText.Find[${checkmarkIcon}]}))
 							{
 								Logger:Log["Mission", "Mission Complete", "g"]
-								Logger:Log["Mission", " ${missionIterator.Value.Name}", "o"]
+								Logger:Log["Mission", " ${missionIterator.Value.Name.Trim}", "o"]
 								This:InsertState["Cleanup"]
 								This:InsertState["Repair"]
 								This:InsertState["CompleteMission", 1500]
@@ -2676,10 +2676,10 @@ objectdef obj_Mission inherits obj_StateQueue
 							return FALSE
 						}
 
-						Logger:Log["Mission", "Found mission for ${agentName} ${missionIterator.Value.Name}.", "", LOG_DEBUG]
+						Logger:Log["Mission", "Found mission for ${agentName} ${missionIterator.Value.Name.Trim}.", "", LOG_DEBUG]
 						offered:Set[TRUE]
 
-						if ${InvalidMissions.Contains[${missionIterator.Value.Name}]} || (${Config.DeclineLowSec} && ${EVEWindow[ByCaption, Mission journal - ${agentName}].HTML.Escape.Find["low security system"]})
+						if ${InvalidMissions.Contains[${missionIterator.Value.Name.Trim}]} || (${Config.DeclineLowSec} && ${EVEWindow[ByCaption, Mission journal - ${agentName}].HTML.Escape.Find["low security system"]})
 						{
 							variable int agentDeclineWaitTime
 							agentDeclineWaitTime:Set[${Agents.SecondsTillDeclineable[${agentName}]}]
