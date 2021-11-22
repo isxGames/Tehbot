@@ -55,7 +55,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		PCs:AddAllPC
 	}
 
-	method DetectOtherPilots(int threshold = 3)
+	method DetectOtherPilots(int threshold)
 	{
 		This:BuildPC
 		PCs:RequestUpdate
@@ -63,6 +63,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		variable iterator pilotIterator
 		PCs.TargetList:GetIterator[pilotIterator]
 		variable int detected = 0
+		; This:LogDebug[${threshold} total ${PCs.TargetList.Used}]
 		if ${pilotIterator:First(exists)}
 		{
 			do
@@ -76,17 +77,18 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 				; Lock and destroy everything only in vigilant mode.
 				if (${threshold} > 1) && (${pilotIterator.Value.Type.Equal["Capsule"]} || ${pilotIterator.Value.Type.Find["Shuttle"]})
 				{
+					; This:LogDebug[${threshold} skipping ${pilotIterator.Value.Type}]
 					continue
 				}
 
 				detected:Inc[1]
-				; This:LogDebug["${pilotIterator.Value.IsTargetingMe} ${pilotIterator.Value.IsLockedTarget} ${pilotIterator.Value.ToAttacker.IsCurrentlyAttacking}"]
+				; This:LogDebug["${detected} - ${pilotIterator.Value.Name} - ${pilotIterator.Value.Type} - ${pilotIterator.Value.IsTargetingMe} - ${pilotIterator.Value.IsLockedTarget} - ${pilotIterator.Value.ToAttacker.IsCurrentlyAttacking}"]
 
 			}
 			while ${pilotIterator:Next(exists)}
 		}
 
-		if ${detected} >= 1
+		if ${detected} >= ${threshold}
 		{
 			This:LogDebug["Detected ${detected} other pilot nearby."]
 		}
@@ -189,7 +191,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			This:Log["Detected many hostile pilots in local, wait until they are gone."]
 			${Config.Common.Tehbot_Mode}:Stop
 			Move:Stop
-			This:QueueState["WaitTillLocalSafe"]
+			This:QueueState["LocalSafe"]
 			This:QueueState["ResumeBot"]
 			This:QueueState["FightOrFlight"]
 			return TRUE
@@ -433,13 +435,46 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 
 	member:int LocalHostilePilots()
 	{
-		return 5
+		variable index:pilot pilotIndex
+		EVE:GetLocalPilots[pilotIndex]
+
+		if ${pilotIndex.Used} < 2
+		{
+			return 0
+		}
+
+		variable int count = 0
+		variable iterator pilotIterator
+		pilotIndex:GetIterator[pilotIterator]
+
+		if ${pilotIterator:First(exists)}
+		{
+			do
+			{
+				if ${Me.CharID} == ${pilotIterator.Value.CharID} || ${pilotIterator.Value.ToFleetMember(exists)}
+				{
+					continue
+				}
+				; echo ${pilotIterator.Value.Name} ${pilotIterator.Value.CharID} ${pilotIterator.Value.Corp.ID} ${pilotIterator.Value.AllianceID}
+				; echo ${pilotIterator.Value.Standing.MeToPilot}
+				; echo ${pilotIterator.Value.Standing.MeToCorp}
+				; echo ${pilotIterator.Value.Standing.MeToAlliance}
+				if ${pilotIterator.Value.Standing.MeToPilot} < 0 || ${pilotIterator.Value.Standing.MeToCorp} < 0 || ${pilotIterator.Value.Standing.MeToAlliance}
+				{
+					count:Inc[1]
+				}
+			}
+			while ${pilotIterator:Next(exists)}
+
+		}
+
+		return ${count}
 	}
 
     ; Both a boolean member and a state.
 	member:bool LocalSafe()
 	{
-		if ${This.LocalHostilePilots} < 7
+		if ${This.LocalHostilePilots} < 1
 		{
 			return TRUE
 		}
