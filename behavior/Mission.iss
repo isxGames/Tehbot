@@ -291,12 +291,14 @@ objectdef obj_Mission inherits obj_StateQueue
 
 		ActiveNPCs.AutoLock:Set[TRUE]
 		NPCs.AutoLock:Set[TRUE]
+		UIElement[Run@TitleBar@Tehbot]:SetText[Stop]
 	}
 
 	method Stop()
 	{
 		Logger:Log["Mission", "Stopping."]
 		This:Clear
+		UIElement[Run@TitleBar@Tehbot]:SetText[Run]
 	}
 
 	member:bool test()
