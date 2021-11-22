@@ -28,6 +28,21 @@ objectdef obj_Utility
 		return ${timeObj.Timestamp.Signed}
 	}
 
+	member:bool DowntimeClose()
+	{
+		variable string timeInDay = ${EVETime.Time}
+		variable int hour
+		hour:Set[${timeInDay.Token[1, ":"]}]
+		variable int minute
+		minute:Set[${timeInDay.Token[2, ":"]}]
+
+		if ${hour} == 10 && ${minute} >= 30 && ${minute} <= 59
+		{
+			return TRUE
+		}
+		return FALSE
+	}
+
 	member:bool Repair()
 	{
 		if !${Client.InSpace}

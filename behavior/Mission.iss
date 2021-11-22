@@ -1492,7 +1492,12 @@ objectdef obj_Mission inherits obj_StateQueue
 			}
 			while ${missionIterator:Next(exists)}
 
-		if !${Config.Halt} && !${halt}
+		if ${Utility.DowntimeClose}
+		{
+			This:Log["Halting for downtime close."]
+		}
+
+		if !${Config.Halt} && !${halt} && !${Utility.DowntimeClose}
 		{
 			This:InsertState["CheckForWork"]
 			This:InsertState["PickAgent"]
