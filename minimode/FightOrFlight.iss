@@ -62,7 +62,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 
 		variable iterator pilotIterator
 		PCs.TargetList:GetIterator[pilotIterator]
-		variable bool detected = FALSE
+		variable int detected = 0
 		if ${pilotIterator:First(exists)}
 		{
 			do
@@ -72,14 +72,21 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 				{
 					continue
 				}
-				detected:Set[TRUE]
+				detected:Inc[1]
 				This:LogDebug["Detected other pilot nearby: \ar ${pilotIterator.Value.Name} ${pilotIterator.Value.Type} ${pilotIterator.Value.IsTargetingMe} ${pilotIterator.Value.IsLockedTarget} ${pilotIterator.Value.ToAttacker.IsCurrentlyAttacking}"]
 
 			}
 			while ${pilotIterator:Next(exists)}
 		}
 
-		IsOtherPilotsDetected:Set[${detected}]
+		if ${detected} > 2
+		{
+			IsOtherPilotsDetected:Set[TRUE]
+		}
+		else
+		{
+			IsOtherPilotsDetected:Set[FALSE]
+		}
 	}
 
 	method DetectGankers()
@@ -97,18 +104,18 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 				{
 					This:LogCritical["Being attacked by player: \ar${attackerIterator.Value.Name} in a ${attackerIterator.Value.Type}"]
 
-					if ${AttackTimestamp.Element[${attackerIterator.Value.ID}](exists)}
+					if ${AttackTimestamp.Element[${attackerIterator.Value.Name.Escape}](exists)}
 					{
 						variable int lastAttackTimestamp
-						lastAttackTimestamp:Set[${AttackTimestamp.Element[${attackerIterator.Value.ID}]}]
+						lastAttackTimestamp:Set[${AttackTimestamp.Element[${attackerIterator.Value.Name.Escape}]}]
 						This:LogDebug["lastattacktimestamp ${lastAttackTimestamp}"]
 						variable int secondsSinceAttacked
 						secondsSinceAttacked:Set[${Math.Calc[${Utility.EVETimestamp} - ${lastAttackTimestamp}]}]
 						This:LogDebug["secondsSinceAttacked ${secondsSinceAttacked}"]
 					}
 
-					AttackTimestamp:Set[${attackerIterator.Value.ID}, ${Utility.EVETimestamp}]
-					This:LogDebug["Update attack timer ${attackerIterator.Value.ID} -- ${Utility.EVETimestamp}"]
+					AttackTimestamp:Set[${attackerIterator.Value.Name.Escape}, ${Utility.EVETimestamp}]
+					This:LogDebug["Update attack timer ${attackerIterator.Value.Name.Escape} -- ${Utility.EVETimestamp}"]
 					detected:Set[TRUE]
 				}
 			}
@@ -379,7 +386,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 				do
 				{
 					variable int lastAttackTimestamp
-					lastAttackTimestamp:Set[${AttackTimestamp.Element[${lockedTargetIterator.Value.ID}]}]
+					lastAttackTimestamp:Set[${AttackTimestamp.Element[${lockedTargetIterator.Value.Name.Escape}]}]
 					variable int secondsSinceAttacked
 					secondsSinceAttacked:Set[${Math.Calc[${Utility.EVETimestamp} - ${lastAttackTimestamp}]}]
 					This:LogDebug["Seconds since attacker last attacked: \ar${secondsSinceAttacked}"]
