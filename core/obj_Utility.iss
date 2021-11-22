@@ -1,4 +1,4 @@
-objectdef obj_Uitlity
+objectdef obj_Utility
 {
 	method Initialize()
 	{
