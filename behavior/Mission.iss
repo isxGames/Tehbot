@@ -288,6 +288,9 @@ objectdef obj_Mission inherits obj_StateQueue
 			This:QueueState["CheckForWork"]
 			EVE:RefreshBookmarks
 		}
+
+		ActiveNPCs.AutoLock:Set[TRUE]
+		NPCs.AutoLock:Set[TRUE]
 	}
 
 	method Stop()
@@ -1060,7 +1063,6 @@ objectdef obj_Mission inherits obj_StateQueue
 		MaxTarget:Dec[2]
 
 		ActiveNPCs.MinLockCount:Set[${MaxTarget}]
-		ActiveNPCs.AutoLock:Set[TRUE]
 
 		; ActiveNPCs:RequestUpdate
 		; echo list is ${ActiveNPCs.LockedTargetList.Used}
@@ -1228,7 +1230,6 @@ objectdef obj_Mission inherits obj_StateQueue
 			return FALSE
 
 		NPCs.MinLockCount:Set[1]
-		NPCs.AutoLock:Set[TRUE]
 
 		if ${NPCs.TargetList.Used}
 		{
