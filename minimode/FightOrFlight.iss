@@ -103,12 +103,12 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 						lastAttackTimestamp:Set[${AttackTimestamp.Element[${attackerIterator.Value.ID}]}]
 						This:LogDebug["lastattacktimestamp ${lastAttackTimestamp}"]
 						variable int secondsSinceAttacked
-						secondsSinceAttacked:Set[${Math.Calc[${This.EVETimestamp} - ${lastAttackTimestamp}]}]
+						secondsSinceAttacked:Set[${Math.Calc[${Utility.EVETimestamp} - ${lastAttackTimestamp}]}]
 						This:LogDebug["secondsSinceAttacked ${secondsSinceAttacked}"]
 					}
 
-					AttackTimestamp:Set[${attackerIterator.Value.ID}, ${This.EVETimestamp}]
-					This:LogDebug["Update attack timer ${attackerIterator.Value.ID} -- ${This.EVETimestamp}"]
+					AttackTimestamp:Set[${attackerIterator.Value.ID}, ${Utility.EVETimestamp}]
+					This:LogDebug["Update attack timer ${attackerIterator.Value.ID} -- ${Utility.EVETimestamp}"]
 					detected:Set[TRUE]
 				}
 			}
@@ -381,7 +381,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 					variable int lastAttackTimestamp
 					lastAttackTimestamp:Set[${AttackTimestamp.Element[${lockedTargetIterator.Value.ID}]}]
 					variable int secondsSinceAttacked
-					secondsSinceAttacked:Set[${Math.Calc[${This.EVETimestamp} - ${lastAttackTimestamp}]}]
+					secondsSinceAttacked:Set[${Math.Calc[${Utility.EVETimestamp} - ${lastAttackTimestamp}]}]
 					This:LogDebug["Seconds since attacker last attacked: \ar${secondsSinceAttacked}"]
 					if ${secondsSinceAttacked} >= 300
 					{
@@ -462,38 +462,10 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 
 	member:bool Repair()
 	{
-		if ${Me.InStation}
+		if ${Me.InStation} && ${Utility.Repair}
 		{
-			if !${EVEWindow[RepairShop](exists)}
-			{
-				MyShip.ToItem:GetRepairQuote
-				This:LogDebug["GetRepairQuote."]
-				This:InsertState["Repair", 2000]
-				return TRUE
-			}
-			else
-			{
-				if ${EVEWindow[byName, modal](exists)} && ${EVEWindow[byName, modal].Text.Find[Repairing these items]}
-				{
-					EVEWindow[byName, modal]:ClickButtonYes
-					This:LogDebug["Repairing these items."]
-					This:InsertState["Repair", 2000]
-					return TRUE
-				}
-				if ${EVEWindow[byName,"Set Quantity"](exists)}
-				{
-					EVEWindow[byName,"Set Quantity"]:ClickButtonOK
-					This:LogDebug["ClickButtonOK."]
-					This:InsertState["Repair", 2000]
-					return TRUE
-				}
-				if !${EVEWindow[RepairShop].TotalCost.Equal[0]}
-				{
-					EVEWindow[RepairShop]:RepairAll
-					This:LogDebug["RepairAlls."]
-					return FALSE
-				}
-			}
+			This:InsertState["Repair", 2000]
+			return TRUE
 		}
 
 		return TRUE
@@ -587,28 +559,5 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		}
 
 		return TRUE
-	}
-
-	member:int EVETimestamp()
-	{
-		variable string text = ${EVETime.DateAndTime}
-		variable string dataText = ${text.Token[1, " "]}
-		variable string timeText = ${text.Token[2, " "]}
-
-		variable int year = ${dataText.Token[1, "."]}
-		variable int month = ${dataText.Token[2, "."]}
-		variable int day = ${dataText.Token[3, "."]}
-		variable int hour = ${timeText.Token[1, ":"]}
-		variable int minute = ${timeText.Token[2, ":"]}
-
-		variable time timeObj
-		timeObj.YearPtr:Set[${Math.Calc[${year} - 1900]}]
-		timeObj.MonthPtr:Set[${Math.Calc[${month} - 1]}]
-		timeObj.Day:Set[${day}]
-		timeObj.Hour:Set[${hour}]
-		timeObj.Minute:Set[${minute}]
-		; timeObj.Hour:Dec[${delayHours}]
-		timeObj:Update
-		return ${timeObj.Timestamp.Signed}
 	}
 }

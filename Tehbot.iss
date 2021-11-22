@@ -41,7 +41,8 @@
 
 ; clear
 #include core/obj_NPCData.iss
-#include core/obj_PriorityTargets.iss
+#include core/obj_PrioritizedTargets.iss
+#include core/obj_Utility.iss
 
 #include behavior/MiniMode.iss
 #include behavior/Salvager.iss
@@ -77,7 +78,8 @@ function main(string Character="")
 	UI:Reload
 
 	declarevariable NPCData obj_NPCData script
-	declarevariable PriorityTargets obj_PriorityTargets script
+	declarevariable PrioritizedTargets obj_PrioritizedTargets script
+	declarevariable Utility obj_Utility script
 	declarevariable TehbotLogin obj_Login script
 	declarevariable Dynamic obj_Dynamic script
 
