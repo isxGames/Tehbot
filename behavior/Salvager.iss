@@ -73,7 +73,7 @@ objectdef obj_Salvager inherits obj_StateQueue
 
 	method Start()
 	{
-		Logger:Log["obj_Salvage", "Started", "g"]
+		Logger:Log["obj_Salvage", "Starting", "g"]
 		if ${This.IsIdle}
 		{
 			This:QueueState["CheckCargoHold", 500]

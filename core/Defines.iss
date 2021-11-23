@@ -4,10 +4,9 @@
 #define CATEGORYID_ENTITY																						11
 #define CATEGORYID_ORE     																						25
 #define CATEGORYID_STRUCTURE                                                                                    65
+#define CATEGORYID_STARBASE		                                                                                23
 
-#define CATEGORYID_STARBASE		23
-#define GROUPID_CONTROL_TOWER   365
-
+#define GROUPID_CONTROL_TOWER                                                                                   365
 #define GROUP_FREQUENCY_MINING_LASER 																			483
 #define GROUP_ENERGYWEAPON 																						53
 #define GROUP_HYBRIDWEAPON 																						74
