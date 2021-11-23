@@ -59,11 +59,18 @@ objectdef obj_TargetList inherits obj_StateQueue
 		NeedUpdate:Set[TRUE]
 	}
 
-	method AddNotTargetingMe()
+	method AddTargetingMeExceptSentryTowers()
 	{
-		This:AddQueryString["Distance < 150000 && !IsTargetingMe && IsNPC && CategoryID = 11 && !IsMoribund && !(Name =- \"CONCORD\")"]
+		variable string excludeSentries = "!(Name =- \"Battery\") && !(Name =- \"Batteries\") && !(Name =- \"Sentry Gun\") && !(Name =- \"Tower Sentry Drone\")"
+		This:AddQueryString["Distance < 150000 && IsTargetingMe && IsNPC && !IsMoribund && !(Name =- \"CONCORD\") && ${excludeSentries}"]
 		NeedUpdate:Set[TRUE]
 	}
+
+	; method AddNotTargetingMe()
+	; {
+	; 	This:AddQueryString["Distance < 150000 && !IsTargetingMe && IsNPC && CategoryID = CATEGORYID_ENTITY && !IsMoribund && !(Name =- \"CONCORD\")"]
+	; 	NeedUpdate:Set[TRUE]
+	; }
 
 	method AddPCTargetingMe()
 	{
@@ -145,6 +152,29 @@ objectdef obj_TargetList inherits obj_StateQueue
 		QueryString:Concat["GroupID = GROUP_PRESSURESOLO)"]
 
 		This:AddQueryString["${QueryString.Escape}"]
+	}
+
+	method AddAllNPCsExceptSentryTowers()
+	{
+		variable string excludeSentries = "!(Name =- \"Battery\") && !(Name =- \"Batteries\") && !(Name =- \"Sentry Gun\") && !(Name =- \"Tower Sentry Drone\")"
+
+		variable string QueryString="CategoryID = CATEGORYID_ENTITY && IsNPC && !IsMoribund && !(Name =- \"CONCORD\") && !("
+
+		;Exclude Groups here
+		QueryString:Concat["GroupID = GROUP_CONCORDDRONE ||"]
+		QueryString:Concat["GroupID = GROUP_CONVOYDRONE ||"]
+		QueryString:Concat["GroupID = GROUP_CONVOY ||"]
+		QueryString:Concat["GroupID = GROUP_LARGECOLLIDABLEOBJECT ||"]
+		QueryString:Concat["GroupID = GROUP_LARGECOLLIDABLESHIP ||"]
+		QueryString:Concat["GroupID = GROUP_SPAWNCONTAINER ||"]
+		QueryString:Concat["GroupID = CATEGORYID_ORE ||"]
+		QueryString:Concat["GroupID = GROUP_DEADSPACEOVERSEERSSTRUCTURE ||"]
+		QueryString:Concat["GroupID = GROUP_LARGECOLLIDABLESTRUCTURE ||"]
+		; Somehow the non hostile Orca and Drone ship in the Anomaly mission is in this group
+		QueryString:Concat["GroupID = GROUP_ANCIENTSHIPSTRUCTURE ||"]
+		QueryString:Concat["GroupID = GROUP_PRESSURESOLO)"]
+
+		This:AddQueryString["${QueryString.Escape} && ${excludeSentries}"]
 	}
 
 	method AddTargetException(int64 ID)

@@ -226,8 +226,8 @@ objectdef obj_Mission inherits obj_StateQueue
 		LavishScript:RegisterEvent[Tehbot_ScheduleResume]
 		Event[Tehbot_ScheduleResume]:AttachAtom[This:ScheduleResume]
 
-		NPCs:AddAllNPCs
-		ActiveNPCs:AddTargetingMe
+		NPCs:AddAllNPCsExceptSentryTowers
+		ActiveNPCs:AddTargetingMeExceptSentryTowers
 		Lootables:AddQueryString["(GroupID = GROUP_WRECK || GroupID = GROUP_CARGOCONTAINER) && !IsMoribund"]
 
 		AllowDronesOnNpcClass:Add["Frigate"]
@@ -792,11 +792,14 @@ objectdef obj_Mission inherits obj_StateQueue
 			while ${classIterator:Next(exists)}
 		}
 
-		ActiveNPCs:AddTargetingMe
+		ActiveNPCs:AddTargetingMeExceptSentryTowers
 
 		; Aggreesive mode
-		ActiveNPCs:AddAllNPCs
-		ActiveNPCs:AddQueryString[${targetToDestroy}]
+		ActiveNPCs:AddAllNPCsExceptSentryTowers
+		if ${targetToDestroy.NotNULLOrEmpty}
+		{
+			ActiveNPCs:AddQueryString[${targetToDestroy.Escape}]
+		}
 	}
 
 	variable bool looted = FALSE
