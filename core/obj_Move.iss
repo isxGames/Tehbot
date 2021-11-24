@@ -875,7 +875,7 @@ objectdef obj_Move inherits obj_StateQueue
 		;	Find out if we need to approach the target
 		if ${Me.ToEntity.Mode} != 4 || ${orbitTarget} != ${ID}
 		{
-			Logger:Log["Move", "Orbiting ${Entity[${ID}].Name} at ${ComBot.MetersToKM_Str[${distance}]}", "g"]
+			Logger:Log["Move", "Orbiting ${Entity[${ID}].Name} at ${Tehbot.MetersToKM_Str[${distance}]}", "g"]
 			Entity[${ID}]:Orbit[${distance}]
 			orbitTarget:Set[${ID}]
 			return
@@ -946,7 +946,7 @@ objectdef obj_Approach inherits obj_StateQueue
 		;	Find out if we need to approach the target
 		if ${Entity[${ID}].Distance} > ${distance} && ${Me.ToEntity.Mode} != 1
 		{
-			Logger:Log["Move", "Approaching to within ${ComBot.MetersToKM_Str[${distance}]} of ${Entity[${ID}].Name}", "g"]
+			Logger:Log["Move", "Approaching to within ${Tehbot.MetersToKM_Str[${distance}]} of ${Entity[${ID}].Name}", "g"]
 			Entity[${ID}]:Approach[${distance}]
 			return FALSE
 		}
@@ -954,7 +954,7 @@ objectdef obj_Approach inherits obj_StateQueue
 		;	If we're approaching a target, find out if we need to stop doing so
 		if ${Entity[${ID}].Distance} <= ${distance} && ${Me.ToEntity.Mode} == 1
 		{
-			Logger:Log["Move", "Within ${ComBot.MetersToKM_Str[${distance}]} of ${Entity[${ID}].Name}", "g"]
+			Logger:Log["Move", "Within ${Tehbot.MetersToKM_Str[${distance}]} of ${Entity[${ID}].Name}", "g"]
 			EVE:Execute[CmdStopShip]
 			Ship.ModuleList_AB_MWD:DeactivateAll
 			return TRUE

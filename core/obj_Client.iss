@@ -97,7 +97,7 @@ objectdef obj_Client
 				This:Undock
 			}
 
-			if ${ComBot.Paused}
+			if ${Tehbot.Paused}
 			{
 				return
 			}
