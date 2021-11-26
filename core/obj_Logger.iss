@@ -18,7 +18,7 @@ objectdef obj_Logger
 		{
 			FP:MakeSubdirectory["Logs"]
 		}
-		This.LogFile:Set["./Config/Logs/${Me.Name}.log"]
+		This.LogFile:Set["./Config/Logs/${Me.Name} - ${Time.Date.Replace["\/","."]}.log"]
 
 		This:InitializeLogs
 	}
