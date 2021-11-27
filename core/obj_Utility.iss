@@ -79,4 +79,14 @@ objectdef obj_Utility
 		}
 		return FALSE
 	}
+
+	member:int Min(int a, int b)
+	{
+		if ${a} < ${b}
+		{
+			return ${a}
+		}
+
+		return ${b}
+	}
 }
