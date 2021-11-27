@@ -50,7 +50,7 @@ objectdef obj_UndockWarp inherits obj_StateQueue
 
 	member:bool UndockWarp()
 	{
-		if ${Client.Undock}
+		if ${Client.TryWarpToBookmark}
 		{
 			return FALSE
 		}
@@ -59,7 +59,7 @@ objectdef obj_UndockWarp inherits obj_StateQueue
 			if ${EVE.ProgressWindowTitle.Equal[Prepare to undock]}
 			{
 				Logger:Log["UndockWarp", "Triggering warp to undock bookmark, if available", "y"]
-				Client.Undock:Set[TRUE]
+				Client.TryWarpToBookmark:Set[TRUE]
 			}
 		}
 		return FALSE

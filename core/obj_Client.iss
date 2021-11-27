@@ -4,21 +4,21 @@ objectdef obj_Client
 	variable int NextPulse
 
 	variable bool Ready=TRUE
-	variable bool Undock=FALSE
+
+	variable bool TryWarpToBookmark=FALSE
 	variable int64 SystemID=${Me.SolarSystemID}
 
-	variable uint UndockBookmarFilterQuery
+	variable uint UndockWarpBookmarkFilterQuery
 
 	method Initialize()
 	{
 		Event[ISXEVE_onFrame]:AttachAtom[This:Pulse]
-		UndockBookmarFilterQuery:Set[${LavishScript.CreateQuery[SolarSystemID == ${Me.SolarSystemID} && Label =- "${UndockWarp.Config.substring}" && Distance > 150000 && Distance < 50000000]}]
-
+		UndockWarpBookmarkFilterQuery:Set[${LavishScript.CreateQuery[SolarSystemID == ${Me.SolarSystemID} && Label =- "${UndockWarp.Config.substring}" && Distance > 150000 && Distance < 50000000]}]
 	}
 
 	method Shutdown()
 	{
-		LavishScript:FreeQuery[${UndockBookmarFilterQuery}]
+		LavishScript:FreeQuery[${UndockWarpBookmarkFilterQuery}]
 		Event[ISXEVE_onFrame]:DetachAtom[This:Pulse]
 		if !${EVE.Is3DDisplayOn}
 		{
@@ -38,7 +38,7 @@ objectdef obj_Client
 	{
 		if ${LavishScript.RunningTime} >= ${This.NextPulse}
 		{
-			if ${Me.SolarSystemID} != ${SystemID} && !${This.Undock}
+			if ${Me.SolarSystemID} != ${SystemID} && !${This.TryWarpToBookmark}
 			{
 				SystemID:Set[${Me.SolarSystemID}]
 				This:Wait[5000]
@@ -89,12 +89,12 @@ objectdef obj_Client
 
 			if ${Me.InStation}
 			{
-				Undock:Set[TRUE]
+				TryWarpToBookmark:Set[TRUE]
 			}
 
-			if ${This.Undock} && ${This.InSpace}
+			if ${This.TryWarpToBookmark} && ${This.InSpace}
 			{
-				This:Undock
+				This:UndockWarp
 			}
 
 			if ${Tehbot.Paused}
@@ -108,13 +108,6 @@ objectdef obj_Client
 
 	member:bool InSpace()
 	{
-		if ${Me.InStation}
-		{
-			if ${Ship.RetryUpdateModuleList} == 0
-			{
-				Ship.RetryUpdateModuleList:Set[1]
-			}
-		}
 		if ${Me.InSpace(type).Name.Equal[bool]} && ${EVE.EntitiesCount} > 0
 		{
 			return ${Me.InSpace}
@@ -150,22 +143,22 @@ objectdef obj_Client
 		}
 	}
 
-	method Undock()
+	method UndockWarp()
 	{
-		variable index:bookmark BookmarkIndex
+		variable index:bookmark undockBookMarkIdx
 		variable string suffix
 		suffix:Set[${UndockWarp.Config.UndockSuffix}]
-		EVE:GetBookmarks[BookmarkIndex]
-		BookmarkIndex:RemoveByQuery[${UndockBookmarFilterQuery}, FALSE]
-		BookmarkIndex:Collapse
+		EVE:GetBookmarks[undockBookMarkIdx]
+		undockBookMarkIdx:RemoveByQuery[${UndockWarpBookmarkFilterQuery}, FALSE]
+		undockBookMarkIdx:Collapse
 
-		if ${BookmarkIndex.Used}
+		if ${undockBookMarkIdx.Used}
 		{
-			Logger:Log["Client", "Undock warping to ${BookmarkIndex.Get[1].Label}", "g"]
-			BookmarkIndex.Get[1]:WarpTo
+			Logger:Log["Client", "Undock warping to ${undockBookMarkIdx.Get[1].Label}", "g"]
+			undockBookMarkIdx.Get[1]:WarpTo
 			Client:Wait[5000]
 		}
-		This.Undock:Set[FALSE]
+		This.TryWarpToBookmark:Set[FALSE]
 	}
 
 	method Wait(int delay)
