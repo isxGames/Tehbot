@@ -33,8 +33,11 @@ objectdef obj_ModuleList
 		{
 			do
 			{
-				; Will deactivate the module if the current targetID is not the same
-				Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:ActivateModule[${targetID}, ${deactivateAfterCyclePercent}]
+				if !${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsModuleActiveOn[${targetID}]}
+				{
+					; Will deactivate the module if the current targetID is not the same
+					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:ActivateModule[${targetID}, ${deactivateAfterCyclePercent}]
+				}
 			}
 			while ${moduleIDIterator:Next(exists)}
 		}
