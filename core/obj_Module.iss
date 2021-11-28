@@ -20,6 +20,28 @@ objectdef obj_Module inherits obj_StateQueue
 		return "MyShip.Module[${ModuleID}]"
 	}
 
+	member:bool TestGetFallthroughObject()
+	{
+		; ${This.IsChangingAmmo} is NULL for energy weapons, didn't test with other types.
+		; ${This.Duration} is NULL for weapons.
+		; ${This.LastTarget} ${This.TargetID} are NULL until target exists.
+		if ${This.Name.NotNULLOrEmpty} && \
+			${This.IsReloadingAmmo(type).Name.Equal[bool]} && \
+			${This.IsOnline(type).Name.Equal[bool]} && \
+			${This.IsGoingOnline(type).Name.Equal[bool]} && \
+			${This.IsDeactivating(type).Name.Equal[bool]} && \
+			${This.IsActivatable(type).Name.Equal[bool]} && \
+			${This.IsAutoReloadOn(type).Name.Equal[bool]} && \
+			${This.AutoRepeat(type).Name.Equal[bool]} && \
+			${This.IsActive(type).Name.Equal[bool]} && \
+			${This.HP(type).Name.Equal[float64]} && \
+			${This.Damage(type).Name.Equal[float64]}
+		{
+			return TRUE
+		}
+		return FALSE
+	}
+
 	member:bool IsActive()
 	{
 		; ISXEVE API is not reliable
