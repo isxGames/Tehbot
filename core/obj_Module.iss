@@ -86,23 +86,23 @@ objectdef obj_Module inherits obj_StateQueue
 
 		; The following code can completely fix this risk but it's too much extraS complexity
 		; variable string TurretAmmoRangeType = "unknown"
-		; if ${MyShip.Module[${ModuleID}].Charge.Type(exists)}
+		; if ${This.Charge.Type(exists)}
 		; {
-		; 	if ${MyShip.Module[${ModuleID}].Charge.Type.Find["Multifrequency"]} || \
-		; 	${MyShip.Module[${ModuleID}].Charge.Type.Find["Gamma"]} || \
-		; 	${MyShip.Module[${ModuleID}].Charge.Type.Find["Xray"]} || \
-		; 	${MyShip.Module[${ModuleID}].Charge.Type.Find["Ultraviolet"]} || \
-		; 	${MyShip.Module[${ModuleID}].Charge.Type.Find["Conflagration"]} || \
-		; 	${MyShip.Module[${ModuleID}].Charge.Type.Find["Hail"]}
+		; 	if ${This.Charge.Type.Find["Multifrequency"]} || \
+		; 	${This.Charge.Type.Find["Gamma"]} || \
+		; 	${This.Charge.Type.Find["Xray"]} || \
+		; 	${This.Charge.Type.Find["Ultraviolet"]} || \
+		; 	${This.Charge.Type.Find["Conflagration"]} || \
+		; 	${This.Charge.Type.Find["Hail"]}
 		; 	{
 		; 		TurretAmmoRangeType:Set["short"]
 		; 	}
-		; 	elseif ${MyShip.Module[${ModuleID}].Charge.Type.Find["Standard"]} || \
-		; 	${MyShip.Module[${ModuleID}].Charge.Type.Find["Infrared"]} || \
-		; 	${MyShip.Module[${ModuleID}].Charge.Type.Find["Microwave"]} || \
-		; 	${MyShip.Module[${ModuleID}].Charge.Type.Find["Radio"]} || \
-		; 	${MyShip.Module[${ModuleID}].Charge.Type.Find["Scorch"]} || \
-		; 	${MyShip.Module[${ModuleID}].Charge.Type.Find["Barrage"]}
+		; 	elseif ${This.Charge.Type.Find["Standard"]} || \
+		; 	${This.Charge.Type.Find["Infrared"]} || \
+		; 	${This.Charge.Type.Find["Microwave"]} || \
+		; 	${This.Charge.Type.Find["Radio"]} || \
+		; 	${This.Charge.Type.Find["Scorch"]} || \
+		; 	${This.Charge.Type.Find["Barrage"]}
 		; 	{
 		; 		TurretAmmoRangeType:Set["long"]
 		; 	}
@@ -165,7 +165,7 @@ objectdef obj_Module inherits obj_StateQueue
 		if ${Entity[${newTarget}].Distance} > ${OptimalRange}
 		{
 			; echo need range
-			if !${MyShip.Module[${ModuleID}].Charge.Type(exists)} || ${MyShip.Module[${ModuleID}].Charge.Type.Find["Tracking Speed Script"]}
+			if !${This.Charge.Type(exists)} || ${This.Charge.Type.Find["Tracking Speed Script"]}
 			{
 				if ${MyShip.Cargo["Optimal Range Script"].Quantity} > 0
 				{
@@ -173,7 +173,7 @@ objectdef obj_Module inherits obj_StateQueue
 					This:QueueState["LoadOptimalAmmo", 50, "Optimal Range Script"]
 				}
 				; BUG of ISXEVE: UnloadToCargo method is not working
-				; elseif ${MyShip.Module[${ModuleID}].Charge.Type.Find["Tracking Speed Script"]}
+				; elseif ${This.Charge.Type.Find["Tracking Speed Script"]}
 				; {
 				; 	Logger:Log["obj_Module", "Unloading Tracking Speed Script"]
 				; 	This:Deactivate
@@ -184,7 +184,7 @@ objectdef obj_Module inherits obj_StateQueue
 		elseif ${Entity[${newTarget}].Distance} < ${Math.Calc[${OptimalRange} * 0.6]}
 		{
 			; echo need tracking
-			if !${MyShip.Module[${ModuleID}].Charge.Type(exists)} || ${MyShip.Module[${ModuleID}].Charge.Type.Find["Optimal Range Script"]}
+			if !${This.Charge.Type(exists)} || ${This.Charge.Type.Find["Optimal Range Script"]}
 			{
 				if ${MyShip.Cargo["Tracking Speed Script"].Quantity} > 0
 				{
@@ -192,7 +192,7 @@ objectdef obj_Module inherits obj_StateQueue
 					This:QueueState["LoadOptimalAmmo", 50, "Tracking Speed Script"]
 				}
 				; BUG of ISXEVE: UnloadToCargo method is not working
-				; elseif ${MyShip.Module[${ModuleID}].Charge.Type.Find["Optimal Range Script"]}
+				; elseif ${This.Charge.Type.Find["Optimal Range Script"]}
 				; {
 				; 	Logger:Log["obj_Module", "Unloading Optimal Range Script"]
 				; 	This:Deactivate
@@ -204,19 +204,19 @@ objectdef obj_Module inherits obj_StateQueue
 
     method Activate(int64 newTarget=-1, int deactivateAfterCyclePercent=-1)
     {
-        if ${MyShip.Module[${ModuleID}].IsReloading} || ${Deactivating}
+        if ${This.IsReloading} || ${Deactivating}
 		{
 			return
 		}
 
         if ${This.IsActive} && !${This.IsActiveOn[${newTarget}]} && \
-			${MyShip.Module[${ModuleID}].ToItem.GroupID} != GROUP_TRACKINGCOMPUTER && \
-			${MyShip.Module[${ModuleID}].ToItem.GroupID} != GROUP_MISSILEGUIDANCECOMPUTER
+			${This.ToItem.GroupID} != GROUP_TRACKINGCOMPUTER && \
+			${This.ToItem.GroupID} != GROUP_MISSILEGUIDANCECOMPUTER
         {
             This:Deactivate
         }
 
-        if ${Entity[${newTarget}].CategoryID} == CATEGORYID_ORE && ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_FREQUENCY_MINING_LASER
+        if ${Entity[${newTarget}].CategoryID} == CATEGORYID_ORE && ${This.ToItem.GroupID} == GROUP_FREQUENCY_MINING_LASER
         {
             This:QueueState["LoadMiningCrystal", 50, ${Entity[${newTarget}].Type}]
         }
@@ -226,7 +226,7 @@ objectdef obj_Module inherits obj_StateQueue
 
 		if ${Entity[${newTarget}].CategoryID} == CATEGORYID_ENTITY
 		{
-			if ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_PRECURSORWEAPON
+			if ${This.ToItem.GroupID} == GROUP_PRECURSORWEAPON
 			{
 				if ${Entity[${newTarget}].Distance} > 70000 || ${Mission.RudeEwar}
 				{
@@ -255,7 +255,7 @@ objectdef obj_Module inherits obj_StateQueue
 					This:QueueState["LoadOptimalAmmo", 50, "Baryon Exotic Plasma L"]
 				}
 			}
-			elseif ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_PROJECTILEWEAPON
+			elseif ${This.ToItem.GroupID} == GROUP_PROJECTILEWEAPON
 			{
 				; This expression returns TRUE when the Quantity is NULL
 				if ${MyShip.Cargo[${shortRangeAmmo}].Quantity} == 0
@@ -270,7 +270,7 @@ objectdef obj_Module inherits obj_StateQueue
 
 				This:ChooseAndLoadTurretAmmo[${shortRangeAmmo}, ${longRangeAmmo}, ${newTarget}, 45000]
 			}
-			elseif ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_MISSILELAUNCHERTORPEDO
+			elseif ${This.ToItem.GroupID} == GROUP_MISSILELAUNCHERTORPEDO
 			{
 				if ${MyShip.Cargo[${shortRangeAmmo}].Quantity} == 0
 				{
@@ -322,7 +322,7 @@ objectdef obj_Module inherits obj_StateQueue
 					This:QueueState["LoadOptimalAmmo", 50, ${longRangeAmmo}]
 				}
 			}
-			elseif ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_ENERGYWEAPON
+			elseif ${This.ToItem.GroupID} == GROUP_ENERGYWEAPON
 			{
 				if ${MyShip.Cargo[${shortRangeAmmo}].Quantity} == 0
 				{
@@ -336,18 +336,18 @@ objectdef obj_Module inherits obj_StateQueue
 
 				This:ChooseAndLoadTurretAmmo[${shortRangeAmmo}, ${longRangeAmmo}, ${newTarget}, 49000]
 			}
-			elseif ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_TRACKINGCOMPUTER
+			elseif ${This.ToItem.GroupID} == GROUP_TRACKINGCOMPUTER
 			{
 				This:ChooseAndLoadTrackingComputerScript[${newTarget}, ${Ship.ModuleList_Weapon.OptimalRange.Int}]
 			}
 		}
 
-        if ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_PRECURSORWEAPON && ${Entity[${newTarget}].Distance} > ${Ship.CurrentOptimal}
+        if ${This.ToItem.GroupID} == GROUP_PRECURSORWEAPON && ${Entity[${newTarget}].Distance} > ${Ship.CurrentOptimal}
         {
            return
         }
 
-        if ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_MISSILELAUNCHERRAPIDHEAVY && ${Entity[${newTarget}].Distance} > 70000
+        if ${This.ToItem.GroupID} == GROUP_MISSILELAUNCHERRAPIDHEAVY && ${Entity[${newTarget}].Distance} > 70000
         {
            return
         }
@@ -367,13 +367,13 @@ objectdef obj_Module inherits obj_StateQueue
 	{
 		variable index:item Crystals
 		variable iterator Crystal
-		if ${OreType.Find[${MyShip.Module[${ModuleID}].Charge.Type.Token[1, " "]}]}
+		if ${OreType.Find[${This.Charge.Type.Token[1, " "]}]}
 		{
 			return TRUE
 		}
 		else
 		{
-			MyShip.Module[${ModuleID}]:GetAvailableAmmo[Crystals]
+			This:GetAvailableAmmo[Crystals]
 
 			if ${Crystals.Used} == 0
 			{
@@ -388,7 +388,7 @@ objectdef obj_Module inherits obj_StateQueue
 				if ${OreType.Find[${Crystal.Value.Name.Token[1, " "]}](exists)}
 				{
 					Logger:Log["obj_Module", "Switching Crystal to ${Crystal.Value.Name}"]
-					MyShip.Module[${ModuleID}]:ChangeAmmo[${Crystal.Value.ID}, 1]
+					This:ChangeAmmo[${Crystal.Value.ID}, 1]
 					return TRUE
 				}
 			}
@@ -400,12 +400,12 @@ objectdef obj_Module inherits obj_StateQueue
 
 	member:bool LoadOptimalAmmo(string ammo)
 	{
-		if ${MyShip.Module[${ModuleID}].IsReloading}
+		if ${This.IsReloading}
 		{
 			return FALSE
 		}
 
-		if ${ammo.Equal[${MyShip.Module[${ModuleID}].Charge.Type}]}
+		if ${ammo.Equal[${This.Charge.Type}]}
 		{
 			return TRUE
 		}
@@ -413,7 +413,7 @@ objectdef obj_Module inherits obj_StateQueue
 		{
 			variable index:item availableAmmos
 			variable iterator availableAmmoIterator
-			MyShip.Module[${ModuleID}]:GetAvailableAmmo[availableAmmos]
+			This:GetAvailableAmmo[availableAmmos]
 
 			if ${availableAmmos.Used} == 0
 			{
@@ -433,12 +433,12 @@ objectdef obj_Module inherits obj_StateQueue
 					Logger:Log["obj_Module", "Switching Ammo to \ay${availableAmmoIterator.Value.Name}"]
 					variable int ChargeAmountToLoad = ${MyShip.Cargo[${ammo}].Quantity}
 
-					if ${ChargeAmountToLoad} > ${MyShip.Module[${ModuleID}].MaxCharges}
+					if ${ChargeAmountToLoad} > ${This.MaxCharges}
 					{
-						ChargeAmountToLoad:Set[${MyShip.Module[${ModuleID}].MaxCharges}]
+						ChargeAmountToLoad:Set[${This.MaxCharges}]
 					}
 
-					MyShip.Module[${ModuleID}]:ChangeAmmo[${availableAmmoIterator.Value.ID}, ${ChargeAmountToLoad}]
+					This:ChangeAmmo[${availableAmmoIterator.Value.ID}, ${ChargeAmountToLoad}]
 					This:InsertState["WaitTillSwitchAmmo", 50, "\"${ammo}\", 20"]
 					return TRUE
 				}
@@ -451,19 +451,19 @@ objectdef obj_Module inherits obj_StateQueue
 
 	member:bool UnloadAmmoToCargo()
 	{
-		if ${MyShip.Module[${ModuleID}].IsReloading}
+		if ${This.IsReloading}
 		{
 			return FALSE
 		}
 
-		if !${MyShip.Module[${ModuleID}].Charge(exists)}
+		if !${This.Charge(exists)}
 		{
 			return TRUE
 		}
 		else
 		{
-			Logger:Log["obj_Module", "Unloading \ay${MyShip.Module[${ModuleID}].Charge.Type}"]
-			MyShip.Module[${ModuleID}]:UnloadToCargo
+			Logger:Log["obj_Module", "Unloading \ay${This.Charge.Type}"]
+			This:UnloadToCargo
 			return TRUE
 		}
 
@@ -476,7 +476,7 @@ objectdef obj_Module inherits obj_StateQueue
 		{
 			if ${MyShip.Module[${ModuleID}].IsActive}
 			{
-				if (${Me.ToEntity.Mode} == 3 && ${MyShip.Module[${ModuleID}].ToItem.GroupID} == GROUP_AFTERBURNER)
+				if (${Me.ToEntity.Mode} == 3 && ${This.ToItem.GroupID} == GROUP_AFTERBURNER)
 				{
 					Activated:Set[FALSE]
 					CurrentTarget:Set[-1]
@@ -493,7 +493,7 @@ objectdef obj_Module inherits obj_StateQueue
 		elseif ${Entity[${newTarget}](exists)} && ${Entity[${newTarget}].IsLockedTarget}
 		{
 			; Strict isActiveOn
-			if ${MyShip.Module[${ModuleID}].IsActive} && ${MyShip.Module[${ModuleID}].TargetID.Equal[${newTarget}]}
+			if ${MyShip.Module[${ModuleID}].IsActive} && ${This.TargetID.Equal[${newTarget}]}
 			{
 				return TRUE
 			}
@@ -518,7 +518,7 @@ objectdef obj_Module inherits obj_StateQueue
 		if ${countdown} > 0
 		{
 			This:SetStateArgs["\"${ammo}\", ${Math.Calc[${countdown} - 1]}"]
-			return ${ammo.Equal[${MyShip.Module[${ModuleID}].Charge.Type}]}
+			return ${ammo.Equal[${This.Charge.Type}]}
 		}
 		return TRUE
 	}
@@ -540,7 +540,7 @@ objectdef obj_Module inherits obj_StateQueue
 			return TRUE
 		}
 
-		if ${Math.Calc[((${EVETime.AsInt64} - ${MyShip.Module[${ModuleID}].TimeLastClicked.AsInt64}) / ${MyShip.Module[${ModuleID}].ActivationTime}) * 100]} > ${percent}
+		if ${Math.Calc[((${EVETime.AsInt64} - ${This.TimeLastClicked.AsInt64}) / ${This.ActivationTime}) * 100]} > ${percent}
 		{
 			MyShip.Module[${ModuleID}]:Deactivate
 			Deactivating:Set[TRUE]
@@ -583,29 +583,24 @@ objectdef obj_Module inherits obj_StateQueue
 
 	member:float Range()
 	{
-		if ${MyShip.Module[${ModuleID}].TransferRange(exists)}
+		if ${This.TransferRange(exists)}
 		{
-			return ${MyShip.Module[${ModuleID}].TransferRange}
+			return ${This.TransferRange}
 		}
-		if ${MyShip.Module[${ModuleID}].ShieldTransferRange(exists)}
+		if ${This.ShieldTransferRange(exists)}
 		{
-			return ${MyShip.Module[${ModuleID}].ShieldTransferRange}
+			return ${This.ShieldTransferRange}
 		}
-		if ${MyShip.Module[${ModuleID}].OptimalRange(exists)}
+		if ${This.OptimalRange(exists)}
 		{
-			if ${MyShip.Module[${ModuleID}].AccuracyFalloff(exists)}
-				return ${Math.Calc[${MyShip.Module[${ModuleID}].OptimalRange} + ${MyShip.Module[${ModuleID}].AccuracyFalloff}]}
-			return ${MyShip.Module[${ModuleID}].OptimalRange}
+			if ${This.AccuracyFalloff(exists)}
+				return ${Math.Calc[${This.OptimalRange} + ${This.AccuracyFalloff}]}
+			return ${This.OptimalRange}
 		}
 		else
 		{
-			return ${Math.Calc[${MyShip.Module[${ModuleID}].Charge.MaxFlightTime} * ${MyShip.Module[${ModuleID}].Charge.MaxVelocity}]}
+			return ${Math.Calc[${This.Charge.MaxFlightTime} * ${This.Charge.MaxVelocity}]}
 		}
-	}
-
-	member:float OptimalRange()
-	{
-		return ${MyShip.Module[${ModuleID}].OptimalRange}
 	}
 
 	member:string GetFallthroughObject()
