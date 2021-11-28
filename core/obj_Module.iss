@@ -1,10 +1,9 @@
 objectdef obj_Module inherits obj_StateQueue
 {
-	variable bool Activated = FALSE
-	variable bool Deactivating = FALSE
-	variable int64 CurrentTarget = -1
+	variable bool _activationInstructed = FALSE
+	variable bool _deactivationInstructed = FALSE
+	variable int64 _instructedTarget = -1
 	variable int64 ModuleID
-	variable string TurretAmmoRangeType = "unknown"
 
 	method Initialize(int64 ID)
 	{
@@ -45,19 +44,19 @@ objectdef obj_Module inherits obj_StateQueue
 	member:bool IsModuleActive()
 	{
 		; Don't simplify this for Lavish Script has bug
-		if ${This.IsActive} || ${Activated}
+		if ${This.IsActive} || ${_activationInstructed}
 			return TRUE
 		return FALSE
 	}
 
-	member:bool IsModuleActiveOn(int64 checkTarget)
+	member:bool IsModuleActiveOn(int64 targetID)
 	{
 		variable bool isTargetMatch = FALSE
-		if (${CurrentTarget.Equal[0]} || ${CurrentTarget.Equal[-1]}) && (${checkTarget.Equal[0]} || ${checkTarget.Equal[-1]})
+		if (${_instructedTarget.Equal[0]} || ${_instructedTarget.Equal[-1]}) && (${targetID.Equal[0]} || ${targetID.Equal[-1]})
 		{
 			isTargetMatch:Set[TRUE]
 		}
-		elseif ${CurrentTarget.Equal[${checkTarget}]}
+		elseif ${_instructedTarget.Equal[${targetID}]}
 		{
 			isTargetMatch:Set[TRUE]
 		}
@@ -72,113 +71,83 @@ objectdef obj_Module inherits obj_StateQueue
 
 	method DeactivateModule()
 	{
-		if ${This.IsActive} && !${Deactivating}
+		if ${This.IsActive} && !${_deactivationInstructed}
 		{
 			This:Deactivate
-			Deactivating:Set[TRUE]
+			_deactivationInstructed:Set[TRUE]
 			This:Clear
 			This:InsertState["WaitTillInactive", 50, 0]
 		}
 	}
 
-	method ChooseAndLoadTurretAmmo(string shortRangeAmmo, string longRangeAmmo, int64 newTarget, int DefaultRangeThreshold)
+	method ChooseAndLoadTurretAmmo(string shortRangeAmmo, string longRangeAmmo, int64 targetID)
 	{
-		; I can not reset TurretAmmoRangeType to 'unknown' between missions due to stupid script bugs,
-		; There will be tiny risk of inaccurate TurretAmmoRangeType when the ammo is
-		; changed manually between missions.
-		; But the script can basically auto correct it as the mission goes on as follows:
-
-		; 		Label "Short" X Ammo "Long":
-		; 			For Close Target: Will switch to Ammo "Short" immediately
-		; 			For Far Target: Will firstly switch to Ammo "Short" then switch to Label/Ammo "Long"
-		; 			For Out of Range Target: Will switch Label to "Long"
-
-		; 		Label "Long" X Ammo "Short":
-		; 			For Target Within 40% Range: Will switch to Label "Short" immediately
-		; 			For Target Within 40% - 100% Range: The only case that it cannot auto correct,
-		; 				but this won't be big deal or lasts long as "Short" ammo is preferred and
-		;				correct in this case, and the target in its optimal range should be destroyed soon.
-		; 			For Out of Range Target: Will switch Ammo to "Long" immediately
-
-		; The following code can completely fix this risk but it's too much extraS complexity
-		; variable string TurretAmmoRangeType = "unknown"
-		; if ${This.Charge.Type(exists)}
-		; {
-		; 	if ${This.Charge.Type.Find["Multifrequency"]} || \
-		; 	${This.Charge.Type.Find["Gamma"]} || \
-		; 	${This.Charge.Type.Find["Xray"]} || \
-		; 	${This.Charge.Type.Find["Ultraviolet"]} || \
-		; 	${This.Charge.Type.Find["Conflagration"]} || \
-		; 	${This.Charge.Type.Find["Hail"]}
-		; 	{
-		; 		TurretAmmoRangeType:Set["short"]
-		; 	}
-		; 	elseif ${This.Charge.Type.Find["Standard"]} || \
-		; 	${This.Charge.Type.Find["Infrared"]} || \
-		; 	${This.Charge.Type.Find["Microwave"]} || \
-		; 	${This.Charge.Type.Find["Radio"]} || \
-		; 	${This.Charge.Type.Find["Scorch"]} || \
-		; 	${This.Charge.Type.Find["Barrage"]}
-		; 	{
-		; 		TurretAmmoRangeType:Set["long"]
-		; 	}
-		; }
-
-		switch ${TurretAmmoRangeType}
+		if !${This.Charge(exists)} || \
+			${This.Charge.Type.Find[${shortRangeAmmo}]} || \
+			!${This.Charge.Type.Find[${longRangeAmmo}]}	/* this means unknown ammo is loaded */
 		{
-			; When current ammo state is unknown, chose ammo by estimated default range.
-			case unknown
-				; echo current unknown ammo range ${This.Range}
-				if ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0 && ${Entity[${newTarget}].Distance} <= ${DefaultRangeThreshold}
+			if ${Entity[${targetID}].Distance} <= ${This.Range}
+			{
+				if  ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0
 				{
-					TurretAmmoRangeType:Set["short"]
 					This:QueueState["LoadOptimalAmmo", 50, ${shortRangeAmmo}]
+					return
 				}
-
-				if ${MyShip.Cargo[${longRangeAmmo}].Quantity} > 0 && ${Entity[${newTarget}].Distance} > ${DefaultRangeThreshold}
+				elseif ${MyShip.Cargo[${longRangeAmmo}].Quantity} > 0
 				{
-					TurretAmmoRangeType:Set["long"]
 					This:QueueState["LoadOptimalAmmo", 50, ${longRangeAmmo}]
+					return
 				}
-
-				break
-			case short
-				; echo current \ao short \aw ammo range ${This.Range}
-				; Use dynamic range to take skills, tracking enhancers, tracking disrupters etc. to account
-				if ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0 && ${Entity[${newTarget}].Distance} <= ${This.Range}
+			}
+			else
+			{
+				if ${MyShip.Cargo[${longRangeAmmo}].Quantity} > 0
 				{
-					TurretAmmoRangeType:Set["short"]
+					This:QueueState["LoadOptimalAmmo", 50, ${longRangeAmmo}]
+					return
+				}
+				elseif  ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0
+				{
 					This:QueueState["LoadOptimalAmmo", 50, ${shortRangeAmmo}]
+					return
 				}
-
-				if ${MyShip.Cargo[${longRangeAmmo}].Quantity} > 0 && ${Entity[${newTarget}].Distance} > ${This.Range}
-				{
-					TurretAmmoRangeType:Set["long"]
-					This:QueueState["LoadOptimalAmmo", 50, ${longRangeAmmo}]
-				}
-
-				break
-			case long
-				; echo current \ag long \aw ammo range ${This.Range}
-				if ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0 && ${Entity[${newTarget}].Distance} <= ${Math.Calc[${This.Range} * 0.4]}
-				{
-					TurretAmmoRangeType:Set["short"]
-					This:QueueState["LoadOptimalAmmo", 50, ${shortRangeAmmo}]
-				}
-
-				if ${MyShip.Cargo[${longRangeAmmo}].Quantity} > 0 && ${Entity[${newTarget}].Distance} > ${Math.Calc[${This.Range} * 0.4]}
-				{
-					TurretAmmoRangeType:Set["long"]
-					This:QueueState["LoadOptimalAmmo", 50, ${longRangeAmmo}]
-				}
-
-				break
+			}
 		}
+		else /* implies ${This.Charge.Type.Find[${longRangeAmmo}]} is TRUE */
+		{
+			if ${Entity[${targetID}].Distance} <= ${Math.Calc[${This.Range} * 0.4]}
+			{
+				if  ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0
+				{
+					This:QueueState["LoadOptimalAmmo", 50, ${shortRangeAmmo}]
+					return
+				}
+				elseif ${MyShip.Cargo[${longRangeAmmo}].Quantity} > 0
+				{
+					This:QueueState["LoadOptimalAmmo", 50, ${longRangeAmmo}]
+					return
+				}
+			}
+			else
+			{
+				if ${MyShip.Cargo[${longRangeAmmo}].Quantity} > 0
+				{
+					This:QueueState["LoadOptimalAmmo", 50, ${longRangeAmmo}]
+					return
+				}
+				elseif  ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0
+				{
+					This:QueueState["LoadOptimalAmmo", 50, ${shortRangeAmmo}]
+					return
+				}
+			}
+		}
+		This:LogCritical["No configured ammo in cargo!"]
 	}
 
-	method ChooseAndLoadTrackingComputerScript(int64 newTarget, int OptimalRange)
+	method ChooseAndLoadTrackingComputerScript(int64 targetID, int optimalRange)
 	{
-		if ${Entity[${newTarget}].Distance} > ${OptimalRange}
+		if ${Entity[${targetID}].Distance} > ${optimalRange}
 		{
 			; echo need range
 			if !${This.Charge.Type(exists)} || ${This.Charge.Type.Find["Tracking Speed Script"]}
@@ -191,13 +160,13 @@ objectdef obj_Module inherits obj_StateQueue
 				; BUG of ISXEVE: UnloadToCargo method is not working
 				; elseif ${This.Charge.Type.Find["Tracking Speed Script"]}
 				; {
-				; 	Logger:Log["obj_Module", "Unloading Tracking Speed Script"]
+				; 	This:Log["Unloading Tracking Speed Script"]
 				; 	This:DeactivateModule
 				; 	This:QueueState["UnloadAmmoToCargo", 50]
 				; }
 			}
 		}
-		elseif ${Entity[${newTarget}].Distance} < ${Math.Calc[${OptimalRange} * 0.6]}
+		elseif ${Entity[${targetID}].Distance} < ${Math.Calc[${optimalRange} * 0.6]}
 		{
 			; echo need tracking
 			if !${This.Charge.Type(exists)} || ${This.Charge.Type.Find["Optimal Range Script"]}
@@ -210,7 +179,7 @@ objectdef obj_Module inherits obj_StateQueue
 				; BUG of ISXEVE: UnloadToCargo method is not working
 				; elseif ${This.Charge.Type.Find["Optimal Range Script"]}
 				; {
-				; 	Logger:Log["obj_Module", "Unloading Optimal Range Script"]
+				; 	This:Log["Unloading Optimal Range Script"]
 				; 	This:DeactivateModule
 				; 	This:QueueState["UnloadAmmoToCargo", 50]
 				; }
@@ -218,54 +187,54 @@ objectdef obj_Module inherits obj_StateQueue
 		}
 	}
 
-    method ActivateModule(int64 newTarget=-1, int deactivateAfterCyclePercent=-1)
+    method ActivateModule(int64 targetID=-1, int deactivateAfterCyclePercent=-1)
     {
-        if ${This.IsReloading} || ${Deactivating}
+        if ${This.IsReloading} || ${_deactivationInstructed}
 		{
 			return
 		}
 
-        if ${This.IsModuleActive} && !${This.IsModuleActiveOn[${newTarget}]} && \
+        if ${This.IsModuleActive} && !${This.IsModuleActiveOn[${targetID}]} && \
 			${This.ToItem.GroupID} != GROUP_TRACKINGCOMPUTER && \
 			${This.ToItem.GroupID} != GROUP_MISSILEGUIDANCECOMPUTER
         {
             This:DeactivateModule
         }
 
-        if ${Entity[${newTarget}].CategoryID} == CATEGORYID_ORE && ${This.ToItem.GroupID} == GROUP_FREQUENCY_MINING_LASER
+        if ${Entity[${targetID}].CategoryID} == CATEGORYID_ORE && ${This.ToItem.GroupID} == GROUP_FREQUENCY_MINING_LASER
         {
-            This:QueueState["LoadMiningCrystal", 50, ${Entity[${newTarget}].Type}]
+            This:QueueState["LoadMiningCrystal", 50, ${Entity[${targetID}].Type}]
         }
 
 		variable string shortRangeAmmo = ${Mission.ammo}
 		variable string longRangeAmmo = ${Mission.secondaryAmmo}
 
-		if ${Entity[${newTarget}].CategoryID} == CATEGORYID_ENTITY
+		if ${Entity[${targetID}].CategoryID} == CATEGORYID_ENTITY
 		{
 			if ${This.ToItem.GroupID} == GROUP_PRECURSORWEAPON
 			{
-				if ${Entity[${newTarget}].Distance} > 70000 || ${Mission.RudeEwar}
+				if ${Entity[${targetID}].Distance} > 70000 || ${Mission.RudeEwar}
 				{
 					This:QueueState["LoadOptimalAmmo", 50, "Meson Exotic Plasma L"]
 				}
 
-				if ${Entity[${newTarget}].Distance} > 50000 && ${Entity[${newTarget}].Distance} < 70000 && !${Mission.RudeEwar}
+				if ${Entity[${targetID}].Distance} > 50000 && ${Entity[${targetID}].Distance} < 70000 && !${Mission.RudeEwar}
 				{
 					This:QueueState["LoadOptimalAmmo", 50, "Mystic L"]
 				}
 
-				if ${Entity[${newTarget}].Distance} > 27000 && ${Entity[${newTarget}].Distance} < 50000 && !${Mission.RudeEwar}
+				if ${Entity[${targetID}].Distance} > 27000 && ${Entity[${targetID}].Distance} < 50000 && !${Mission.RudeEwar}
 				{
 					This:QueueState["LoadOptimalAmmo", 50, "Baryon Exotic Plasma L"]
 				}
 
-				if ${Entity[${newTarget}].Distance} < 27000 && ${Entity[${newTarget}].Distance} > 7500 && !${Mission.RudeEwar}
+				if ${Entity[${targetID}].Distance} < 27000 && ${Entity[${targetID}].Distance} > 7500 && !${Mission.RudeEwar}
 
 				{
 					This:QueueState["LoadOptimalAmmo", 50, "Occult L"]
 				}
 
-				if ${Entity[${newTarget}].Distance} < 7500 && !${Mission.RudeEwar}
+				if ${Entity[${targetID}].Distance} < 7500 && !${Mission.RudeEwar}
 
 				{
 					This:QueueState["LoadOptimalAmmo", 50, "Baryon Exotic Plasma L"]
@@ -284,7 +253,7 @@ objectdef obj_Module inherits obj_StateQueue
 					longRangeAmmo:Set["Barrage L"]
 				}
 
-				This:ChooseAndLoadTurretAmmo[${shortRangeAmmo}, ${longRangeAmmo}, ${newTarget}, 45000]
+				This:ChooseAndLoadTurretAmmo[${shortRangeAmmo}, ${longRangeAmmo}, ${targetID}]
 			}
 			elseif ${This.ToItem.GroupID} == GROUP_MISSILELAUNCHERTORPEDO
 			{
@@ -328,12 +297,12 @@ objectdef obj_Module inherits obj_StateQueue
 					}
 				}
 
-				if ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0 && ${Entity[${newTarget}].Distance} < 62000
+				if ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0 && ${Entity[${targetID}].Distance} < 62000
 				{
 					This:QueueState["LoadOptimalAmmo", 50, ${shortRangeAmmo}]
 				}
 
-				if ${MyShip.Cargo[${longRangeAmmo}].Quantity} > 0 && ${Entity[${newTarget}].Distance} > 62000
+				if ${MyShip.Cargo[${longRangeAmmo}].Quantity} > 0 && ${Entity[${targetID}].Distance} > 62000
 				{
 					This:QueueState["LoadOptimalAmmo", 50, ${longRangeAmmo}]
 				}
@@ -350,32 +319,32 @@ objectdef obj_Module inherits obj_StateQueue
 					longRangeAmmo:Set["Scorch L"]
 				}
 
-				This:ChooseAndLoadTurretAmmo[${shortRangeAmmo}, ${longRangeAmmo}, ${newTarget}, 49000]
+				This:ChooseAndLoadTurretAmmo[${shortRangeAmmo}, ${longRangeAmmo}, ${targetID}]
 			}
 			elseif ${This.ToItem.GroupID} == GROUP_TRACKINGCOMPUTER
 			{
-				This:ChooseAndLoadTrackingComputerScript[${newTarget}, ${Ship.ModuleList_Weapon.OptimalRange.Int}]
+				This:ChooseAndLoadTrackingComputerScript[${targetID}, ${Ship.ModuleList_Weapon.OptimalRange.Int}]
 			}
 		}
 
-        if ${This.ToItem.GroupID} == GROUP_PRECURSORWEAPON && ${Entity[${newTarget}].Distance} > ${Ship.CurrentOptimal}
+        if ${This.ToItem.GroupID} == GROUP_PRECURSORWEAPON && ${Entity[${targetID}].Distance} > ${Ship.CurrentOptimal}
         {
            return
         }
 
-        if ${This.ToItem.GroupID} == GROUP_MISSILELAUNCHERRAPIDHEAVY && ${Entity[${newTarget}].Distance} > 70000
+        if ${This.ToItem.GroupID} == GROUP_MISSILELAUNCHERRAPIDHEAVY && ${Entity[${targetID}].Distance} > 70000
         {
            return
         }
 
-        This:QueueState["ActivateOn", 50, "${newTarget}"]
+        This:QueueState["ActivateOn", 50, "${targetID}"]
 
         if ${deactivateAfterCyclePercent} > 0
         {
             This:QueueState["DeactivateAfterCyclePercent", 50, ${deactivateAfterCyclePercent}]
         }
 
-		; Need this state to catch target destruction and reset CurrentTarget
+		; Need this state to catch target destruction and reset _instructedTarget
         This:QueueState["WaitTillInactive", 50, -1]
     }
 
@@ -393,7 +362,7 @@ objectdef obj_Module inherits obj_StateQueue
 
 			if ${Crystals.Used} == 0
 			{
-				Logger:Log["obj_Module", "No crystals available - mining ouput decreased", "o"]
+				This:Log["No crystals available - mining ouput decreased", "o"]
 			}
 
 			Crystals:GetIterator[Crystal]
@@ -403,7 +372,7 @@ objectdef obj_Module inherits obj_StateQueue
 			{
 				if ${OreType.Find[${Crystal.Value.Name.Token[1, " "]}](exists)}
 				{
-					Logger:Log["obj_Module", "Switching Crystal to ${Crystal.Value.Name}"]
+					This:Log["Switching Crystal to ${Crystal.Value.Name}"]
 					This:ChangeAmmo[${Crystal.Value.ID}, 1]
 					return TRUE
 				}
@@ -435,7 +404,7 @@ objectdef obj_Module inherits obj_StateQueue
 			{
 				if ${Me.InSpace}
 				{
-					Logger:Log["obj_Module", "No Ammo available - dreadful - also, annoying", "o"]
+					This:Log["No Ammo available - dreadful - also, annoying", "o"]
 				}
 				return FALSE
 			}
@@ -446,7 +415,7 @@ objectdef obj_Module inherits obj_StateQueue
 			{
 				if ${ammo.Equal[${availableAmmoIterator.Value.Name}]}
 				{
-					Logger:Log["obj_Module", "Switching Ammo to \ay${availableAmmoIterator.Value.Name}"]
+					This:Log["Switching Ammo to \ay${availableAmmoIterator.Value.Name}"]
 					variable int ChargeAmountToLoad = ${MyShip.Cargo[${ammo}].Quantity}
 
 					if ${ChargeAmountToLoad} > ${This.MaxCharges}
@@ -478,7 +447,7 @@ objectdef obj_Module inherits obj_StateQueue
 		}
 		else
 		{
-			Logger:Log["obj_Module", "Unloading \ay${This.Charge.Type}"]
+			This:Log["Unloading \ay${This.Charge.Type}"]
 			This:UnloadToCargo
 			return TRUE
 		}
@@ -486,43 +455,43 @@ objectdef obj_Module inherits obj_StateQueue
 		return FALSE
 	}
 
-	member:bool ActivateOn(int64 newTarget)
+	member:bool ActivateOn(int64 targetID)
 	{
-		if ${newTarget.Equal[-1]} || ${newTarget.Equal[0]}
+		if ${targetID.Equal[-1]} || ${targetID.Equal[0]}
 		{
 			if ${This.IsActive}
 			{
 				if (${Me.ToEntity.Mode} == 3 && ${This.ToItem.GroupID} == GROUP_AFTERBURNER)
 				{
-					Activated:Set[FALSE]
-					CurrentTarget:Set[-1]
+					_activationInstructed:Set[FALSE]
+					_instructedTarget:Set[-1]
 					This:Clear
 				}
 				return TRUE
 			}
 			This:Activate
-			CurrentTarget:Set[-1]
-			Activated:Set[TRUE]
+			_instructedTarget:Set[-1]
+			_activationInstructed:Set[TRUE]
 			This:InsertState["WaitTillActive", 50, 20]
 			return TRUE
 		}
-		elseif ${Entity[${newTarget}](exists)} && ${Entity[${newTarget}].IsLockedTarget}
+		elseif ${Entity[${targetID}](exists)} && ${Entity[${targetID}].IsLockedTarget}
 		{
 			; Strict isActiveOn
-			if ${This.IsActive} && ${This.TargetID.Equal[${newTarget}]}
+			if ${This.IsActive} && ${This.TargetID.Equal[${targetID}]}
 			{
 				return TRUE
 			}
-			This:Activate[${newTarget}]
-			CurrentTarget:Set[${newTarget}]
-			Activated:Set[TRUE]
+			This:Activate[${targetID}]
+			_instructedTarget:Set[${targetID}]
+			_activationInstructed:Set[TRUE]
 			This:InsertState["WaitTillActive", 50, 20]
 			return FALSE
 		}
 		else
 		{
-			Activated:Set[FALSE]
-			CurrentTarget:Set[-1]
+			_activationInstructed:Set[FALSE]
+			_instructedTarget:Set[-1]
 			This:Clear
 			return TRUE
 		}
@@ -559,7 +528,7 @@ objectdef obj_Module inherits obj_StateQueue
 		if ${Math.Calc[((${EVETime.AsInt64} - ${This.TimeLastClicked.AsInt64}) / ${This.ActivationTime}) * 100]} > ${percent}
 		{
 			This:Deactivate
-			Deactivating:Set[TRUE]
+			_deactivationInstructed:Set[TRUE]
 			This:Clear
 			This:InsertState["WaitTillInactive", 50, 0]
 			return TRUE
@@ -586,14 +555,14 @@ objectdef obj_Module inherits obj_StateQueue
 			else
 			{
 				; Waiting infinitely
-				Deactivating:Set[FALSE]
+				_deactivationInstructed:Set[FALSE]
 				return FALSE
 			}
 		}
 
-		Activated:Set[FALSE]
-		Deactivating:Set[FALSE]
-		CurrentTarget:Set[-1]
+		_activationInstructed:Set[FALSE]
+		_deactivationInstructed:Set[FALSE]
+		_instructedTarget:Set[-1]
 		return TRUE
 	}
 
