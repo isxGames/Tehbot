@@ -19,8 +19,6 @@
 ; Probably need to rethink Approach and Orbit behaviors.  Make both separate modules, or let behaviors manage them on their own?
 #include core/obj_Move.iss
 ; clear
-#include core/obj_ModuleBase.iss
-; clear
 #include core/obj_Module.iss
 ; clear
 #include core/obj_ModuleList.iss

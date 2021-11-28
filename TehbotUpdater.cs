@@ -35,7 +35,6 @@ namespace TehbotUpdater
 					"core/obj_Dynamic.iss",
 					"core/obj_Login.iss",
 					"core/obj_Module.iss",
-					"core/obj_ModuleBase.iss",
 					"core/obj_ModuleList.iss",
 					"core/obj_Move.iss",
 					"core/obj_NPCData.iss",
