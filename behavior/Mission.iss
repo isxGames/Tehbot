@@ -228,8 +228,13 @@ objectdef obj_Mission inherits obj_StateQueue
 		LavishScript:RegisterEvent[Tehbot_ScheduleResume]
 		Event[Tehbot_ScheduleResume]:AttachAtom[This:ScheduleResume]
 
-		NPCs:AddAllNPCsExceptSentryTowers
-		ActiveNPCs:AddTargetingMeExceptSentryTowers
+		NPCs:AddAllNPCs
+		; If ignore NPC sentry towers
+		NPCs:AddTargetExceptionByPartOfName["Battery"]
+		NPCs:AddTargetExceptionByPartOfName["Batteries"]
+		NPCs:AddTargetExceptionByPartOfName["Sentry Gun"]
+		NPCs:AddTargetExceptionByPartOfName["Tower Sentry"]
+		ActiveNPCs:AddTargetingMe
 		Lootables:AddQueryString["(GroupID = GROUP_WRECK || GroupID = GROUP_CARGOCONTAINER) && !IsMoribund"]
 
 		AllowDronesOnNpcClass:Add["Frigate"]
@@ -286,8 +291,14 @@ objectdef obj_Mission inherits obj_StateQueue
 			EVE:RefreshBookmarks
 		}
 
+		This:BuildActiveNPC
 		ActiveNPCs.AutoLock:Set[TRUE]
 		NPCs.AutoLock:Set[TRUE]
+		; If ignore NPC sentry towers
+		NPCs:AddTargetExceptionByPartOfName["Battery"]
+		NPCs:AddTargetExceptionByPartOfName["Batteries"]
+		NPCs:AddTargetExceptionByPartOfName["Sentry Gun"]
+		NPCs:AddTargetExceptionByPartOfName["Tower Sentry"]
 		UIElement[Run@TitleBar@Tehbot]:SetText[Stop]
 	}
 
@@ -618,6 +629,7 @@ objectdef obj_Mission inherits obj_StateQueue
 							if ${bookmarkIterator.Value.LocationType.Equal[dungeon]}
 							{
 								Move:AgentBookmark[${bookmarkIterator.Value.ID}]
+								This:BuildActiveNPC
 								This:InsertState["PerformMission"]
 								This:InsertState["Traveling"]
 								This:InsertState["Cleanup"]
@@ -780,14 +792,20 @@ objectdef obj_Mission inherits obj_StateQueue
 			while ${classIterator:Next(exists)}
 		}
 
-		ActiveNPCs:AddTargetingMeExceptSentryTowers
+		ActiveNPCs:AddTargetingMe
 
-		; Aggreesive mode
-		ActiveNPCs:AddAllNPCsExceptSentryTowers
+		; if aggreesive mode
+		ActiveNPCs:AddAllNPCs
 		if ${targetToDestroy.NotNULLOrEmpty}
 		{
 			ActiveNPCs:AddQueryString[${targetToDestroy.Escape}]
 		}
+
+		; If ignore NPC sentry towers
+		ActiveNPCs:AddTargetExceptionByPartOfName["Battery"]
+		ActiveNPCs:AddTargetExceptionByPartOfName["Batteries"]
+		ActiveNPCs:AddTargetExceptionByPartOfName["Sentry Gun"]
+		ActiveNPCs:AddTargetExceptionByPartOfName["Tower Sentry"]
 	}
 
 	variable bool looted = FALSE
@@ -799,7 +817,6 @@ objectdef obj_Mission inherits obj_StateQueue
 	member:bool PerformMission(int nextwaitcomplete = 0)
 	{
 		variable iterator itemIterator
-		This:BuildActiveNPC
 		ActiveNPCs:RequestUpdate
 		NPCs:RequestUpdate
 		Lootables:RequestUpdate
@@ -1194,7 +1211,6 @@ objectdef obj_Mission inherits obj_StateQueue
 		{
 			variable string targetClass
 			targetClass:Set[${NPCData.NPCType[${Entity[${currentTarget}].GroupID}]}]
-			echo ${targetClass}
 			; Avoid using drones against structures which may cause AOE damage when destructed.
 			if !${AllowDronesOnNpcClass.Contains[${targetClass}]}
 			{

@@ -18,7 +18,8 @@ objectdef obj_TargetList inherits obj_StateQueue
 	variable index:string QueryStringList
 	variable collection:int TargetLockPrioritys
 	variable collection:int TargetLockPrioritysBuffer
-	variable set TargetExceptions
+	variable set ExcludeTargetID
+	variable set ExcludeTargetNameIncludeString
 	variable set LockedAndLockingTargets
 	variable int64 DistanceTarget
 	variable int MaxRange = 20000
@@ -55,22 +56,9 @@ objectdef obj_TargetList inherits obj_StateQueue
 
 	method AddTargetingMe()
 	{
-		This:AddQueryString["Distance < 150000 && IsTargetingMe && IsNPC && !IsMoribund && !(Name =- \"CONCORD\")"]
+		This:AddQueryString["Distance < 150000 && IsTargetingMe && IsNPC && !IsMoribund"]
 		NeedUpdate:Set[TRUE]
 	}
-
-	method AddTargetingMeExceptSentryTowers()
-	{
-		variable string excludeSentries = "!(Name =- \"Battery\") && !(Name =- \"Batteries\") && !(Name =- \"Sentry Gun\") && !(Name =- \"Tower Sentry Drone\")"
-		This:AddQueryString["Distance < 150000 && IsTargetingMe && IsNPC && !IsMoribund && !(Name =- \"CONCORD\") && ${excludeSentries}"]
-		NeedUpdate:Set[TRUE]
-	}
-
-	; method AddNotTargetingMe()
-	; {
-	; 	This:AddQueryString["Distance < 150000 && !IsTargetingMe && IsNPC && CategoryID = CATEGORYID_ENTITY && !IsMoribund && !(Name =- \"CONCORD\")"]
-	; 	NeedUpdate:Set[TRUE]
-	; }
 
 	method AddPCTargetingMe()
 	{
@@ -135,7 +123,7 @@ objectdef obj_TargetList inherits obj_StateQueue
 
 	method AddAllNPCs()
 	{
-		variable string QueryString="CategoryID = CATEGORYID_ENTITY && IsNPC && !IsMoribund && !(Name =- \"CONCORD\") && !("
+		variable string QueryString="CategoryID = CATEGORYID_ENTITY && IsNPC && !IsMoribund && !("
 
 		;Exclude Groups here
 		QueryString:Concat["GroupID = GROUP_CONCORDDRONE ||"]
@@ -154,33 +142,10 @@ objectdef obj_TargetList inherits obj_StateQueue
 		This:AddQueryString["${QueryString.Escape}"]
 	}
 
-	method AddAllNPCsExceptSentryTowers()
-	{
-		variable string excludeSentries = "!(Name =- \"Battery\") && !(Name =- \"Batteries\") && !(Name =- \"Sentry Gun\") && !(Name =- \"Tower Sentry Drone\")"
-
-		variable string QueryString="CategoryID = CATEGORYID_ENTITY && IsNPC && !IsMoribund && !(Name =- \"CONCORD\") && !("
-
-		;Exclude Groups here
-		QueryString:Concat["GroupID = GROUP_CONCORDDRONE ||"]
-		QueryString:Concat["GroupID = GROUP_CONVOYDRONE ||"]
-		QueryString:Concat["GroupID = GROUP_CONVOY ||"]
-		QueryString:Concat["GroupID = GROUP_LARGECOLLIDABLEOBJECT ||"]
-		QueryString:Concat["GroupID = GROUP_LARGECOLLIDABLESHIP ||"]
-		QueryString:Concat["GroupID = GROUP_SPAWNCONTAINER ||"]
-		QueryString:Concat["GroupID = CATEGORYID_ORE ||"]
-		QueryString:Concat["GroupID = GROUP_DEADSPACEOVERSEERSSTRUCTURE ||"]
-		QueryString:Concat["GroupID = GROUP_LARGECOLLIDABLESTRUCTURE ||"]
-		; Somehow the non hostile Orca and Drone ship in the Anomaly mission is in this group
-		QueryString:Concat["GroupID = GROUP_ANCIENTSHIPSTRUCTURE ||"]
-		QueryString:Concat["GroupID = GROUP_PRESSURESOLO)"]
-
-		This:AddQueryString["${QueryString.Escape} && ${excludeSentries}"]
-	}
-
-	method AddTargetException(int64 ID)
+	method AddTargetExceptionByID(int64 ID)
 	{
 		variable iterator RemoveIterator
-		TargetExceptions:Add[${ID}]
+		ExcludeTargetID:Add[${ID}]
 		TargetList:GetIterator[RemoveIterator]
 		if ${RemoveIterator:First(exists)}
 		{
@@ -223,9 +188,56 @@ objectdef obj_TargetList inherits obj_StateQueue
 		}
 	}
 
-	method ClearTargetExceptions()
+	method AddTargetExceptionByPartOfName(string namePart)
 	{
-		TargetExceptions:Clear
+		variable iterator RemoveIterator
+		ExcludeTargetNameIncludeString:Add[${namePart}]
+		TargetList:GetIterator[RemoveIterator]
+		if ${RemoveIterator:First(exists)}
+		{
+			do
+			{
+				if ${RemoveIterator.Value.Name.Find[${namePart}]}
+				{
+					TargetList:Remove[${RemoveIterator.Key}]
+				}
+			}
+			while ${RemoveIterator:Next(exists)}
+		}
+		LockedTargetList:GetIterator[RemoveIterator]
+		if ${RemoveIterator:First(exists)}
+		{
+			do
+			{
+				if ${RemoveIterator.Value.Name.Find[${namePart}]}
+				{
+					LockedTargetList:Remove[${RemoveIterator.Key}]
+				}
+			}
+			while ${RemoveIterator:Next(exists)}
+		}
+		LockedAndLockingTargetList:GetIterator[RemoveIterator]
+		if ${RemoveIterator:First(exists)}
+		{
+			do
+			{
+				if ${RemoveIterator.Value.Name.Find[${namePart}]}
+				{
+					LockedAndLockingTargetList:Remove[${RemoveIterator.Key}]
+					if ${RemoveIterator.Value.IsLockedTarget}
+					{
+						RemoveIterator.Value:UnlockTarget
+					}
+				}
+			}
+			while ${RemoveIterator:Next(exists)}
+		}
+	}
+
+	method ClearExcludeTarget()
+	{
+		ExcludeTargetID:Clear
+		ExcludeTargetNameIncludeString:Clear
 	}
 
 	member:bool UpdateList()
@@ -268,6 +280,8 @@ objectdef obj_TargetList inherits obj_StateQueue
 	{
 		variable index:entity entity_index
 		variable iterator entity_iterator
+		variable iterator excludeNamePartIterator
+		variable bool excludeByNameSubstring = FALSE
 		if !${Client.InSpace}
 		{
 			return FALSE
@@ -303,7 +317,24 @@ objectdef obj_TargetList inherits obj_StateQueue
 					}
 					if ${entity_iterator.Value.DistanceTo[${DistanceTarget}]} <= ${MaxRange}
 					{
-						if !${TargetExceptions.Contains[${entity_iterator.Value.ID}]} && !${AlreadyInList.Contains[${entity_iterator.Value.ID}]}
+						excludeByNameSubstring:Set[FALSE]
+						ExcludeTargetNameIncludeString:GetIterator[excludeNamePartIterator]
+						if ${excludeNamePartIterator:First(exists)}
+						{
+							do
+							{
+								if ${entity_iterator.Value.Name.Find[${excludeNamePartIterator.Value}]}
+								{
+									excludeByNameSubstring:Set[TRUE]
+									break
+								}
+							}
+							while ${excludeNamePartIterator:Next(exists)}
+						}
+						if !${ExcludeTargetID.Contains[${entity_iterator.Value.ID}]} && \
+							!${entity_iterator.Value.Name.Find["CONCORD"]} && \
+							!${excludeByNameSubstring} && \
+							!${AlreadyInList.Contains[${entity_iterator.Value.ID}]}
 						{
 							This.TargetListBuffer:Insert[${entity_iterator.Value.ID}]
 							AlreadyInList:Add[${entity_iterator.Value.ID}]
@@ -336,7 +367,24 @@ objectdef obj_TargetList inherits obj_StateQueue
 					{
 						TargetList_DeadDelay:Set[${entity_iterator.Value.ID}, ${Math.Calc[${LavishScript.RunningTime} + 5000]}]
 					}
-					if !${TargetExceptions.Contains[${entity_iterator.Value.ID}]} && !${AlreadyInList.Contains[${entity_iterator.Value.ID}]}
+					excludeByNameSubstring:Set[FALSE]
+					ExcludeTargetNameIncludeString:GetIterator[excludeNamePartIterator]
+					if ${excludeNamePartIterator:First(exists)}
+					{
+						do
+						{
+							if ${entity_iterator.Value.Name.Find[${excludeNamePartIterator.Value}]}
+							{
+								excludeByNameSubstring:Set[TRUE]
+								break
+							}
+						}
+						while ${excludeNamePartIterator:Next(exists)}
+					}
+					if !${ExcludeTargetID.Contains[${entity_iterator.Value.ID}]} && \
+						!${entity_iterator.Value.Name.Find["CONCORD"]} && \
+						!${excludeByNameSubstring} && \
+						!${AlreadyInList.Contains[${entity_iterator.Value.ID}]}
 					{
 						This.TargetListBufferOOR:Insert[${entity_iterator.Value.ID}]
 						AlreadyInList:Add[${entity_iterator.Value.ID}]
