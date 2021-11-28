@@ -28,7 +28,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 
 		if ${This.IsIdle}
 		{
-			This:LogInfo["Started"]
+			This:LogInfo["Starting"]
 			This:QueueState["FightOrFlight"]
 		}
 	}
@@ -187,7 +187,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		}
 
 		; While currently jumping, Me.InSpace is false and status numbers will be null.
-		if !${Me.InSpace}
+		if !${Client.InSpace}
 		{
 			This:LogDebug["Not in space, jumping?"]
 			return FALSE
@@ -233,9 +233,10 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			This:QueueState["FightOrFlight"]
 			return TRUE
 		}
-		elseif ${MyShip.ShieldPct.Int} < 0 || ${MyShip.ArmorPct.Int} < 50 || ${MyShip.StructurePct.Int} < 100
+		elseif ${MyShip.ShieldPct.Int} < 0 || ${MyShip.ArmorPct.Int} < 50 || ${MyShip.StructurePct.Int} < 100  || ${MyShip.CapacitorPct.Int} < 5
 		{
-			This:LogInfo["PVE Low HP - Shield: ${MyShip.ShieldPct.Int}%, Armor: ${MyShip.ArmorPct.Int}%, Hull: ${MyShip.StructurePct.Int}%, I should flee."]
+			; TODO align and 75% speed before entering flee status, in case last second.
+			This:LogInfo["PVE Low HP - Shield: ${MyShip.ShieldPct.Int}%, Armor: ${MyShip.ArmorPct.Int}%, Hull: ${MyShip.StructurePct.Int}%, Capacitor: ${MyShip.CapacitorPct.Int}%, I should flee."]
 			${Config.Common.Tehbot_Mode}:Stop
 			Move:Stop
 			DroneControl:Stop
@@ -266,10 +267,19 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 
 	member:bool EngageGankers()
 	{
-		if ${Me.InStation} || !${Me.InSpace}
+		if ${Me.InStation}
 		{
+			; Pod killed.
+			This:LogCritical["Pod killed."]
+			IsEngagingGankers:Set[FALSE]
 			This:QueueState["FightOrFlight"]
 			return TRUE
+		}
+
+		if !${Client.Inspace}
+		{
+			; Ship Destroyed?
+			FALSE
 		}
 
 		IsEngagingGankers:Set[TRUE]
@@ -289,6 +299,15 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			This:QueueState["FightOrFlight"]
 			return TRUE
 		}
+
+		; if !${MyShip.ToEntity.Type.Equal["Capsule"]} && Findmywreck
+		; {
+		; 	Destroy my wreck
+		; 	Then warpoff
+		;	TODO add detection in Traveling status when
+		;			scrambled when ships shows aligned but not really in warp.
+		; 	and do something.
+		; }
 
 		This:UnlockNPCsAndLockPCs
 
@@ -412,6 +431,15 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			return FALSE
 		}
 
+		; There is a short time after ship destruction that pod is not detected, we may overlook the
+		; last pod. detect twice to avoid this. (No big deal anyway)
+		Client:Wait[1000]
+		This:DetectOtherPilots[1]
+		if ${IsOtherPilotsDetected}
+		{
+			return FALSE
+		}
+
 		${Config.Common.Tehbot_Mode}:Start
 		This:QueueState["FightOrFlight"]
 		IsEngagingGankers:Set[FALSE]
@@ -459,7 +487,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
     ; Both a boolean member and a state.
 	member:bool LocalSafe()
 	{
-		if ${This.LocalHostilePilots} < 1
+		if ${This.LocalHostilePilots} < 8
 		{
 			return TRUE
 		}
@@ -598,6 +626,5 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		PCs:RequestUpdate
 		PCs.MinLockCount:Set[${MaxTarget}]
 		PCs.AutoLock:Set[TRUE]
-		; TODO verify this is working.
 	}
 }
