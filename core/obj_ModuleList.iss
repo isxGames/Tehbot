@@ -15,9 +15,9 @@ objectdef obj_ModuleList
 		{
 			do
 			{
-				if !${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsActive}
+				if !${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsModuleActive}
 				{
-					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:Activate[${targetID}, ${deactivateAfterCyclePercent}]
+					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:ActivateModule[${targetID}, ${deactivateAfterCyclePercent}]
 					return
 				}
 			}
@@ -34,7 +34,7 @@ objectdef obj_ModuleList
 			do
 			{
 				; Will deactivate the module if the current targetID is not the same
-				Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:Activate[${targetID}, ${deactivateAfterCyclePercent}]
+				Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:ActivateModule[${targetID}, ${deactivateAfterCyclePercent}]
 			}
 			while ${moduleIDIterator:Next(exists)}
 		}
@@ -48,9 +48,9 @@ objectdef obj_ModuleList
 		{
 			do
 			{
-				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsActive}
+				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsModuleActive}
 				{
-					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:Deactivate
+					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:DeactivateModule
 				}
 			}
 			while ${moduleIDIterator:Next(exists)}
@@ -65,9 +65,9 @@ objectdef obj_ModuleList
 		{
 			do
 			{
-				if !${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsActiveOn[${targetID}]} && ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsActive}
+				if !${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsModuleActiveOn[${targetID}]} && ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsModuleActive}
 				{
-					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:Deactivate
+					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:DeactivateModule
 					return
 				}
 			}
@@ -83,9 +83,9 @@ objectdef obj_ModuleList
 		{
 			do
 			{
-				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsActiveOn[${targetID}]}
+				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsModuleActiveOn[${targetID}]}
 				{
-					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:Deactivate
+					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:DeactivateModule
 				}
 			}
 			while ${moduleIDIterator:Next(exists)}
@@ -100,7 +100,7 @@ objectdef obj_ModuleList
 		{
 			do
 			{
-				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsActiveOn[${targetID}]}
+				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsModuleActiveOn[${targetID}]}
 				{
 					return TRUE
 				}
@@ -124,7 +124,7 @@ objectdef obj_ModuleList
 		{
 			do
 			{
-				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsActive}
+				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsModuleActive}
 				{
 					countActive:Inc
 				}
@@ -143,7 +143,7 @@ objectdef obj_ModuleList
 		{
 			do
 			{
-				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsActiveOn[${targetID}]}
+				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsModuleActiveOn[${targetID}]}
 				{
 					countActive:Inc
 				}
@@ -162,7 +162,7 @@ objectdef obj_ModuleList
 		{
 			do
 			{
-				if !${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsActive} && !${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsReloading}
+				if !${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsModuleActive} && !${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsReloading}
 				{
 					countInactive:Inc
 				}

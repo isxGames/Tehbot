@@ -42,21 +42,15 @@ objectdef obj_Module inherits obj_StateQueue
 		return FALSE
 	}
 
-	member:bool IsActive()
+	member:bool IsModuleActive()
 	{
-		; ISXEVE API is not reliable
 		; Don't simplify this for Lavish Script has bug
-		if ${MyShip.Module[${ModuleID}].IsActive} || ${Activated}
+		if ${This.IsActive} || ${Activated}
 			return TRUE
 		return FALSE
 	}
 
-	member:bool IsDeactivating()
-	{
-		return ${Deactivating}
-	}
-
-	member:bool IsActiveOn(int64 checkTarget)
+	member:bool IsModuleActiveOn(int64 checkTarget)
 	{
 		variable bool isTargetMatch = FALSE
 		if (${CurrentTarget.Equal[0]} || ${CurrentTarget.Equal[-1]}) && (${checkTarget.Equal[0]} || ${checkTarget.Equal[-1]})
@@ -69,18 +63,18 @@ objectdef obj_Module inherits obj_StateQueue
 		}
 
 		; Don't simplify this for Lavish Script has bug
-		if ${This.IsActive} && ${isTargetMatch}
+		if ${This.IsModuleActive} && ${isTargetMatch}
 		{
 			return TRUE
 		}
 		return FALSE
 	}
 
-	method Deactivate()
+	method DeactivateModule()
 	{
-		if ${MyShip.Module[${ModuleID}].IsActive} && !${Deactivating}
+		if ${This.IsActive} && !${Deactivating}
 		{
-			MyShip.Module[${ModuleID}]:Deactivate
+			This:Deactivate
 			Deactivating:Set[TRUE]
 			This:Clear
 			This:InsertState["WaitTillInactive", 50, 0]
@@ -191,14 +185,14 @@ objectdef obj_Module inherits obj_StateQueue
 			{
 				if ${MyShip.Cargo["Optimal Range Script"].Quantity} > 0
 				{
-					This:Deactivate
+					This:DeactivateModule
 					This:QueueState["LoadOptimalAmmo", 50, "Optimal Range Script"]
 				}
 				; BUG of ISXEVE: UnloadToCargo method is not working
 				; elseif ${This.Charge.Type.Find["Tracking Speed Script"]}
 				; {
 				; 	Logger:Log["obj_Module", "Unloading Tracking Speed Script"]
-				; 	This:Deactivate
+				; 	This:DeactivateModule
 				; 	This:QueueState["UnloadAmmoToCargo", 50]
 				; }
 			}
@@ -210,32 +204,32 @@ objectdef obj_Module inherits obj_StateQueue
 			{
 				if ${MyShip.Cargo["Tracking Speed Script"].Quantity} > 0
 				{
-					This:Deactivate
+					This:DeactivateModule
 					This:QueueState["LoadOptimalAmmo", 50, "Tracking Speed Script"]
 				}
 				; BUG of ISXEVE: UnloadToCargo method is not working
 				; elseif ${This.Charge.Type.Find["Optimal Range Script"]}
 				; {
 				; 	Logger:Log["obj_Module", "Unloading Optimal Range Script"]
-				; 	This:Deactivate
+				; 	This:DeactivateModule
 				; 	This:QueueState["UnloadAmmoToCargo", 50]
 				; }
 			}
 		}
 	}
 
-    method Activate(int64 newTarget=-1, int deactivateAfterCyclePercent=-1)
+    method ActivateModule(int64 newTarget=-1, int deactivateAfterCyclePercent=-1)
     {
         if ${This.IsReloading} || ${Deactivating}
 		{
 			return
 		}
 
-        if ${This.IsActive} && !${This.IsActiveOn[${newTarget}]} && \
+        if ${This.IsModuleActive} && !${This.IsModuleActiveOn[${newTarget}]} && \
 			${This.ToItem.GroupID} != GROUP_TRACKINGCOMPUTER && \
 			${This.ToItem.GroupID} != GROUP_MISSILEGUIDANCECOMPUTER
         {
-            This:Deactivate
+            This:DeactivateModule
         }
 
         if ${Entity[${newTarget}].CategoryID} == CATEGORYID_ORE && ${This.ToItem.GroupID} == GROUP_FREQUENCY_MINING_LASER
@@ -496,7 +490,7 @@ objectdef obj_Module inherits obj_StateQueue
 	{
 		if ${newTarget.Equal[-1]} || ${newTarget.Equal[0]}
 		{
-			if ${MyShip.Module[${ModuleID}].IsActive}
+			if ${This.IsActive}
 			{
 				if (${Me.ToEntity.Mode} == 3 && ${This.ToItem.GroupID} == GROUP_AFTERBURNER)
 				{
@@ -506,7 +500,7 @@ objectdef obj_Module inherits obj_StateQueue
 				}
 				return TRUE
 			}
-			MyShip.Module[${ModuleID}]:Activate
+			This:Activate
 			CurrentTarget:Set[-1]
 			Activated:Set[TRUE]
 			This:InsertState["WaitTillActive", 50, 20]
@@ -515,11 +509,11 @@ objectdef obj_Module inherits obj_StateQueue
 		elseif ${Entity[${newTarget}](exists)} && ${Entity[${newTarget}].IsLockedTarget}
 		{
 			; Strict isActiveOn
-			if ${MyShip.Module[${ModuleID}].IsActive} && ${This.TargetID.Equal[${newTarget}]}
+			if ${This.IsActive} && ${This.TargetID.Equal[${newTarget}]}
 			{
 				return TRUE
 			}
-			MyShip.Module[${ModuleID}]:Activate[${newTarget}]
+			This:Activate[${newTarget}]
 			CurrentTarget:Set[${newTarget}]
 			Activated:Set[TRUE]
 			This:InsertState["WaitTillActive", 50, 20]
@@ -550,7 +544,7 @@ objectdef obj_Module inherits obj_StateQueue
 		if ${countdown} > 0
 		{
 			This:SetStateArgs[${Math.Calc[${countdown} - 1]}]
-			return ${MyShip.Module[${ModuleID}].IsActive}
+			return ${This.IsActive}
 		}
 		return TRUE
 	}
@@ -564,7 +558,7 @@ objectdef obj_Module inherits obj_StateQueue
 
 		if ${Math.Calc[((${EVETime.AsInt64} - ${This.TimeLastClicked.AsInt64}) / ${This.ActivationTime}) * 100]} > ${percent}
 		{
-			MyShip.Module[${ModuleID}]:Deactivate
+			This:Deactivate
 			Deactivating:Set[TRUE]
 			This:Clear
 			This:InsertState["WaitTillInactive", 50, 0]
@@ -577,12 +571,12 @@ objectdef obj_Module inherits obj_StateQueue
 	{
 		if ${count} > 50
 		{
-			MyShip.Module[${ModuleID}]:Deactivate
+			This:Deactivate
 			This:InsertState["WaitTillInactive", 50, 0]
 			return TRUE
 		}
 
-		if ${MyShip.Module[${ModuleID}].IsActive}
+		if ${This.IsActive}
 		{
 			if ${count} >= 0
 			{
@@ -624,10 +618,4 @@ objectdef obj_Module inherits obj_StateQueue
 			return ${Math.Calc[${This.Charge.MaxFlightTime} * ${This.Charge.MaxVelocity}]}
 		}
 	}
-
-	member:string GetFallthroughObject()
-	{
-		return "MyShip.Module[${ModuleID}]"
-	}
-
 }
