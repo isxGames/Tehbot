@@ -307,9 +307,9 @@ objectdef obj_Move inherits obj_StateQueue
 			Client:Wait[10000]
 			return FALSE
 		}
-		if ${Entity[${ID}].Distance} > 3000
+		if ${Entity[${ID}].Distance} >= 2500
 		{
-			This:Approach[${ID}, 3000]
+			This:Approach[${ID}, 2500]
 			return FALSE
 		}
 		Logger:Log["Move", "Activating ${Entity[${ID}].Name}", "g"]
@@ -944,7 +944,7 @@ objectdef obj_Approach inherits obj_StateQueue
 		}
 
 		;	Find out if we need to approach the target
-		if ${Entity[${ID}].Distance} > ${distance} && ${Me.ToEntity.Mode} != 1
+		if ${Entity[${ID}].Distance} >= ${distance} && ${Me.ToEntity.Mode} != 1
 		{
 			Logger:Log["Move", "Approaching to within ${Tehbot.MetersToKM_Str[${distance}]} of ${Entity[${ID}].Name}", "g"]
 			Entity[${ID}]:Approach[${distance}]
@@ -952,7 +952,7 @@ objectdef obj_Approach inherits obj_StateQueue
 		}
 
 		;	If we're approaching a target, find out if we need to stop doing so
-		if ${Entity[${ID}].Distance} <= ${distance} && ${Me.ToEntity.Mode} == 1
+		if ${Entity[${ID}].Distance} < ${distance} && ${Me.ToEntity.Mode} == 1
 		{
 			Logger:Log["Move", "Within ${Tehbot.MetersToKM_Str[${distance}]} of ${Entity[${ID}].Name}", "g"]
 			EVE:Execute[CmdStopShip]
