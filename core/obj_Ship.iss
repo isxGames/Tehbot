@@ -21,10 +21,11 @@ along with Tehbot.  If not, see <http://www.gnu.org/licenses/>.
 
 objectdef obj_Ship inherits obj_StateQueue
 {
-	variable int RetryUpdateModuleList=1
+	; Module list name and its query id.
+	variable collection:uint ModuleListQueryID
 
-	variable index:string ModuleLists
-	variable collection:uint ModuleQueries
+	; ; Avoid creating duplicate operators for the same module.
+	; variable collection:obj_Module RegisteredModule
 
 	variable set ActiveJammerSet
 	variable set ActiveNeuterSet
@@ -48,8 +49,6 @@ objectdef obj_Ship inherits obj_StateQueue
 		This:AddModuleList[Repair_Armor, "ToItem.GroupID = GROUP_ARMOR_REPAIRERS"]
 		This:AddModuleList[Repair_Hull, "ToItem.GroupID = NONE"]
 		This:AddModuleList[AB_MWD, "ToItem.GroupID = GROUP_AFTERBURNER"]
-		; Supress isxeve error log output.
-		; This:AddModuleList[Passive, "!IsActivatable"]
 		This:AddModuleList[Salvagers, "ToItem.GroupID = GROUP_SALVAGER"]
 		This:AddModuleList[TractorBeams, "ToItem.GroupID = GROUP_TRACTOR_BEAM"]
 		This:AddModuleList[Cloaks, "ToItem.GroupID = GROUP_CLOAKING_DEVICE"]
@@ -68,22 +67,19 @@ objectdef obj_Ship inherits obj_StateQueue
 		This:AddModuleList[AutoTarget, "ToItem.GroupID = GROUP_AUTOMATED_TARGETING_SYSTEM"]
 		This:AddModuleList[Siege, "ToItem.GroupID = GROUP_SIEGEMODULE"]
 		This:AddModuleList[TargetModules, "MaxRange>0"]
+		; This:AddModuleList[Passive, "!IsActivatable"]
 		This:Clear
-		This:QueueState["WaitForSpace"]
+		This:QueueState["WaitForInSpace"]
 		This:QueueState["UpdateModules"]
 	}
 
 	method AddModuleList(string Name, string QueryString)
 	{
-		This.ModuleLists:Insert[${Name}]
-		This.ModuleQueries:Set[${This.ModuleLists.Used}, ${LavishScript.CreateQuery[${QueryString.Escape}]}]
+		This.ModuleListQueryID:Set[${Name}, ${LavishScript.CreateQuery[${QueryString.Escape}]}]
 		declarevariable ModuleList_${Name} obj_ModuleList object
-		This:Clear
-		This:QueueState["WaitForSpace"]
-		This:QueueState["UpdateModules"]
 	}
 
-	member:bool WaitForSpace()
+	member:bool WaitForInSpace()
 	{
 		if ${Client.InSpace}
 		{
@@ -92,107 +88,116 @@ objectdef obj_Ship inherits obj_StateQueue
 		return FALSE
 	}
 
-	member:bool UpdateModules()
-	{
-		variable iterator List
-		variable index:module ModuleList
-		ModuleLists:GetIterator[List]
-
-		Logger:Log["Ship", "Update Called"]
-
-		if !${Client.InSpace}
-		{
-			Logger:Log["Ship", "UpdateModules called while in station", "o"]
-			RetryUpdateModuleList:Set[1]
-			return
-		}
-
-		/* build module lists */
-		ModuleList:Clear
-
-		if ${List:First(exists)}
-			do
-			{
-				This.ModuleList_${List.Value}:Clear
-			}
-			while ${List:Next(exists)}
-
-		MyShip:GetModules[ModuleList]
-
-		if !${ModuleList.Used} && ${MyShip.HighSlots} > 0
-		{
-			Logger:Log["Ship", "UpdateModuleList - No modules found. Retrying in a few seconds", "o"]
-			Logger:Log["Ship", "If this ship has slots, you must have at least one module equipped, of any type.", "o"]
-			RetryUpdateModuleList:Inc
-			if ${RetryUpdateModuleList} >= 10
-			{
-				return TRUE
-			}
-			return FALSE
-		}
-		RetryUpdateModuleList:Set[0]
-
-		variable iterator ModuleIter
-
-		ModuleList:GetIterator[ModuleIter]
-		if ${ModuleIter:First(exists)}
-		do
-		{
-			if !${ModuleIter.Value(exists)}
-			{
-				Logger:Log["Ship", "UpdateModuleList - Null module found. Retrying in a few seconds.", "o"]
-				RetryUpdateModuleList:Inc
-				return FALSE
-			}
-			if ${List:First(exists)}
-			{
-				do
-				{
-					if ${LavishScript.QueryEvaluate[${This.ModuleQueries.Element[${List.Key}]}, ModuleIter.Value]}
-					{
-						ModuleList_${List.Value}:Insert[${ModuleIter.Value.ID}]
-					}
-				}
-				while ${List:Next(exists)}
-			}
-		}
-		while ${ModuleIter:Next(exists)}
-
-		Logger:Log["Ship", "Ship Module Inventory", "y"]
-
-		if ${List:First(exists)}
-			do
-			{
-				This.ModuleList_${List.Value}:GetIterator[ModuleIter]
-				if ${ModuleIter:First(exists)}
-				{
-					Logger:Log["Ship", "${List.Value}:", "g"]
-					do
-					{
-						Logger:Log["Ship", " Slot: ${ModuleIter.Value.ToItem.Slot} ${ModuleIter.Value.ToItem.Name}", "-g"]
-					}
-					while ${ModuleIter:Next(exists)}
-				}
-			}
-			while ${List:Next(exists)}
-
-		if ${This.ModuleList_AB_MWD.Used} > 1
-		{
-			Logger:Log["Ship", "Warning: More than 1 Afterburner or MWD was detected, I will only use the first one.", "o"]
-		}
-		This:QueueState["WaitForStation"]
-		This:QueueState["WaitForSpace"]
-		This:QueueState["UpdateModules"]
-		return TRUE
-	}
-
-	member:bool WaitForStation()
+	member:bool WaitForInStation()
 	{
 		if ${Me.InStation}
 		{
 			return TRUE
 		}
 		return FALSE
+	}
+
+	member:bool UpdateModules()
+	{
+		Logger:Log["Ship", "Update Called"]
+
+		if !${Client.InSpace}
+		{
+			Logger:Log["Ship", "UpdateModules called while in station", "o"]
+			This:Clear
+			This:QueueState["WaitForInSpace"]
+			This:QueueState["UpdateModules"]
+			return TRUE
+		}
+
+		variable string moduleListName
+
+		if ${ModuleListQueryID.FirstKey(exists)}
+		{
+			do
+			{
+				moduleListName:Set[${ModuleListQueryID.CurrentKey}]
+				This.ModuleList_${moduleListName}:Clear
+			}
+			while ${ModuleListQueryID.NextKey(exists)}
+		}
+
+		variable index:module shipModules
+		MyShip:GetModules[shipModules]
+		if !${shipModules.Used} && ${MyShip.HighSlots} > 0
+		{
+			Logger:Log["Ship", "UpdateModuleList - No modules found. Retrying in a few seconds", "o"]
+			Logger:Log["Ship", "If this ship has slots, you must have at least one module equipped, of any type.", "o"]
+
+			This:InsertState["UpdateModules", 5000]
+			return TRUE
+		}
+
+		variable iterator moduleIterator
+		shipModules:GetIterator[moduleIterator]
+		if ${moduleIterator:First(exists)}
+		do
+		{
+			if !${moduleIterator.Value(exists)}
+			{
+				Logger:Log["Ship", "UpdateModuleList - Null module found. Retrying in a few seconds.", "o"]
+				This:InsertState["UpdateModules", 5000]
+				return TRUE
+			}
+
+			; if ${moduleIterator.Value.IsActivatable} && !${RegisteredModule.Element[${moduleIterator.Value.ID}](exists)}
+			; {
+			; 	Logger:Log["Ship", "Registering module ${moduleIterator.Value.ID} ${moduleIterator.Value.Name}", "g"]
+			; 	RegisteredModule:Set[${moduleIterator.Value.ID}, ${moduleIterator.Value.ID}]
+			; }
+			; ; TODO deattach atoms and remove object for modules no longer present.
+
+			if ${ModuleListQueryID.FirstKey(exists)}
+			{
+				do
+				{
+					moduleListName:Set[${ModuleListQueryID.CurrentKey}]
+					; Logger:Log["Ship", " inserting, group ${moduleListName}, query of which is ${ModuleListQueryID.CurrentValue}"]
+					if ${LavishScript.QueryEvaluate[${ModuleListQueryID.CurrentValue}, moduleIterator.Value]}
+					{
+						; Logger:Log["Ship", " insert ${moduleIterator.Value.ID} ${moduleIterator.Value.Name} ${RegisteredModule.Element[${moduleIterator.Value.ID}].ModuleID} to group ${moduleListName}"]
+						ModuleList_${moduleListName}:Insert[${moduleIterator.Value.ID}]
+					}
+				}
+				while ${ModuleListQueryID.NextKey(exists)}
+			}
+		}
+		while ${moduleIterator:Next(exists)}
+
+		Logger:Log["Ship", "Ship Module Inventory", "y"]
+		if ${ModuleListQueryID.FirstKey(exists)}
+		{
+			do
+			{
+				moduleListName:Set[${ModuleListQueryID.CurrentKey}]
+
+				This.ModuleList_${moduleListName}:GetIterator[moduleIterator]
+				if ${moduleIterator:First(exists)}
+				{
+					Logger:Log["Ship", "Active module list ${moduleListName}:", "g"]
+					do
+					{
+						Logger:Log["Ship", " Slot: ${MyShip.Module[${moduleIterator.Value}].ToItem.Slot} ${MyShip.Module[${moduleIterator.Value}].ToItem.Name} ", "-g"]
+					}
+					while ${moduleIterator:Next(exists)}
+				}
+			}
+			while ${ModuleListQueryID.NextKey(exists)}
+		}
+
+		if ${This.ModuleList_AB_MWD.Used} > 1
+		{
+			Logger:Log["Ship", "Warning: More than 1 Afterburner or MWD was detected, I will only use the first one.", "o"]
+		}
+		This:QueueState["WaitForInStation"]
+		This:QueueState["WaitForInSpace"]
+		This:QueueState["UpdateModules"]
+		return TRUE
 	}
 
 	member:bool IsClosebyFrigate(int64 targetID)
@@ -210,7 +215,7 @@ objectdef obj_Ship inherits obj_StateQueue
 
 	member:bool IsHardToDealWithTarget(int64 targetID)
 	{
-		; TODO Add issile judgement
+		; TODO Add Missile judgement
 		return ${This.IsClosebyFrigate[${targetID}]}
 	}
 
