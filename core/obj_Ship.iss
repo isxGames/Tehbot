@@ -34,6 +34,8 @@ objectdef obj_Ship inherits obj_StateQueue
 	variable index:string ActiveJammerList
 	variable index:string ActiveNeuterList
 
+	variable bool verbose = TRUE
+
 	method Initialize(int64 ID)
 	{
 		This[parent]:Initialize
@@ -170,7 +172,7 @@ objectdef obj_Ship inherits obj_StateQueue
 		while ${moduleIterator:Next(exists)}
 
 		Logger:Log["Ship", "Ship Module Inventory", "y"]
-		if ${ModuleListQueryID.FirstKey(exists)}
+		if ${ModuleListQueryID.FirstKey(exists)} && ${verbose}
 		{
 			do
 			{
@@ -188,6 +190,8 @@ objectdef obj_Ship inherits obj_StateQueue
 				}
 			}
 			while ${ModuleListQueryID.NextKey(exists)}
+
+			verbose:Set[FALSE]
 		}
 
 		if ${This.ModuleList_AB_MWD.Used} > 1
