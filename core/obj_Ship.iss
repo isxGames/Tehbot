@@ -24,8 +24,8 @@ objectdef obj_Ship inherits obj_StateQueue
 	; Module list name and its query id.
 	variable collection:uint ModuleListQueryID
 
-	; ; Avoid creating duplicate operators for the same module.
-	; variable collection:obj_Module RegisteredModule
+	; Avoid creating duplicate operators for the same module.
+	variable collection:obj_Module RegisteredModule
 
 	variable set ActiveJammerSet
 	variable set ActiveNeuterSet
@@ -147,12 +147,12 @@ objectdef obj_Ship inherits obj_StateQueue
 				return TRUE
 			}
 
-			; if ${moduleIterator.Value.IsActivatable} && !${RegisteredModule.Element[${moduleIterator.Value.ID}](exists)}
-			; {
-			; 	Logger:Log["Ship", "Registering module ${moduleIterator.Value.ID} ${moduleIterator.Value.Name}", "g"]
-			; 	RegisteredModule:Set[${moduleIterator.Value.ID}, ${moduleIterator.Value.ID}]
-			; }
-			; ; TODO deattach atoms and remove object for modules no longer present.
+			if ${moduleIterator.Value.IsActivatable} && !${RegisteredModule.Element[${moduleIterator.Value.ID}](exists)}
+			{
+				Logger:Log["Ship", "Registering module ${moduleIterator.Value.ID} ${moduleIterator.Value.Name}", "g"]
+				RegisteredModule:Set[${moduleIterator.Value.ID}, ${moduleIterator.Value.ID}]
+			}
+			; TODO deattach atoms and remove object for modules no longer present.
 
 			if ${ModuleListQueryID.FirstKey(exists)}
 			{

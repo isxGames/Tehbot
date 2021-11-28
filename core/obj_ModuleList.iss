@@ -1,207 +1,207 @@
 objectdef obj_ModuleList
 {
-	variable index:obj_Module Modules
+	variable index:int64 ModuleID
 
 	method Insert(int64 ID)
 	{
-		Modules:Insert[${ID}]
+		ModuleID:Insert[${ID}]
 	}
 
-	method ActivateOne(int64 target=-1, int deactivateAfterCyclePercent=-1)
+	method ActivateOne(int64 targetID=-1, int deactivateAfterCyclePercent=-1)
 	{
-		variable iterator ModuleIterator
-		Modules:GetIterator[ModuleIterator]
-		if ${ModuleIterator:First(exists)}
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
 		{
 			do
 			{
-				if !${ModuleIterator.Value.IsActive}
+				if !${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsActive}
 				{
-					ModuleIterator.Value:Activate[${target}, ${deactivateAfterCyclePercent}]
+					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:Activate[${targetID}, ${deactivateAfterCyclePercent}]
 					return
 				}
 			}
-			while ${ModuleIterator:Next(exists)}
+			while ${moduleIDIterator:Next(exists)}
 		}
 	}
 
-	method ActivateAll(int64 target=-1, int deactivateAfterCyclePercent=-1)
+	method ActivateAll(int64 targetID=-1, int deactivateAfterCyclePercent=-1)
 	{
-		variable iterator ModuleIterator
-		Modules:GetIterator[ModuleIterator]
-		if ${ModuleIterator:First(exists)}
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
 		{
 			do
 			{
-				; Will deactivate the module if the current target is not the same
-				ModuleIterator.Value:Activate[${target}, ${deactivateAfterCyclePercent}]
+				; Will deactivate the module if the current targetID is not the same
+				Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:Activate[${targetID}, ${deactivateAfterCyclePercent}]
 			}
-			while ${ModuleIterator:Next(exists)}
+			while ${moduleIDIterator:Next(exists)}
 		}
 	}
 
 	method DeactivateAll()
 	{
-		variable iterator ModuleIterator
-		Modules:GetIterator[ModuleIterator]
-		if ${ModuleIterator:First(exists)}
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
 		{
 			do
 			{
-				if ${ModuleIterator.Value.IsActive}
+				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsActive}
 				{
-					ModuleIterator.Value:Deactivate
+					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:Deactivate
 				}
 			}
-			while ${ModuleIterator:Next(exists)}
+			while ${moduleIDIterator:Next(exists)}
 		}
 	}
 
-	method DeactivateOneNotOn(int64 target=-1)
+	method DeactivateOneNotOn(int64 targetID=-1)
 	{
-		variable iterator ModuleIterator
-		Modules:GetIterator[ModuleIterator]
-		if ${ModuleIterator:First(exists)}
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
 		{
 			do
 			{
-				if !${ModuleIterator.Value.IsActiveOn[${target}]} && ${ModuleIterator.Value.IsActive}
+				if !${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsActiveOn[${targetID}]} && ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsActive}
 				{
-					ModuleIterator.Value:Deactivate
+					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:Deactivate
 					return
 				}
 			}
-			while ${ModuleIterator:Next(exists)}
+			while ${moduleIDIterator:Next(exists)}
 		}
 	}
 
-	method DeactivateOn(int64 target=-1)
+	method DeactivateOn(int64 targetID=-1)
 	{
-		variable iterator ModuleIterator
-		Modules:GetIterator[ModuleIterator]
-		if ${ModuleIterator:First(exists)}
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
 		{
 			do
 			{
-				if ${ModuleIterator.Value.IsActiveOn[${target}]}
+				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsActiveOn[${targetID}]}
 				{
-					ModuleIterator.Value:Deactivate
+					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:Deactivate
 				}
 			}
-			while ${ModuleIterator:Next(exists)}
+			while ${moduleIDIterator:Next(exists)}
 		}
 	}
 
-	member:bool IsActiveOn(int64 checkTarget)
+	member:bool IsActiveOn(int64 targetID)
 	{
-		variable iterator ModuleIterator
-		Modules:GetIterator[ModuleIterator]
-		if ${ModuleIterator:First(exists)}
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
 		{
 			do
 			{
-				if ${ModuleIterator.Value.IsActiveOn[${checkTarget}]}
+				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsActiveOn[${targetID}]}
 				{
 					return TRUE
 				}
 			}
-			while ${ModuleIterator:Next(exists)}
+			while ${moduleIDIterator:Next(exists)}
 		}
 		return FALSE
 	}
 
 	member:int Count()
 	{
-		return ${Modules.Used}
+		return ${ModuleID.Used}
 	}
 
 	member:int ActiveCount()
 	{
 		variable int countActive=0
-		variable iterator ModuleIterator
-		Modules:GetIterator[ModuleIterator]
-		if ${ModuleIterator:First(exists)}
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
 		{
 			do
 			{
-				if ${ModuleIterator.Value.IsActive}
+				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsActive}
 				{
 					countActive:Inc
 				}
 			}
-			while ${ModuleIterator:Next(exists)}
+			while ${moduleIDIterator:Next(exists)}
 		}
 		return ${countActive}
 	}
 
-	member:int ActiveCountOn(int64 checkTarget)
+	member:int ActiveCountOn(int64 targetID)
 	{
 		variable int countActive=0
-		variable iterator ModuleIterator
-		Modules:GetIterator[ModuleIterator]
-		if ${ModuleIterator:First(exists)}
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
 		{
 			do
 			{
-				if ${ModuleIterator.Value.IsActiveOn[${checkTarget}]}
+				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsActiveOn[${targetID}]}
 				{
 					countActive:Inc
 				}
 			}
-			while ${ModuleIterator:Next(exists)}
+			while ${moduleIDIterator:Next(exists)}
 		}
 		return ${countActive}
 	}
 
 	member:int InactiveCount()
 	{
-		variable iterator ModuleIterator
+		variable iterator moduleIDIterator
 		variable int countInactive = 0
-		Modules:GetIterator[ModuleIterator]
-		if ${ModuleIterator:First(exists)}
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
 		{
 			do
 			{
-				if !${ModuleIterator.Value.IsActive} && !${ModuleIterator.Value.IsReloading}
+				if !${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsActive} && !${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsReloading}
 				{
 					countInactive:Inc
 				}
 			}
-			while ${ModuleIterator:Next(exists)}
+			while ${moduleIDIterator:Next(exists)}
 		}
 		return ${countInactive}
 	}
 
 	member:float Range()
 	{
-		return ${Modules.Get[1].Range}
+		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].Range}
 	}
 
 	member:float OptimalRange()
 	{
-		return ${Modules.Get[1].OptimalRange}
+		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].OptimalRange}
 	}
 
-	member:bool IncludeModule(int64 ModuleID)
+	member:bool IncludeModule(int64 moduleID)
 	{
-		variable iterator ModuleIterator
-		Modules:GetIterator[ModuleIterator]
-		if ${ModuleIterator:First(exists)}
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
 		{
 			do
 			{
-				if ${ModuleIterator.Value.ID} == ${ModuleID}
+				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].ID} == ${moduleID}
 				{
 					return TRUE
 				}
 			}
-			while ${ModuleIterator:Next(exists)}
+			while ${moduleIDIterator:Next(exists)}
 		}
 		return FALSE
 	}
 
 	member:string GetFallthroughObject()
 	{
-		return "Ship.${This.ObjectName}.Modules"
+		return "Ship.${This.ObjectName}.ModuleID"
 	}
 }
