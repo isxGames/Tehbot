@@ -22,28 +22,13 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		NPCs:AddAllNPCs
 	}
 
-	method Log(string text)
-	{
-		Logger:Log["FightOrFlight", "${text.Escape}", "", LOG_STANDARD]
-	}
-
-	method LogDebug(string text)
-	{
-		Logger:Log["FightOrFlight", "${text.Escape}"]
-	}
-
-	method LogCritical(string text)
-	{
-		Logger:Log["FightOrFlight", "${text.Escape}", "", LOG_CRITICAL]
-	}
-
 	method Start()
 	{
 		AttackTimestamp:Clear
 
 		if ${This.IsIdle}
 		{
-			This:Log["Started"]
+			This:LogInfo["Started"]
 			This:QueueState["FightOrFlight"]
 		}
 	}
@@ -188,7 +173,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 
 		if ${Me.InStation} && !${This.LocalSafe}
 		{
-			This:Log["Detected many hostile pilots in local, wait until they are gone."]
+			This:LogInfo["Detected many hostile pilots in local, wait until they are gone."]
 			${Config.Common.Tehbot_Mode}:Stop
 			Move:Stop
 			This:QueueState["LocalSafe"]
@@ -240,7 +225,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 
 		if ${MyShip.ToEntity.Type.Equal["Capsule"]}
 		{
-			This:Log["I am in egg, I should flee."]
+			This:LogInfo["I am in egg, I should flee."]
 			${Config.Common.Tehbot_Mode}:Stop
 			Move:Stop
 			DroneControl:Stop
@@ -250,7 +235,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		}
 		elseif ${MyShip.ShieldPct.Int} < 0 || ${MyShip.ArmorPct.Int} < 50 || ${MyShip.StructurePct.Int} < 100
 		{
-			This:Log["PVE Low HP - Shield: ${MyShip.ShieldPct.Int}%, Armor: ${MyShip.ArmorPct.Int}%, Hull: ${MyShip.StructurePct.Int}%, I should flee."]
+			This:LogInfo["PVE Low HP - Shield: ${MyShip.ShieldPct.Int}%, Armor: ${MyShip.ArmorPct.Int}%, Hull: ${MyShip.StructurePct.Int}%, I should flee."]
 			${Config.Common.Tehbot_Mode}:Stop
 			Move:Stop
 			DroneControl:Stop
@@ -263,7 +248,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		}
 		elseif !${Move.Traveling} && !${This.LocalSafe}
 		{
-			This:Log["Detected many red in local, I should flee."]
+			This:LogInfo["Detected many red in local, I should flee."]
 			${Config.Common.Tehbot_Mode}:Stop
 			Move:Stop
 			DroneControl:Stop
@@ -299,7 +284,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 
 		if !${IsWarpScrambled} && ${MyShip.ToEntity.Type.Equal["Capsule"]}
 		{
-			This:Log["I am in egg, I should flee."]
+			This:LogInfo["I am in egg, I should flee."]
 			This:QueueState["FleeToStation"]
 			This:QueueState["FightOrFlight"]
 			return TRUE
@@ -333,7 +318,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 						if ${Entity[${activeNeuterIterator.Value}].IsLockedTarget}
 						{
 							currentTarget:Set[${activeNeuterIterator.Value}]
-							This:Log["Switching target to active neutralizer \ar${Entity[${currentTarget}].Name}"]
+							This:LogInfo["Switching target to active neutralizer \ar${Entity[${currentTarget}].Name}"]
 							break
 						}
 					}
@@ -352,7 +337,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 					if ${Entity[${activeNeuterIterator.Value}].IsLockedTarget}
 					{
 						currentTarget:Set[${activeNeuterIterator.Value}]
-						This:Log["Targeting active neutralizer \ar${Entity[${currentTarget}].Name}"]
+						This:LogInfo["Targeting active neutralizer \ar${Entity[${currentTarget}].Name}"]
 						break
 					}
 				}
@@ -392,7 +377,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 					currentTarget:Set[${CapsuleTarget}]
 				}
 			}
-			This:Log["Primary target: \ar${Entity[${currentTarget}].Name}"]
+			This:LogInfo["Primary target: \ar${Entity[${currentTarget}].Name}"]
 		}
 
 		;;;;;;;;;;;;;;;;;;;;Shoot;;;;;;;;;;;;;;;;;;;;;
@@ -494,7 +479,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 
 	member:bool ResumeBot(bool Undock = FALSE)
 	{
-		This:Log["Resuming bot."]
+		This:LogInfo["Resuming bot."]
 
 		; To avoid going back to agent to reload ammos.
 		if ${Undock}
@@ -533,7 +518,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		StationID:Set[${Entity["CategoryID = CATEGORYID_STATION"].ID}]
 		if ${Entity[${StationID}](exists)}
 		{
-			This:Log["Fleeing to station ${Entity[${StationID}].Name}."]
+			This:LogInfo["Fleeing to station ${Entity[${StationID}].Name}."]
 			Move.Traveling:Set[FALSE]
 			Move:Entity[${StationID}]
 			This:InsertState["Traveling"]

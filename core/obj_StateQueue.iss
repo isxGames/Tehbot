@@ -24,7 +24,7 @@ objectdef obj_State
 	}
 }
 
-objectdef obj_StateQueue
+objectdef obj_StateQueue inherits obj_Logger
 {
 	variable queue:obj_State States
 	variable obj_State CurState

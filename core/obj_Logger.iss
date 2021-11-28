@@ -1,5 +1,7 @@
 objectdef obj_Logger
 {
+	variable string LogModuleName
+	variable string LogInfoColor
 	variable string LogFile
 	variable queue:string ConsoleBuffer
 	variable string PreviousMsg
@@ -72,5 +74,35 @@ objectdef obj_Logger
         {
             UI:Update["${CallingModule.Escape}", "${StatusMessage.Escape}", "${Color}"]
         }
+	}
+
+	method LogInfo(string message)
+	{
+		if !${LogModuleName.NotNULLOrEmpty}
+		{
+			LogModuleName:Set[${This.ObjectName}]
+		}
+		; Don't use This:Log or it won't work when inherited.
+		Logger:Log[${LogModuleName}, "${message.Escape}", "${LogInfoColor}", LOG_STANDARD]
+	}
+
+	method LogDebug(string message)
+	{
+		if !${LogModuleName.NotNULLOrEmpty}
+		{
+			LogModuleName:Set[${This.ObjectName}]
+		}
+		; Don't use This:Log or it won't work when inherited.
+		Logger:Log[${LogModuleName}, "${message.Escape}", "", LOG_DEBUG]
+	}
+
+	method LogCritical(string message)
+	{
+		if !${LogModuleName.NotNULLOrEmpty}
+		{
+			LogModuleName:Set[${This.ObjectName}]
+		}
+		; Don't use This:Log or it won't work when inherited.
+		Logger:Log[${LogModuleName}, "${message.Escape}", "r", LOG_CRITICAL]
 	}
 }
