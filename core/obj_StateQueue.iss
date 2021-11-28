@@ -33,7 +33,6 @@ objectdef obj_StateQueue
 	variable int PulseFrequency = 2000
 	variable bool NonGameTiedPulse = FALSE
 	variable bool IsIdle
-	variable bool IndependentPulse = FALSE
 	variable int RandomDelta = 500
 
 	method Initialize()
@@ -41,12 +40,6 @@ objectdef obj_StateQueue
 		CurState:Set["Idle", 100, ""]
 		IsIdle:Set[TRUE]
 		Event[ISXEVE_onFrame]:AttachAtom[This:Pulse]
-	}
-
-	method IndependentPulse()
-	{
-		IndependentPulse:Set[TRUE]
-		Event[ISXEVE_onFrame]:DetachAtom[This:Pulse]
 	}
 
 	method Shutdown()
@@ -57,49 +50,27 @@ objectdef obj_StateQueue
 	method Pulse()
 	{
 		variable bool ReportIdle=TRUE
-		if !${IndependentPulse}
+		if ${LavishScript.RunningTime} >= ${This.NextPulse}
 		{
-			if ${LavishScript.RunningTime} >= ${This.NextPulse}
+			if (!${Tehbot.Paused} && ${Client.Ready}) || ${This.NonGameTiedPulse}
 			{
-				if (!${ComBot.Paused} && ${Client.Ready}) || ${This.NonGameTiedPulse}
+				if ${This.${CurState.Name}[${CurState.Args}]}
 				{
-					if ${This.${CurState.Name}[${CurState.Args}]}
+					if ${States.Used} == 0
 					{
-						if ${States.Used} == 0
-						{
-							This:QueueState["Idle", 100];
-							IsIdle:Set[TRUE]
-							ReportIdle:Set[FALSE]
-						}
-						CurState:Set[${States.Peek.Name}, ${States.Peek.Frequency}, "${States.Peek.Args.Escape}"]
-						if ${ReportIdle}
-						{
-							UI:Log["${This(type)} State Change: ${States.Peek.Name}", TRUE]
-						}
-						States:Dequeue
+						This:QueueState["Idle", 100];
+						IsIdle:Set[TRUE]
+						ReportIdle:Set[FALSE]
 					}
+					CurState:Set[${States.Peek.Name}, ${States.Peek.Frequency}, "${States.Peek.Args.Escape}"]
+					if ${ReportIdle}
+					{
+						UI:Log["${This(type)} State Change: ${States.Peek.Name}", TRUE]
+					}
+					States:Dequeue
 				}
-				This.NextPulse:Set[${Math.Calc[${LavishScript.RunningTime} + ${CurState.Frequency} + ${Math.Rand[${RandomDelta}]}]}]
 			}
-		}
-		else
-		{
-			if ${States.Used} == 0
-			{
-				This:QueueState["Idle", 100];
-				IsIdle:Set[TRUE]
-				ReportIdle:Set[FALSE]
-			}
-
-			if ${This.${CurState.Name}[${CurState.Args}]}
-			{
-				CurState:Set[${States.Peek.Name}, ${States.Peek.Frequency}, "${States.Peek.Args.Escape}"]
-				if ${ReportIdle}
-				{
-					UI:Log["${This(type)} State Change: ${States.Peek.Name}", TRUE]
-				}
-				States:Dequeue
-			}
+			This.NextPulse:Set[${Math.Calc[${LavishScript.RunningTime} + ${CurState.Frequency} + ${Math.Rand[${RandomDelta}]}]}]
 		}
 	}
 
