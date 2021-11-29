@@ -77,5 +77,5 @@
 #define DRONE_RACE_GALLENTE 																					8
 
 #define LOG_DEBUG                                                                                               1
-#define LOG_STANDARD                                                                                            2
+#define LOG_INFO                                                                                                2
 #define LOG_CRITICAL                                                                                            3

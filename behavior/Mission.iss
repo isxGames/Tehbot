@@ -7,7 +7,7 @@ objectdef obj_Configuration_Agents
 		if !${BaseConfig.BaseRef.FindSet[${This.SetName}](exists)}
 		{
 			Logger:Log["Warning: ${This.SetName} settings missing - initializing"]
-			This:Set_Default_Values[]
+			This:Set_Default_Values
 		}
 		Logger:Log["Configuration", " ${This.SetName}: Initialized", "-g"]
 	}
@@ -112,7 +112,7 @@ objectdef obj_Configuration_Mission
 		if !${BaseConfig.BaseRef.FindSet[${This.SetName}](exists)}
 		{
 			Logger:Log["Configuration", " ${This.SetName} settings missing - initializing", "o"]
-			This:Set_Default_Values[]
+			This:Set_Default_Values
 		}
 		Logger:Log["Configuration", " ${This.SetName}: Initialized", "-g"]
 	}
@@ -127,14 +127,22 @@ objectdef obj_Configuration_Mission
 		BaseConfig.BaseRef:AddSet[${This.SetName}]
 		This.CommonRef:AddSetting[AmmoAmountToLoad, 100]
 		This.CommonRef:AddSetting[DeclineLowSec, TRUE]
+		This.CommonRef:AddSetting[AggressiveMode, FALSE]
+		This.CommonRef:AddSetting[IgnoreNPCSentries, FALSE]
+		This.CommonRef:AddSetting[DeactivateSiegeModuleEarly, FALSE]
 		This.CommonRef:AddSetting[SalvagePrefix, "Salvage: "]
+		This.CommonRef:AddSetting[LogLevelBar, LOG_INFO]
 	}
 
 	Setting(bool, Halt, SetHalt)
 	Setting(bool, UseSecondaryAmmo, SetSecondary)
 	Setting(bool, UseDrones, SetDrones)
 	Setting(bool, RangeLimit, SetRangeLimit)
+	Setting(bool, DeclineLowSec, SetDeclineLowSec)
 	Setting(bool, DropOffToContainer, SetDropOffToContainer)
+	Setting(bool, AggressiveMode, SetAggressiveMode)
+	Setting(bool, IgnoreNPCSentries, SetIgnoreNPCSentries)
+	Setting(bool, DeactivateSiegeModuleEarly, SetDeactivateSiegeModuleEarly)
 	Setting(string, SalvagePrefix, SetSalvagePrefix)
 	Setting(string, DropOffContainerName, SetDropOffContainerName)
 	Setting(string, MunitionStorage, SetMunitionStorage)
@@ -150,7 +158,7 @@ objectdef obj_Configuration_Mission
 	Setting(string, EMAmmoSecondary, SetEMAmmoSecondary)
 	Setting(string, ExplosiveAmmoSecondary, SetExplosiveAmmoSecondary)
 	Setting(int, AmmoAmountToLoad, SetAmmoAmountToLoad)
-	Setting(bool, DeclineLowSec, SetDeclineLowSec)
+	Setting(int, LogLevelBar, SetLogLevelBar)
 }
 
 objectdef obj_Mission inherits obj_StateQueue
@@ -222,19 +230,13 @@ objectdef obj_Mission inherits obj_StateQueue
 		This.PulseFrequency:Set[500]
 
 		This.LogInfoColor:Set["g"]
+		This.LogLevelBar:Set[${Config.LogLevelBar}]
 
 		LavishScript:RegisterEvent[Tehbot_ScheduleHalt]
 		Event[Tehbot_ScheduleHalt]:AttachAtom[This:ScheduleHalt]
 		LavishScript:RegisterEvent[Tehbot_ScheduleResume]
 		Event[Tehbot_ScheduleResume]:AttachAtom[This:ScheduleResume]
 
-		NPCs:AddAllNPCs
-		; If ignore NPC sentry towers
-		NPCs:AddTargetExceptionByPartOfName["Battery"]
-		NPCs:AddTargetExceptionByPartOfName["Batteries"]
-		NPCs:AddTargetExceptionByPartOfName["Sentry Gun"]
-		NPCs:AddTargetExceptionByPartOfName["Tower Sentry"]
-		ActiveNPCs:AddTargetingMe
 		Lootables:AddQueryString["(GroupID = GROUP_WRECK || GroupID = GROUP_CARGOCONTAINER) && !IsMoribund"]
 
 		AllowDronesOnNpcClass:Add["Frigate"]
@@ -291,14 +293,9 @@ objectdef obj_Mission inherits obj_StateQueue
 			EVE:RefreshBookmarks
 		}
 
-		This:BuildActiveNPC
+		This:BuildNpcQueries
 		ActiveNPCs.AutoLock:Set[TRUE]
 		NPCs.AutoLock:Set[TRUE]
-		; If ignore NPC sentry towers
-		NPCs:AddTargetExceptionByPartOfName["Battery"]
-		NPCs:AddTargetExceptionByPartOfName["Batteries"]
-		NPCs:AddTargetExceptionByPartOfName["Sentry Gun"]
-		NPCs:AddTargetExceptionByPartOfName["Tower Sentry"]
 		UIElement[Run@TitleBar@Tehbot]:SetText[Stop]
 	}
 
@@ -629,7 +626,7 @@ objectdef obj_Mission inherits obj_StateQueue
 							if ${bookmarkIterator.Value.LocationType.Equal[dungeon]}
 							{
 								Move:AgentBookmark[${bookmarkIterator.Value.ID}]
-								This:BuildActiveNPC
+								This:BuildNpcQueries
 								This:InsertState["PerformMission"]
 								This:InsertState["Traveling"]
 								This:InsertState["Cleanup"]
@@ -650,7 +647,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		return TRUE
 	}
 
-	method BuildActiveNPC()
+	method BuildNpcQueries()
 	{
 		variable iterator classIterator
 		variable iterator groupIterator
@@ -794,18 +791,30 @@ objectdef obj_Mission inherits obj_StateQueue
 
 		ActiveNPCs:AddTargetingMe
 
-		; if aggreesive mode
-		ActiveNPCs:AddAllNPCs
-		if ${targetToDestroy.NotNULLOrEmpty}
+		if ${Config.AggressiveMode}
 		{
-			ActiveNPCs:AddQueryString[${targetToDestroy.Escape}]
+			ActiveNPCs:AddAllNPCs
+			if ${targetToDestroy.NotNULLOrEmpty}
+			{
+				ActiveNPCs:AddQueryString[${targetToDestroy.Escape}]
+			}
 		}
 
-		; If ignore NPC sentry towers
-		ActiveNPCs:AddTargetExceptionByPartOfName["Battery"]
-		ActiveNPCs:AddTargetExceptionByPartOfName["Batteries"]
-		ActiveNPCs:AddTargetExceptionByPartOfName["Sentry Gun"]
-		ActiveNPCs:AddTargetExceptionByPartOfName["Tower Sentry"]
+		NPCs:ClearQueryString
+		NPCs:AddAllNPCs
+
+		if ${Config.IgnoreNPCSentries}
+		{
+			ActiveNPCs:AddTargetExceptionByPartOfName["Battery"]
+			ActiveNPCs:AddTargetExceptionByPartOfName["Batteries"]
+			ActiveNPCs:AddTargetExceptionByPartOfName["Sentry Gun"]
+			ActiveNPCs:AddTargetExceptionByPartOfName["Tower Sentry"]
+
+			NPCs:AddTargetExceptionByPartOfName["Battery"]
+			NPCs:AddTargetExceptionByPartOfName["Batteries"]
+			NPCs:AddTargetExceptionByPartOfName["Sentry Gun"]
+			NPCs:AddTargetExceptionByPartOfName["Tower Sentry"]
+		}
 	}
 
 	variable bool looted = FALSE
@@ -827,6 +836,34 @@ objectdef obj_Mission inherits obj_StateQueue
 		{
 			This:InsertState["PerformMission"]
 			return TRUE
+		}
+
+		variable bool allowSiegeModule
+		variable iterator targetIterator
+		allowSiegeModule:Set[TRUE]
+		if ${Config.DeactivateSiegeModuleEarly} && (${NPCs.TargetList.Used} < 2) && !${Entity[${targetToDestroy}]}
+		{
+			allowSiegeModule:Set[FALSE]
+			NPCs.TargetList:GetIterator[targetIterator]
+			if ${targetIterator:First(exists)}
+			{
+				do
+				{
+					if ${Entity[${targetIterator.Value}].Distance} > 70000
+					{
+						This:LogDebug["still allowing siege for target is ${Entity[${targetIterator.Value}].Distance} away"]
+						allowSiegeModule:Set[TRUE]
+						break
+					}
+				}
+				while ${targetIterator:Next(exists)}
+			}
+		}
+
+		if !${allowSiegeModule} && ${Ship.ModuleList_Siege.ActiveCount}
+		{
+			This:LogDebug["Deactivating siege module early. ${NPCs.TargetList.Used}"]
+			Ship.ModuleList_Siege:DeactivateAll
 		}
 
 		; Hack: Approach to spawn Fajah Ateshi in Anomaly 1, not worth adding another mission configue for this one mission
@@ -860,7 +897,6 @@ objectdef obj_Mission inherits obj_StateQueue
 		{
 			EVE:QueryEntities[lootContainers, ${containerQuery}]
 		}
-
 
 		; Avoid duplicate check on containers.
 		variable iterator containerIterator
@@ -1066,9 +1102,8 @@ objectdef obj_Mission inherits obj_StateQueue
 			return FALSE
 		}
 
-		variable int MaxTarget = ${MyShip.MaxLockedTargets}
-		if ${Me.MaxLockedTargets} < ${MyShip.MaxLockedTargets}
-			MaxTarget:Set[${Me.MaxLockedTargets}]
+		variable int MaxTarget
+		MaxTarget:Set[${Utility.Min[${Me.MaxLockedTargets}, ${MyShip.MaxLockedTargets}]}]
 		MaxTarget:Dec[2]
 
 		ActiveNPCs.MinLockCount:Set[${MaxTarget}]
@@ -1091,7 +1126,8 @@ objectdef obj_Mission inherits obj_StateQueue
 		variable iterator lockedTargetIterator
 		variable iterator activeJammerIterator
 		Ship:BuildActiveJammerList
-
+		; May switch target more than once so use this flag to avoid log spamming.
+		variable bool switched
 		if ${currentTarget} != 0
 		{
 			; Finalized decision
@@ -1125,6 +1161,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			if !${finalized} && ${Ship.IsHardToDealWithTarget[${currentTarget}]} && ${ActiveNPCs.LockedTargetList.Used}
 			{
 				; Switch to easier target
+				switched:Set[FALSE]
 				ActiveNPCs.LockedTargetList:GetIterator[lockedTargetIterator]
 				do
 				{
@@ -1133,10 +1170,14 @@ objectdef obj_Mission inherits obj_StateQueue
 					{
 						currentTarget:Set[${lockedTargetIterator.Value}]
 						maxAttackTime:Set[${Math.Calc[${LavishScript.RunningTime} + (${switchTargetAfter} * 1000)]}]
-						This:LogInfo["Switching to easier target: \ar${Entity[${currentTarget}].Name}"]
+						switched:Set[TRUE]
 					}
 				}
 				while ${lockedTargetIterator:Next(exists)}
+				if ${switched}
+				{
+					This:LogInfo["Switching to easier target: \ar${Entity[${currentTarget}].Name}"]
+				}
 			}
 		}
 		elseif ${ActiveNPCs.LockedTargetList.Used}
@@ -1162,13 +1203,13 @@ objectdef obj_Mission inherits obj_StateQueue
 			{
 				; Priortize the closest target which is not hard to deal with to
 				; reduce the frequency of switching ammo.
-				variable int64 HardToDealWithTarget = 0
+				variable int64 hardToDealWithTarget = 0
 				ActiveNPCs.LockedTargetList:GetIterator[lockedTargetIterator]
 				do
 				{
 					if ${Ship.IsHardToDealWithTarget[${lockedTargetIterator.Value}]}
 					{
-						HardToDealWithTarget:Set[${lockedTargetIterator.Value}]
+						hardToDealWithTarget:Set[${lockedTargetIterator.Value}]
 					}
 					elseif ${currentTarget} == 0 || ${Entity[${currentTarget}].Distance} > ${Entity[${lockedTargetIterator.Value}].Distance}
 					{
@@ -1183,7 +1224,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				if ${currentTarget} == 0
 				{
 					; This:LogInfo["no easy target"]
-					currentTarget:Set[${HardToDealWithTarget}]
+					currentTarget:Set[${hardToDealWithTarget}]
 					maxAttackTime:Set[${Math.Calc[${LavishScript.RunningTime} + (${switchTargetAfter} * 1000)]}]
 				}
 			}
@@ -1217,7 +1258,11 @@ objectdef obj_Mission inherits obj_StateQueue
 				DroneControl:Recall
 			}
 
-			Ship.ModuleList_Siege:ActivateOne
+			if ${allowSiegeModule}
+			{
+				Ship.ModuleList_Siege:ActivateOne
+			}
+
 			if ${Ship.ModuleList_Weapon.Range} > ${Entity[${currentTarget}].Distance} || !${Config.RangeLimit}
 			{
 				Ship.ModuleList_Weapon:ActivateAll[${currentTarget}]

@@ -1,8 +1,10 @@
 objectdef obj_Logger
 {
+	variable string LogFile
+	variable string LogLevelBar = LOG_DEBUG
 	variable string LogModuleName
 	variable string LogInfoColor
-	variable string LogFile
+
 	variable queue:string ConsoleBuffer
 	variable string PreviousMsg
 
@@ -31,29 +33,49 @@ objectdef obj_Logger
 		redirect -append "${This.LogFile}" echo "Bot starting on ${Time.Date} at ${Time.Time24}"
 	}
 
-	method Log(string CallingModule, string StatusMessage, string Color="w", int Level=LOG_STANDARD)
+	method Log(string CallingModule, string StatusMessage, string Color = "w", int level = LOG_INFO, int logLevelBar = LOG_DEBUG)
 	{
-		/*
-			Level = LOG_STANDARD - Standard, Log and Print to Screen
-		*/
+		if ${level} < ${logLevelBar}
+		{
+			return
+		}
 
         variable string MSG
-		MSG:Set["${Time.Time24}: ["]
-		if ${CallingModule.Length} > 15
+		MSG:Set["${Time.Time24}: "]
+
+		switch ${level}
 		{
-			MSG:Concat["${CallingModule.Left[15]}]"]
-		}
-		else
-		{
-			MSG:Concat["${CallingModule}]"]
+			case LOG_DEBUG
+				MSG:Concat["DEBUG"]
+				break
+			case LOG_INFO
+				MSG:Concat["INFO"]
+				break
+			case LOG_CRITICAL
+				MSG:Concat["CRITICAL"]
+				break
 		}
 
-		while ${MSG.Length} < 30
+		while ${MSG.Length} < 20
 		{
 			MSG:Concat[" "]
 		}
 
-		MSG:Concat["${StatusMessage.Escape}"]
+		if ${CallingModule.Length} > 15
+		{
+			MSG:Concat["[${CallingModule.Left[15]}]"]
+		}
+		else
+		{
+			MSG:Concat["[${CallingModule}]"]
+		}
+
+		while ${MSG.Length} < 40
+		{
+			MSG:Concat[" "]
+		}
+
+		MSG:Concat["${StatusMessage.Escape.Replace["\"", ""].Replace["\\", ""]}"]
 
 		variable bool Filter = FALSE
 
@@ -83,7 +105,7 @@ objectdef obj_Logger
 			LogModuleName:Set[${This.ObjectName}]
 		}
 		; Don't use This:Log or it won't work when inherited.
-		Logger:Log[${LogModuleName}, "${message.Escape}", "${LogInfoColor}", LOG_STANDARD]
+		Logger:Log[${LogModuleName}, "${message.Escape}", "${LogInfoColor}", LOG_INFO, ${This.LogLevelBar}]
 	}
 
 	method LogDebug(string message)
@@ -93,7 +115,7 @@ objectdef obj_Logger
 			LogModuleName:Set[${This.ObjectName}]
 		}
 		; Don't use This:Log or it won't work when inherited.
-		Logger:Log[${LogModuleName}, "${message.Escape}", "", LOG_DEBUG]
+		Logger:Log[${LogModuleName}, "${message.Escape}", "", LOG_DEBUG, ${This.LogLevelBar}]
 	}
 
 	method LogCritical(string message)
@@ -103,6 +125,6 @@ objectdef obj_Logger
 			LogModuleName:Set[${This.ObjectName}]
 		}
 		; Don't use This:Log or it won't work when inherited.
-		Logger:Log[${LogModuleName}, "${message.Escape}", "r", LOG_CRITICAL]
+		Logger:Log[${LogModuleName}, "${message.Escape}", "r", LOG_CRITICAL, ${This.LogLevelBar}]
 	}
 }

@@ -101,11 +101,11 @@ objectdef obj_Ship inherits obj_StateQueue
 
 	member:bool UpdateModules()
 	{
-		Logger:Log["Ship", "Update Called"]
+		This:LogInfo["Update Called"]
 
 		if !${Client.InSpace}
 		{
-			Logger:Log["Ship", "UpdateModules called while in station", "o"]
+			This:LogCritical["UpdateModules called while in station"]
 			This:Clear
 			This:QueueState["WaitForInSpace"]
 			This:QueueState["UpdateModules"]
@@ -128,8 +128,8 @@ objectdef obj_Ship inherits obj_StateQueue
 		MyShip:GetModules[shipModules]
 		if !${shipModules.Used} && ${MyShip.HighSlots} > 0
 		{
-			Logger:Log["Ship", "UpdateModuleList - No modules found. Retrying in a few seconds", "o"]
-			Logger:Log["Ship", "If this ship has slots, you must have at least one module equipped, of any type.", "o"]
+			This:LogCritical["UpdateModuleList - No modules found. Retrying in a few seconds", "o"]
+			This:LogCritical["If this ship has slots, you must have at least one module equipped, of any type.", "o"]
 
 			This:InsertState["UpdateModules", 5000]
 			return TRUE
@@ -142,14 +142,14 @@ objectdef obj_Ship inherits obj_StateQueue
 		{
 			if !${moduleIterator.Value(exists)}
 			{
-				Logger:Log["Ship", "UpdateModuleList - Null module found. Retrying in a few seconds.", "o"]
+				This:LogCritical["UpdateModuleList - Null module found. Retrying in a few seconds.", "o"]
 				This:InsertState["UpdateModules", 5000]
 				return TRUE
 			}
 
 			if ${moduleIterator.Value.IsActivatable} && !${RegisteredModule.Element[${moduleIterator.Value.ID}](exists)}
 			{
-				Logger:Log["Ship", "Registering module ${moduleIterator.Value.ID} ${moduleIterator.Value.Name}", "g"]
+				This:LogDebug["Registering module ${moduleIterator.Value.ID} ${moduleIterator.Value.Name}", "g"]
 				RegisteredModule:Set[${moduleIterator.Value.ID}, ${moduleIterator.Value.ID}]
 			}
 			; TODO deattach atoms and remove object for modules no longer present.
@@ -159,10 +159,10 @@ objectdef obj_Ship inherits obj_StateQueue
 				do
 				{
 					moduleListName:Set[${ModuleListQueryID.CurrentKey}]
-					; Logger:Log["Ship", " inserting, group ${moduleListName}, query of which is ${ModuleListQueryID.CurrentValue}"]
+					; This:LogDebug[" inserting, group ${moduleListName}, query of which is ${ModuleListQueryID.CurrentValue}"]
 					if ${LavishScript.QueryEvaluate[${ModuleListQueryID.CurrentValue}, moduleIterator.Value]}
 					{
-						; Logger:Log["Ship", " insert ${moduleIterator.Value.ID} ${moduleIterator.Value.Name} ${RegisteredModule.Element[${moduleIterator.Value.ID}].ModuleID} to group ${moduleListName}"]
+						; This:LogDebug[" insert ${moduleIterator.Value.ID} ${moduleIterator.Value.Name} ${RegisteredModule.Element[${moduleIterator.Value.ID}].ModuleID} to group ${moduleListName}"]
 						ModuleList_${moduleListName}:Insert[${moduleIterator.Value.ID}]
 					}
 				}
@@ -171,7 +171,7 @@ objectdef obj_Ship inherits obj_StateQueue
 		}
 		while ${moduleIterator:Next(exists)}
 
-		Logger:Log["Ship", "Ship Module Inventory", "y"]
+		This:LogInfo["Ship Module Inventory", "y"]
 		if ${ModuleListQueryID.FirstKey(exists)} && ${verbose}
 		{
 			do
@@ -181,10 +181,10 @@ objectdef obj_Ship inherits obj_StateQueue
 				This.ModuleList_${moduleListName}:GetIterator[moduleIterator]
 				if ${moduleIterator:First(exists)}
 				{
-					Logger:Log["Ship", "Active module list ${moduleListName}:", "g"]
+					This:LogInfo["Active module list ${moduleListName}:", "g"]
 					do
 					{
-						Logger:Log["Ship", " Slot: ${MyShip.Module[${moduleIterator.Value}].ToItem.Slot} ${MyShip.Module[${moduleIterator.Value}].ToItem.Name} ", "-g"]
+						This:LogInfo[" Slot: ${MyShip.Module[${moduleIterator.Value}].ToItem.Slot} ${MyShip.Module[${moduleIterator.Value}].ToItem.Name}", "-g"]
 					}
 					while ${moduleIterator:Next(exists)}
 				}
@@ -196,7 +196,7 @@ objectdef obj_Ship inherits obj_StateQueue
 
 		if ${This.ModuleList_AB_MWD.Used} > 1
 		{
-			Logger:Log["Ship", "Warning: More than 1 Afterburner or MWD was detected, I will only use the first one.", "o"]
+			This:LogInfo["Warning: More than 1 Afterburner or MWD was detected, I will only use the first one.", "o"]
 		}
 		This:QueueState["WaitForInStation"]
 		This:QueueState["WaitForInSpace"]
@@ -309,7 +309,7 @@ objectdef obj_Ship inherits obj_StateQueue
 					}
 					else
 					{
-						Logger:Log["Ship", "unknown EW ${jamsIterator.Value}", "r"]
+						This:LogInfo["unknown EW ${jamsIterator.Value}", "r"]
 					}
 				}
 				while ${jamsIterator:Next(exists)}
@@ -319,7 +319,7 @@ objectdef obj_Ship inherits obj_StateQueue
 
 		if !${ActiveJammerSet.Used} != !${ActiveJammerList.Used}
 		{
-			Logger:Log["Ship", "not equal!", "r"]
+			This:LogCritical["not equal!", "r"]
 		}
 	}
 
@@ -361,7 +361,7 @@ objectdef obj_Ship inherits obj_StateQueue
 
 		if !${ActiveNeuterSet.Used} != !${ActiveNeuterList.Used}
 		{
-			Logger:Log["Ship", "not equal!", "r"]
+			This:LogCritical["not equal!", "r"]
 		}
 	}
 

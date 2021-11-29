@@ -206,7 +206,7 @@ objectdef obj_DroneControl inherits obj_StateQueue
 	{
 		if ${This.IsIdle}
 		{
-			Logger:Log["DroneControl", "Starting."]
+			This:LogInfo["Starting."]
 			ActiveNPC.MaxRange:Set[${droneEngageRange}]
 			variable int MaxTarget = ${MyShip.MaxLockedTargets}
 			if ${Me.MaxLockedTargets} < ${MyShip.MaxLockedTargets}
@@ -221,7 +221,7 @@ objectdef obj_DroneControl inherits obj_StateQueue
 
 	method Stop()
 	{
-		Logger:Log["DroneControl", "Stopping."]
+		This:LogInfo["Stopping."]
 		ActiveNPC.AutoLock:Set[FALSE]
 		This:Clear
 	}
@@ -509,7 +509,7 @@ objectdef obj_DroneControl inherits obj_StateQueue
 			if ${FightOrFlight.IsEngagingGankers} && !${FightOrFlight.currentTarget.Equal[0]} && !${FightOrFlight.currentTarget.Equal[${currentTarget}]}
 			{
 				currentTarget:Set[${FightOrFlight.currentTarget}]
-				Logger:Log["DroneControl", "Switching target to ganker \ar${Entity[${currentTarget}].Name}"]
+				This:LogInfo["Switching target to ganker \ar${Entity[${currentTarget}].Name}"]
 				finalized:Set[TRUE]
 			}
 
@@ -524,7 +524,7 @@ objectdef obj_DroneControl inherits obj_StateQueue
 						if ${Entity[${activeJammerIterator.Value}].IsLockedTarget} && ${Entity[${activeJammerIterator.Value}].Distance} < ${droneEngageRange}
 						{
 							currentTarget:Set[${activeJammerIterator.Value}]
-							Logger:Log["DroneControl", "Switching target to activate jammer \ar${Entity[${currentTarget}].Name}"]
+							This:LogInfo["Switching target to activate jammer \ar${Entity[${currentTarget}].Name}"]
 							finalized:Set[TRUE]
 							break
 						}
@@ -536,10 +536,12 @@ objectdef obj_DroneControl inherits obj_StateQueue
 					finalized:Set[TRUE]
 				}
 			}
-
+			; May switch target more than once so use this flag to avoid log spamming.
+			variable bool switched
 			if !${finalized} && !${Ship.IsHardToDealWithTarget[${currentTarget}]} && ${ActiveNPC.LockedTargetList.Used}
 			{
 				; Switch to difficult target for the ship
+				switched:Set[FALSE]
 				ActiveNPC.LockedTargetList:GetIterator[lockedTargetIterator]
 				do
 				{
@@ -547,16 +549,20 @@ objectdef obj_DroneControl inherits obj_StateQueue
 					(!${Ship.IsHardToDealWithTarget[${currentTarget}]} || ${Entity[${currentTarget}].Distance} > ${Entity[${lockedTargetIterator.Value}].Distance})
 					{
 						currentTarget:Set[${lockedTargetIterator.Value}]
-						Logger:Log["DroneControl", "Switching to target skipped by ship: \ar${Entity[${currentTarget}].Name}"]
+						switched:Set[TRUE]
 					}
 				}
 				while ${lockedTargetIterator:Next(exists)}
+				if ${switched}
+				{
+					This:LogInfo["Switching to target skipped by ship: \ar${Entity[${currentTarget}].Name}"]
+				}
 			}
 		}
 		elseif ${FightOrFlight.IsEngagingGankers} && !${FightOrFlight.currentTarget.Equal[0]}
 		{
 			currentTarget:Set[${FightOrFlight.currentTarget}]
-			Logger:Log["DroneControl", "Engaging ganker \ar${Entity[${currentTarget}].Name}"]
+			This:LogInfo["Engaging ganker \ar${Entity[${currentTarget}].Name}"]
 		}
 		elseif ${ActiveNPC.LockedTargetList.Used}
 		{
@@ -569,7 +575,7 @@ objectdef obj_DroneControl inherits obj_StateQueue
 					if ${Entity[${activeJammerIterator.Value}].IsLockedTarget} && ${Entity[${activeJammerIterator.Value}].Distance} < ${droneEngageRange}
 					{
 						currentTarget:Set[${activeJammerIterator.Value}]
-						Logger:Log["DroneControl", "Targeting activate jammer \ar${Entity[${currentTarget}].Name}"]
+						This:LogInfo["Targeting activate jammer \ar${Entity[${currentTarget}].Name}"]
 						break
 					}
 				}
@@ -593,7 +599,7 @@ objectdef obj_DroneControl inherits obj_StateQueue
 
 			if ${currentTarget} != 0
 			{
-				Logger:Log["DroneControl", "Primary target: \ar${Entity[${currentTarget}].Name}"]
+				This:LogInfo["Primary target: \ar${Entity[${currentTarget}].Name}"]
 			}
 		}
 
