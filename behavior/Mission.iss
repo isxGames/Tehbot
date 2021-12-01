@@ -244,6 +244,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		AllowDronesOnNpcClass:Add["Cruiser"]
 		AllowDronesOnNpcClass:Add["BattleCruiser"]
 		AllowDronesOnNpcClass:Add["Battleship"]
+		AllowDronesOnNpcClass:Add["Sentry"]
 	}
 
 	method ScheduleHalt()
