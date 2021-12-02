@@ -10,7 +10,7 @@ User beware: This bot is NOT designed to run missions with every ship configurat
 
 This bot is also not a good candidate for running missions you can barely do by hand. Exmamples are burner missions and trying to run higher level missions with low-skilled characters. Level 4s in a drake? Nope. Level 3s in a caracal? Probably not...
 
-This bot also lacks any kind of safety functions. It won't protect you if you try to run missions while someone has you wardecced, and if your ship doesn't have enough tank to survive a mission it won't warp out when you go into structure. Your aim should be to set your ship up so it can easily run missions - best practice is to make it so your ship would be fine if you let it sit in a mission and get shot at indefinitely
+Although the bot now has safety function to warp out when you are in danger, your aim should be to set your ship up so it can easily run missions - best practice is to make it so your ship would be fine if you let it sit in a mission and get shot at indefinitely.
 
 ### Mission Flow
 
