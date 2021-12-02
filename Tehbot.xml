@@ -247,6 +247,28 @@
 							</OnLoad>
 						</frame>
 
+						<Text name='LogLevelLabel'>
+							<X>1%</X>
+							<Y>7%</Y>
+							<Width>30%</Width>
+							<Height>3%</Height>
+							<Text>Log level: 0 - DEBUG, 1 - INFO, ... 4 - NONE</Text>
+						</Text>
+						<Slider name='LogLevel'>
+							<X>1%</X>
+							<Y>11%</Y>
+							<Width>20%</Width>
+							<Height>3%</Height>
+							<Border>1</Border>
+							<Range>3</Range>
+							<OnLoad>
+								This:SetValue[${Script[Tehbot].VariableScope.VariableScope.Config.Common.LogLevelBar:Dec}]
+							</OnLoad>
+							<OnChange>
+								Script[Tehbot].VariableScope.VariableScope.Config.Common:SetLogLevelBar[${This.Value:Inc}]
+							</OnChange>
+						</Slider>
+
 						<Checkbox name='Disable3D'>
 							<X>1%</X>
 							<Y>50%</Y>

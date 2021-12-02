@@ -94,12 +94,12 @@
 					<Text name='ActiveShieldBoostText'>
 						<X>1%</X>
 						<Y>28%</Y>
-						<Width>40%</Width>
+						<Width>50%</Width>
 						<Height>3%</Height>
 						<Text>If above is false, run shield boosters if shields drop below ${Script[Tehbot].VariableScope.AutoModule.Config.ActiveShieldBoost}%</Text>
 					</Text>
 					<Slider name='ActiveShieldBoost'>
-						<X>41%</X>
+						<X>46%</X>
 						<Y>27%</Y>
 						<Width>30%</Width>
 						<Height>4%</Height>
@@ -119,7 +119,7 @@
 						<Text>but only if Capacitor is above ${Script[Tehbot].VariableScope.AutoModule.Config.ActiveShieldCap}%</Text>
 					</Text>
 					<Slider name='ActiveShieldCap'>
-						<X>41%</X>
+						<X>46%</X>
 						<Y>31%</Y>
 						<Width>30%</Width>
 						<Height>4%</Height>
@@ -150,12 +150,12 @@
 					<Text name='ActiveArmorRepairText'>
 						<X>1%</X>
 						<Y>39%</Y>
-						<Width>40%</Width>
+						<Width>50%</Width>
 						<Height>3%</Height>
 						<Text>If above is false, run armor repairers if armor drops below ${Script[Tehbot].VariableScope.AutoModule.Config.ActiveArmorRepair}%</Text>
 					</Text>
 					<Slider name='ActiveArmorRepair'>
-						<X>41%</X>
+						<X>46%</X>
 						<Y>38%</Y>
 						<Width>30%</Width>
 						<Height>4%</Height>
@@ -175,7 +175,7 @@
 						<Text>but only if Capacitor is above ${Script[Tehbot].VariableScope.AutoModule.Config.ActiveArmorCap}%</Text>
 					</Text>
 					<Slider name='ActiveArmorCap'>
-						<X>41%</X>
+						<X>46%</X>
 						<Y>42%</Y>
 						<Width>30%</Width>
 						<Height>4%</Height>

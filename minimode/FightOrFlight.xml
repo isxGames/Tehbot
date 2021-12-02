@@ -59,6 +59,135 @@
 						<Wrap />
 						<Text>FightOrFlight is a MiniMode to detect and respond to threats. Fleeing is prefered but it will fight gankers when there is no choice.</Text>
 					</Text>
+
+					<Text name='LogLevelLabel'>
+						<X>1%</X>
+						<Y>7%</Y>
+						<Width>30%</Width>
+						<Height>3%</Height>
+						<Text>Log level: 0 - DEBUG, 1 - INFO, ... 4 - NONE</Text>
+					</Text>
+					<Slider name='LogLevel'>
+						<X>1%</X>
+						<Y>11%</Y>
+						<Width>20%</Width>
+						<Height>3%</Height>
+						<Border>1</Border>
+						<Range>3</Range>
+						<OnLoad>
+							This:SetValue[${Script[Tehbot].VariableScope.FightOrFlight.Config.LogLevelBar:Dec}]
+						</OnLoad>
+						<OnChange>
+							Script[Tehbot].VariableScope.FightOrFlight.Config:SetLogLevelBar[${This.Value:Inc}]
+						</OnChange>
+					</Slider>
+
+					<Text name='FleeShieldThresholdText'>
+						<X>1%</X>
+						<Y>17%</Y>
+						<Width>40%</Width>
+						<Height>3%</Height>
+						<Text>Flee if shields drop below ${Script[Tehbot].VariableScope.FightOrFlight.Config.FleeShieldThreshold}%</Text>
+					</Text>
+					<Slider name='FleeShieldThreshold'>
+						<X>41%</X>
+						<Y>17%</Y>
+						<Width>30%</Width>
+						<Height>4%</Height>
+						<Border>1</Border>
+						<OnLoad>
+							This:SetValue[${Script[Tehbot].VariableScope.FightOrFlight.Config.FleeShieldThreshold}]
+						</OnLoad>
+						<OnChange>
+							Script[Tehbot].VariableScope.FightOrFlight.Config:SetFleeShieldThreshold[${This.Value}]
+						</OnChange>
+					</Slider>
+
+					<Text name='FleeArmorThresholdText'>
+						<X>1%</X>
+						<Y>25%</Y>
+						<Width>40%</Width>
+						<Height>3%</Height>
+						<Text>Flee if armor drop below ${Script[Tehbot].VariableScope.FightOrFlight.Config.FleeArmorThreshold}%</Text>
+					</Text>
+					<Slider name='FleeArmorThreshold'>
+						<X>41%</X>
+						<Y>25%</Y>
+						<Width>30%</Width>
+						<Height>4%</Height>
+						<Border>1</Border>
+						<OnLoad>
+							This:SetValue[${Script[Tehbot].VariableScope.FightOrFlight.Config.FleeArmorThreshold}]
+						</OnLoad>
+						<OnChange>
+							Script[Tehbot].VariableScope.FightOrFlight.Config:SetFleeArmorThreshold[${This.Value}]
+						</OnChange>
+					</Slider>
+
+					<Text name='FleeHullThresholdText'>
+						<X>1%</X>
+						<Y>33%</Y>
+						<Width>40%</Width>
+						<Height>3%</Height>
+						<Text>Flee if hull drop below ${Script[Tehbot].VariableScope.FightOrFlight.Config.FleeHullThreshold}%</Text>
+					</Text>
+					<Slider name='FleeHullThreshold'>
+						<X>41%</X>
+						<Y>33%</Y>
+						<Width>30%</Width>
+						<Height>4%</Height>
+						<Border>1</Border>
+						<OnLoad>
+							This:SetValue[${Script[Tehbot].VariableScope.FightOrFlight.Config.FleeHullThreshold}]
+						</OnLoad>
+						<OnChange>
+							Script[Tehbot].VariableScope.FightOrFlight.Config:SetFleeHullThreshold[${This.Value}]
+						</OnChange>
+					</Slider>
+
+					<Text name='FleeCapacitorThresholdText'>
+						<X>1%</X>
+						<Y>41%</Y>
+						<Width>40%</Width>
+						<Height>3%</Height>
+						<Text>Flee if capacitor drop below ${Script[Tehbot].VariableScope.FightOrFlight.Config.FleeCapacitorThreshold}%</Text>
+					</Text>
+					<Slider name='FleeCapacitorThreshold'>
+						<X>41%</X>
+						<Y>41%</Y>
+						<Width>30%</Width>
+						<Height>4%</Height>
+						<Border>1</Border>
+						<OnLoad>
+							This:SetValue[${Script[Tehbot].VariableScope.FightOrFlight.Config.FleeCapacitorThreshold}]
+						</OnLoad>
+						<OnChange>
+							Script[Tehbot].VariableScope.FightOrFlight.Config:SetFleeCapacitorThreshold[${This.Value}]
+						</OnChange>
+					</Slider>
+
+					<Text name='FleeLocalRedThresholdText'>
+						<X>1%</X>
+						<Y>49%</Y>
+						<Width>50%</Width>
+						<Height>3%</Height>
+						<Text>Flee and stay in station if local has ${Script[Tehbot].VariableScope.FightOrFlight.Config.FleeLocalRedThreshold} pilots with bad standing.</Text>
+					</Text>
+					<Slider name='FleeLocalRedThreshold'>
+						<X>41%</X>
+						<Y>49%</Y>
+						<Width>30%</Width>
+						<Height>4%</Height>
+						<Border>1</Border>
+						<Range>20</Range>
+						<OnLoad>
+							This:SetValue[${Script[Tehbot].VariableScope.FightOrFlight.Config.FleeLocalRedThreshold}]
+						</OnLoad>
+						<OnChange>
+							Script[Tehbot].VariableScope.FightOrFlight.Config:SetFleeLocalRedThreshold[${This.Value}]
+						</OnChange>
+					</Slider>
+
 				</Children>
 			</Frame>
 		</Children>

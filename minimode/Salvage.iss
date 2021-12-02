@@ -9,11 +9,13 @@ objectdef obj_Configuration_Salvage inherits obj_Base_Configuration
 	{
 		This.CommonRef:AddSetting[LockCount, 2]
 		This.CommonRef:AddSetting[Size, "Small"]
+		This.CommonRef:AddSetting[LogLevelBar, LOG_INFO]
 	}
 
 	Setting(int, LockCount, SetLockCount)
 	Setting(string, Size, SetSize)
 	Setting(bool, SalvageYellow, SetSalvageYellow)
+	Setting(int, LogLevelBar, SetLogLevelBar)
 }
 
 
@@ -34,6 +36,8 @@ objectdef obj_Salvage inherits obj_StateQueue
 		This[parent]:Initialize
 		DynamicAddMiniMode("Salvage", "Salvage")
 		PulseFrequency:Set[500]
+
+		This.LogLevelBar:Set[${Config.LogLevelBar}]
 	}
 
 	method Start()
@@ -90,7 +94,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 		}
 		; elseif ${Me.InSpace}
 		; {
-		; 	Logger:Log["Salvage", " Salvage mini module has no equipments to do anything", "r"]
+		; 	This:LogCritical["Salvage mini module has no equipments to do anything"]
 		; }
 
 		; Ship.ModuleList.Count is NULL at early stage
@@ -212,7 +216,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 							Ship.ModuleList_TractorBeams:DeactivateOn[${wreckIterator.Value.ID}]
 						}
 
-							Logger:Log["Salvage", "Activating salvager - \ap${wreckIterator.Value.Name}"]
+							This:LogInfo["Activating salvager - \ap${wreckIterator.Value.Name}"]
 							Ship.ModuleList_Salvagers:ActivateOne[${wreckIterator.Value.ID}]
 						return FALSE
 					}
@@ -229,7 +233,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 						if !${Ship.ModuleList_TractorBeams.IsActiveOn[${wreckIterator.Value.ID}]} && \
 						   ${Ship.ModuleList_TractorBeams.InactiveCount} > 0
 						{
-							Logger:Log["Salvage", "Activating tractor beam - \ap${wreckIterator.Value.Name}"]
+							This:LogInfo["Activating tractor beam - \ap${wreckIterator.Value.Name}"]
 							Ship.ModuleList_TractorBeams:ActivateOne[${wreckIterator.Value.ID}]
 							return FALSE
 						}
@@ -319,7 +323,7 @@ objectdef obj_LootCans inherits obj_StateQueue
 				; BUG of ISXEVE: Finding windows, getting items and looting all are not working for Wrecks, only for cargos.
 				if !${EVEWindow[Inventory].ChildWindow[${wreckIterator.Value}](exists)}
 				{
-					Logger:Log["Salvage", "Opening - \ap${wreckIterator.Value.Name}"]
+					This:LogInfo["Opening - \ap${wreckIterator.Value.Name}"]
 					wreckIterator.Value:Open
 					return FALSE
 				}

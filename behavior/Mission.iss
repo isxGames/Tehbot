@@ -1264,7 +1264,8 @@ objectdef obj_Mission inherits obj_StateQueue
 				Ship.ModuleList_Siege:ActivateOne
 			}
 
-			if ${Ship.ModuleList_Weapon.Range} > ${Entity[${currentTarget}].Distance} || !${Config.RangeLimit}
+			; Shoot at out of range target to trigger them.
+			if ${Ship.ModuleList_Weapon.Range} > ${Entity[${currentTarget}].Distance} || !${Config.RangeLimit} || !${Entity[${currentTarget}].IsTargetingMe}
 			{
 				Ship.ModuleList_Weapon:ActivateAll[${currentTarget}]
 				Ship.ModuleList_TrackingComputer:ActivateAll[${currentTarget}]

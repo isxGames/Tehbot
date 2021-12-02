@@ -1,6 +1,32 @@
+objectdef obj_Configuration_FightOrFlight inherits obj_Base_Configuration
+{
+	method Initialize()
+	{
+		This[parent]:Initialize["FightOrFlight"]
+	}
+
+	method Set_Default_Values()
+	{
+		This.CommonRef:AddSetting[FleeShieldThreshold, 0]
+		This.CommonRef:AddSetting[FleeArmorThreshold, 50]
+		This.CommonRef:AddSetting[FleeHullThreshold, 100]
+		This.CommonRef:AddSetting[FleeCapacitorThreshold, 10]
+		This.CommonRef:AddSetting[FleeLocalRedThreshold, 7]
+		This.CommonRef:AddSetting[LogLevelBar, LOG_INFO]
+	}
+
+	Setting(int, FleeShieldThreshold, SetFleeShieldThreshold)
+	Setting(int, FleeArmorThreshold, SetFleeArmorThreshold)
+	Setting(int, FleeHullThreshold, SetFleeHullThreshold)
+	Setting(int, FleeCapacitorThreshold, SetFleeCapacitorThreshold)
+	Setting(int, FleeLocalRedThreshold, SetFleeLocalRedThreshold)
+	Setting(int, LogLevelBar, SetLogLevelBar)
+}
 
 objectdef obj_FightOrFlight inherits obj_StateQueue
 {
+	variable obj_Configuration_FightOrFlight Config
+
 	variable bool IsWarpScrambled = FALSE
 	variable bool IsOtherPilotsDetected = FALSE
 	variable bool IsAttackedByGankers = FALSE
@@ -20,6 +46,8 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 
 		This:BuildPC
 		NPCs:AddAllNPCs
+
+		This.LogLevelBar:Set[${Config.LogLevelBar}]
 	}
 
 	method Start()
@@ -233,7 +261,10 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			This:QueueState["FightOrFlight"]
 			return TRUE
 		}
-		elseif ${MyShip.ShieldPct.Int} < 0 || ${MyShip.ArmorPct.Int} < 50 || ${MyShip.StructurePct.Int} < 100  || ${MyShip.CapacitorPct.Int} < 5
+		elseif ${MyShip.ShieldPct.Int} < ${Config.FleeShieldThreshold} || \
+			${MyShip.ArmorPct.Int} < ${Config.FleeArmorThreshold} || \
+			${MyShip.StructurePct.Int} < ${Config.FleeHullThreshold} || \
+			${MyShip.CapacitorPct.Int} < ${Config.FleeCapacitorThreshold}
 		{
 			; TODO align and 75% speed before entering flee status, in case last second.
 			This:LogInfo["PVE Low HP - Shield: ${MyShip.ShieldPct.Int}%, Armor: ${MyShip.ArmorPct.Int}%, Hull: ${MyShip.StructurePct.Int}%, Capacitor: ${MyShip.CapacitorPct.Int}%, I should flee."]
@@ -451,7 +482,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		variable index:pilot pilotIndex
 		EVE:GetLocalPilots[pilotIndex]
 
-		if ${pilotIndex.Used} < 2
+		if ${pilotIndex.Used} < ${Config.FleeLocalRedThreshold}
 		{
 			return 0
 		}

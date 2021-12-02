@@ -117,6 +117,7 @@ objectdef obj_Configuration_Common
 
 		This.CommonRef:AddSetting[Tehbot_Mode,"MiniMode"]
 		This.CommonRef:AddSetting[ActiveTab,Status]
+		This.CommonRef:AddSetting[LogLevelBar, LOG_INFO]
 	}
 
 	Setting(string, Tehbot_Mode, SetTehbot_Mode)
@@ -128,4 +129,5 @@ objectdef obj_Configuration_Common
 	Setting(string, ActiveTab, SetActiveTab)
 	Setting(bool, Hidden, SetHidden)
 	Setting(int64, CharID, SetCharID)
+	Setting(int, LogLevelBar, SetLogLevelBar)
 }

@@ -702,9 +702,31 @@
 						</OnMouseExit>
 					</combobox>
 
+					<Text name='LogLevelLabel'>
+						<X>1%</X>
+						<Y>7%</Y>
+						<Width>30%</Width>
+						<Height>3%</Height>
+						<Text>Log level: 0 - DEBUG, 1 - INFO, ... 4 - NONE</Text>
+					</Text>
+					<Slider name='LogLevel'>
+						<X>1%</X>
+						<Y>11%</Y>
+						<Width>20%</Width>
+						<Height>3%</Height>
+						<Border>1</Border>
+						<Range>3</Range>
+						<OnLoad>
+							This:SetValue[${Script[Tehbot].VariableScope.Mission.Config.LogLevelBar:Dec}]
+						</OnLoad>
+						<OnChange>
+							Script[Tehbot].VariableScope.Mission.Config:SetLogLevelBar[${This.Value:Inc}]
+						</OnChange>
+					</Slider>
+
 					<Text name='AmmoSupplyTitle'>
 						<X>1%</X>
-						<Y>33%</Y>
+						<Y>17%</Y>
 						<Width>30%</Width>
 						<Height>5%</Height>
 						<Alignment>Center</Alignment>
@@ -720,7 +742,7 @@
 					</Text>
 					<Text name='AmmoSupplyValue'>
 						<X>1%</X>
-						<Y>37%</Y>
+						<Y>21%</Y>
 						<Width>30%</Width>
 						<Height>5%</Height>
 						<Alignment>Center</Alignment>
@@ -738,7 +760,7 @@
 						<Font template='Button.Font' />
 						<BackgroundColor>FF000000</BackgroundColor>
 						<X>22%</X>
-						<Y>36%</Y>
+						<Y>20%</Y>
 						<Width>3%</Width>
 						<Height>5%</Height>
 						<Text>1</Text>
@@ -757,7 +779,7 @@
 						<Font template='Button.Font' />
 						<BackgroundColor>FF000000</BackgroundColor>
 						<X>25%</X>
-						<Y>36%</Y>
+						<Y>20%</Y>
 						<Width>3%</Width>
 						<Height>5%</Height>
 						<Text>10</Text>
@@ -776,7 +798,7 @@
 						<Font template='Button.Font' />
 						<BackgroundColor>FF000000</BackgroundColor>
 						<X>28%</X>
-						<Y>36%</Y>
+						<Y>20%</Y>
 						<Width>3%</Width>
 						<Height>5%</Height>
 						<Text>100</Text>
@@ -795,7 +817,7 @@
 						<Font template='Button.Font' />
 						<BackgroundColor>FF000000</BackgroundColor>
 						<X>1%</X>
-						<Y>36%</Y>
+						<Y>20%</Y>
 						<Width>3%</Width>
 						<Height>5%</Height>
 						<Text>100</Text>
@@ -814,7 +836,7 @@
 						<Font template='Button.Font' />
 						<BackgroundColor>FF000000</BackgroundColor>
 						<X>4%</X>
-						<Y>36%</Y>
+						<Y>20%</Y>
 						<Width>3%</Width>
 						<Height>5%</Height>
 						<Text>10</Text>
@@ -833,7 +855,7 @@
 						<Font template='Button.Font' />
 						<BackgroundColor>FF000000</BackgroundColor>
 						<X>7%</X>
-						<Y>36%</Y>
+						<Y>20%</Y>
 						<Width>3%</Width>
 						<Height>5%</Height>
 						<Text>1</Text>
@@ -851,10 +873,10 @@
 
 					<Checkbox name='RangeLimit'>
 						<X>1%</X>
-						<Y>43%</Y>
+						<Y>27%</Y>
 						<Width>30%</Width>
 						<Height>5%</Height>
-						<Text>Range Limit</Text>
+						<Text>No shooting out of range targets</Text>
 						<OnLoad>
 							if ${Script[Tehbot].VariableScope.Mission.Config.RangeLimit}
 							{
@@ -865,7 +887,7 @@
 							Script[Tehbot].VariableScope.Mission.Config:SetRangeLimit[${This.Checked}]
 						</OnLeftClick>
 						<OnMouseEnter>
-							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText["If this is checked, only shoot things if they are in range of your weapons.  Uncheck it if you want the bot to shoot things even outside range to agro them and get them moving towards you."]
+							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText["Only shoot things if they are in range of your weapons unless they are not triggered."]
 						</OnMouseEnter>
 						<OnMouseExit>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
@@ -873,8 +895,8 @@
 					</Checkbox>
 
 					<Checkbox name='DeclineLowSec'>
-						<X>13%</X>
-						<Y>43%</Y>
+						<X>1%</X>
+						<Y>31%</Y>
 						<Width>30%</Width>
 						<Height>5%</Height>
 						<Text>Decline Low-Sec Missions</Text>
@@ -889,6 +911,75 @@
 						</OnLeftClick>
 						<OnMouseEnter>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText["If this is checked, the bot will decline missions with low-sec warning."]
+						</OnMouseEnter>
+						<OnMouseExit>
+							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
+						</OnMouseExit>
+					</Checkbox>
+
+					<Checkbox name='AggressiveMode'>
+						<X>1%</X>
+						<Y>35%</Y>
+						<Width>30%</Width>
+						<Height>5%</Height>
+						<Text>Aggressive Mode</Text>
+						<OnLoad>
+							if ${Script[Tehbot].VariableScope.Mission.Config.AggressiveMode}
+							{
+								This:SetChecked
+							}
+						</OnLoad>
+						<OnLeftClick>
+							Script[Tehbot].VariableScope.Mission.Config:SetAggressiveMode[${This.Checked}]
+						</OnLeftClick>
+						<OnMouseEnter>
+							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText["The bot will lock and shoot all enemies together in the room disregarding whether they are triggered, more effciency with more risk."]
+						</OnMouseEnter>
+						<OnMouseExit>
+							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
+						</OnMouseExit>
+					</Checkbox>
+
+					<Checkbox name='IgnoreNPCSentries'>
+						<X>1%</X>
+						<Y>39%</Y>
+						<Width>30%</Width>
+						<Height>5%</Height>
+						<Text>Ignore NPC Sentries</Text>
+						<OnLoad>
+							if ${Script[Tehbot].VariableScope.Mission.Config.IgnoreNPCSentries}
+							{
+								This:SetChecked
+							}
+						</OnLoad>
+						<OnLeftClick>
+							Script[Tehbot].VariableScope.Mission.Config:SetIgnoreNPCSentries[${This.Checked}]
+						</OnLeftClick>
+						<OnMouseEnter>
+							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText["The bot will ignore NPC sentries unless they web or neut you."]
+						</OnMouseEnter>
+						<OnMouseExit>
+							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
+						</OnMouseExit>
+					</Checkbox>
+
+					<Checkbox name='DeactivateSiegeModuleEarly'>
+						<X>1%</X>
+						<Y>43%</Y>
+						<Width>30%</Width>
+						<Height>5%</Height>
+						<Text>DeactivateSiegeModuleEarly</Text>
+						<OnLoad>
+							if ${Script[Tehbot].VariableScope.Mission.Config.DeactivateSiegeModuleEarly}
+							{
+								This:SetChecked
+							}
+						</OnLoad>
+						<OnLeftClick>
+							Script[Tehbot].VariableScope.Mission.Config:SetDeactivateSiegeModuleEarly[${This.Checked}]
+						</OnLeftClick>
+						<OnMouseEnter>
+							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText["The bot will try to deactivate siege module earlier to enter warp faster."]
 						</OnMouseEnter>
 						<OnMouseExit>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
