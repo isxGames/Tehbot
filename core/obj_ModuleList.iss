@@ -7,17 +7,31 @@ objectdef obj_ModuleList
 		ModuleID:Insert[${ID}]
 	}
 
-	method ActivateOne(int64 targetID=-1, int deactivateAfterCyclePercent=-1)
+	method ActivateOne(int64 targetID = TARGET_NA)
 	{
 		variable iterator moduleIDIterator
 		ModuleID:GetIterator[moduleIDIterator]
+		; Strict inactive first.
 		if ${moduleIDIterator:First(exists)}
 		{
 			do
 			{
-				if !${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsModuleActive}
+				if !${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsActive}
 				{
-					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:ActivateModule[${targetID}, ${deactivateAfterCyclePercent}]
+					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:GiveInstruction[INSTRUCTION_ACTIVATE_ON, ${targetID}]
+					return
+				}
+			}
+			while ${moduleIDIterator:Next(exists)}
+		}
+		; Fallback to pick from current active modules.
+		if ${moduleIDIterator:First(exists)}
+		{
+			do
+			{
+				if !${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsInstructionMatch[INSTRUCTION_ACTIVATE_ON, ${targetID}]}
+				{
+					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:GiveInstruction[INSTRUCTION_ACTIVATE_ON, ${targetID}]
 					return
 				}
 			}
@@ -25,7 +39,7 @@ objectdef obj_ModuleList
 		}
 	}
 
-	method ActivateAll(int64 targetID=-1, int deactivateAfterCyclePercent=-1)
+	method ActivateAll(int64 targetID = TARGET_NA)
 	{
 		variable iterator moduleIDIterator
 		ModuleID:GetIterator[moduleIDIterator]
@@ -33,11 +47,22 @@ objectdef obj_ModuleList
 		{
 			do
 			{
-				if !${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsModuleActiveOn[${targetID}]}
-				{
-					; Will deactivate the module if the current targetID is not the same
-					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:ActivateModule[${targetID}, ${deactivateAfterCyclePercent}]
-				}
+				Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:GiveInstruction[INSTRUCTION_ACTIVATE_ON, ${targetID}]
+			}
+			while ${moduleIDIterator:Next(exists)}
+		}
+	}
+
+	method ChangeAmmoFor(int64 targetID = TARGET_NA)
+	{
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
+		{
+			do
+			{
+				; Will auto swtich target and change ammo.
+				Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:GiveInstruction[INSTRUCTION_ACTIVATE_FOR, ${targetID}]
 			}
 			while ${moduleIDIterator:Next(exists)}
 		}
@@ -51,26 +76,41 @@ objectdef obj_ModuleList
 		{
 			do
 			{
-				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsModuleActive}
+				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsActive}
 				{
-					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:DeactivateModule
+					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:GiveInstruction[INSTRUCTION_DEACTIVATE]
 				}
 			}
 			while ${moduleIDIterator:Next(exists)}
 		}
 	}
 
-	method DeactivateOneNotOn(int64 targetID=-1)
+	method DeactivateOneNotOn(int64 targetID)
 	{
 		variable iterator moduleIDIterator
 		ModuleID:GetIterator[moduleIDIterator]
+
+		; Already deactivating one?
 		if ${moduleIDIterator:First(exists)}
 		{
 			do
 			{
-				if !${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsModuleActiveOn[${targetID}]} && ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsModuleActive}
+				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsInstructionMatch[INSTRUCTION_DEACTIVATE]}
 				{
-					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:DeactivateModule
+					return
+				}
+			}
+			while ${moduleIDIterator:Next(exists)}
+		}
+
+		; Deactivate if not.
+		if ${moduleIDIterator:First(exists)}
+		{
+			do
+			{
+				if !${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsModuleActiveOn[${targetID}]} && ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsActive}
+				{
+					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:GiveInstruction[INSTRUCTION_DEACTIVATE]
 					return
 				}
 			}
@@ -78,7 +118,7 @@ objectdef obj_ModuleList
 		}
 	}
 
-	method DeactivateOn(int64 targetID=-1)
+	method DeactivateOn(int64 targetID)
 	{
 		variable iterator moduleIDIterator
 		ModuleID:GetIterator[moduleIDIterator]
@@ -88,7 +128,7 @@ objectdef obj_ModuleList
 			{
 				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsModuleActiveOn[${targetID}]}
 				{
-					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:DeactivateModule
+					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:GiveInstruction[INSTRUCTION_DEACTIVATE]
 				}
 			}
 			while ${moduleIDIterator:Next(exists)}
@@ -103,7 +143,7 @@ objectdef obj_ModuleList
 		{
 			do
 			{
-				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsModuleActiveOn[${targetID}]}
+				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsInstructionMatch[INSTRUCTION_ACTIVATE_ON, ${targetID}]}
 				{
 					return TRUE
 				}
@@ -127,7 +167,7 @@ objectdef obj_ModuleList
 		{
 			do
 			{
-				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsModuleActive}
+				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsActive}
 				{
 					countActive:Inc
 				}
@@ -165,7 +205,7 @@ objectdef obj_ModuleList
 		{
 			do
 			{
-				if !${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsModuleActive} && !${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsReloading}
+				if !${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsInstructionMatch[INSTRUCTION_ACTIVATE_ON]}
 				{
 					countInactive:Inc
 				}

@@ -1293,7 +1293,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			if ${Ship.ModuleList_Weapon.Range} > ${Entity[${currentTarget}].Distance} || !${Config.RangeLimit} || !${Entity[${currentTarget}].IsTargetingMe}
 			{
 				Ship.ModuleList_Weapon:ActivateAll[${currentTarget}]
-				Ship.ModuleList_TrackingComputer:ActivateAll[${currentTarget}]
+				; Ship.ModuleList_TrackingComputer:ActivateAll[${currentTarget}]
 			}
 			if ${Entity[${currentTarget}].Distance} <= ${Ship.ModuleList_TargetPainter.Range}
 			{
