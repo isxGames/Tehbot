@@ -1159,22 +1159,40 @@ objectdef obj_Mission inherits obj_StateQueue
 				}
 			}
 
-			if !${finalized} && ${Ship.IsHardToDealWithTarget[${currentTarget}]} && ${ActiveNPCs.LockedTargetList.Used}
+			if !${finalized} && ${ActiveNPCs.LockedTargetList.Used} && (${Ship.IsHardToDealWithTarget[${currentTarget}]} || ${This.IsStructure[${currentTarget}]})
 			{
-				; Switch to easier target
-				switched:Set[FALSE]
 				ActiveNPCs.LockedTargetList:GetIterator[lockedTargetIterator]
-				do
+				if ${lockedTargetIterator:First(exists)}
 				{
-					if !${Ship.IsHardToDealWithTarget[${lockedTargetIterator.Value}]} && \
-					(${Ship.IsHardToDealWithTarget[${currentTarget}]} || ${Entity[${currentTarget}].Distance} > ${Entity[${lockedTargetIterator.Value}].Distance})
+					do
 					{
-						currentTarget:Set[${lockedTargetIterator.Value}]
-						maxAttackTime:Set[${Math.Calc[${LavishScript.RunningTime} + (${switchTargetAfter} * 1000)]}]
-						switched:Set[TRUE]
+						if ${This.IsStructure[${currentTarget}]} && !${This.IsStructure[${lockedTargetIterator.Value}]}
+						{
+							This:LogInfo["Pritorizing non-structure targets."]
+							currentTarget:Set[0]
+							maxAttackTime:Set[0]
+							return FALSE
+						}
 					}
+					while ${lockedTargetIterator:Next(exists)}
 				}
-				while ${lockedTargetIterator:Next(exists)}
+
+				; Switched to easier target.
+				switched:Set[FALSE]
+				if ${lockedTargetIterator:First(exists)}
+				{
+					do
+					{
+						if !${Ship.IsHardToDealWithTarget[${lockedTargetIterator.Value}]} && \
+						(${Ship.IsHardToDealWithTarget[${currentTarget}]} || ${Entity[${currentTarget}].Distance} > ${Entity[${lockedTargetIterator.Value}].Distance})
+						{
+							currentTarget:Set[${lockedTargetIterator.Value}]
+							maxAttackTime:Set[${Math.Calc[${LavishScript.RunningTime} + (${switchTargetAfter} * 1000)]}]
+							switched:Set[TRUE]
+						}
+					}
+					while ${lockedTargetIterator:Next(exists)}
+				}
 				if ${switched}
 				{
 					This:LogInfo["Switching to easier target: \ar${Entity[${currentTarget}].Name}"]
@@ -1204,28 +1222,35 @@ objectdef obj_Mission inherits obj_StateQueue
 			{
 				; Priortize the closest target which is not hard to deal with to
 				; reduce the frequency of switching ammo.
-				variable int64 hardToDealWithTarget = 0
+				variable int64 lowPriorityTarget = 0
 				ActiveNPCs.LockedTargetList:GetIterator[lockedTargetIterator]
-				do
+				if ${lockedTargetIterator:First(exists)}
 				{
-					if ${Ship.IsHardToDealWithTarget[${lockedTargetIterator.Value}]}
+					do
 					{
-						hardToDealWithTarget:Set[${lockedTargetIterator.Value}]
+						if ${Ship.IsHardToDealWithTarget[${lockedTargetIterator.Value}]} || ${This.IsStructure[${lockedTargetIterator.Value}]}
+						{
+							; Structure priority is lower than ships.
+							if !${This.IsStructure[${lockedTargetIterator.Value}]} || ${lowPriorityTarget.Equal[0]}
+							{
+								lowPriorityTarget:Set[${lockedTargetIterator.Value}]
+							}
+						}
+						elseif ${currentTarget} == 0 || ${Entity[${currentTarget}].Distance} > ${Entity[${lockedTargetIterator.Value}].Distance}
+						{
+							; if ${currentTarget} != 0
+							; 	This:LogInfo["there is something closer ${Entity[${lockedTargetIterator.Value}].Name}"]
+							currentTarget:Set[${lockedTargetIterator.Value}]
+							maxAttackTime:Set[${Math.Calc[${LavishScript.RunningTime} + (${switchTargetAfter} * 1000)]}]
+						}
 					}
-					elseif ${currentTarget} == 0 || ${Entity[${currentTarget}].Distance} > ${Entity[${lockedTargetIterator.Value}].Distance}
-					{
-						; if ${currentTarget} != 0
-						; 	This:LogInfo["there is something closer ${Entity[${lockedTargetIterator.Value}].Name}"]
-						currentTarget:Set[${lockedTargetIterator.Value}]
-						maxAttackTime:Set[${Math.Calc[${LavishScript.RunningTime} + (${switchTargetAfter} * 1000)]}]
-					}
+					while ${lockedTargetIterator:Next(exists)}
 				}
-				while ${lockedTargetIterator:Next(exists)}
 
 				if ${currentTarget} == 0
 				{
 					; This:LogInfo["no easy target"]
-					currentTarget:Set[${hardToDealWithTarget}]
+					currentTarget:Set[${lowPriorityTarget}]
 					maxAttackTime:Set[${Math.Calc[${LavishScript.RunningTime} + (${switchTargetAfter} * 1000)]}]
 				}
 			}
@@ -2894,6 +2919,18 @@ objectdef obj_Mission inherits obj_StateQueue
 			}
 			while ${i:Next(exists)}
 		}
+	}
+
+	member:bool IsStructure(int64 targetID)
+	{
+		variable string targetClass
+		targetClass:Set[${NPCData.NPCType[${Entity[${targetID}].GroupID}]}]
+		if ${AllowDronesOnNpcClass.Contains[${targetClass}]}
+		{
+			return FALSE
+		}
+
+		return TRUE
 	}
 }
 
