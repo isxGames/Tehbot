@@ -124,6 +124,13 @@ objectdef obj_Module inherits obj_StateQueue
 		This:_resetTimers
 	}
 
+	method ConfigureAmmo(string shortRangeAmmo, string longRangeAmmo)
+	{
+		This:LogDebug["${This.Name} configured ammo as ${shortRangeAmmo} + ${longRangeAmmo}"]
+		Ammo:Set[${shortRangeAmmo}]
+		LongRangeAmmo:Set[${longRangeAmmo}]
+	}
+
 	; Deactivate module when target doesn't match or need to change ammo, then activate it on specified target.
 	; Instruction is erased when the target is destroyed.
 	method OperateActivateOn(int64 targetID)
@@ -401,17 +408,13 @@ objectdef obj_Module inherits obj_StateQueue
 
 	member:string _pickOptimalAmmo(int64 targetID)
 	{
-		; echo picking ${This.ToItem.GroupID} GROUP_ENERGYWEAPON
 		switch ${This.ToItem.GroupID}
 		{
 			case GROUP_ENERGYWEAPON
 			case GROUP_PROJECTILEWEAPON
-				; echo picking turret
 				return ${This._pickOptimalAmmoForTurret[${InstructionTargetID}]}
-				; break
 			case GROUP_TRACKINGCOMPUTER
 				return ${This._pickOptimalScriptTrackingComputerScript[${InstructionTargetID}]}
-				; break
 		}
 
 		return ""
@@ -430,7 +433,6 @@ objectdef obj_Module inherits obj_StateQueue
 		variable string longRangeAmmo
 
 		; This:LogDebug["_pickOptimalAmmoForTurret"]
-		; echo "_pickOptimalAmmoForTurret"
 
 		; Set fallback ammo
 		if !${Ammo.NotNULLOrEmpty} || ${MyShip.Cargo[${Ammo}].Quantity} == 0
@@ -464,10 +466,6 @@ objectdef obj_Module inherits obj_StateQueue
 		{
 			longRangeAmmo:Set[${LongRangeAmmo}]
 		}
-
-		; echo "_pickOptimalAmmoForTurret  from ${shortRangeAmmo}  ${longRangeAmmo}"
-
-		; This:LogDebug["_pickOptimalAmmoForTurret from ${shortRangeAmmo}  ${longRangeAmmo}"]
 
 		if !${This.Charge(exists)} || \
 			${This.Charge.Type.Find[${shortRangeAmmo}]} || \

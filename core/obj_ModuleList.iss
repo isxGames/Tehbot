@@ -53,7 +53,7 @@ objectdef obj_ModuleList
 		}
 	}
 
-	method ChangeAmmoFor(int64 targetID = TARGET_NA)
+	method ConfigureAmmo(string shortRangeAmmo, string longRangeAmmo)
 	{
 		variable iterator moduleIDIterator
 		ModuleID:GetIterator[moduleIDIterator]
@@ -61,7 +61,20 @@ objectdef obj_ModuleList
 		{
 			do
 			{
-				; Will auto swtich target and change ammo.
+				Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:ConfigureAmmo[${shortRangeAmmo}, ${longRangeAmmo}]
+			}
+			while ${moduleIDIterator:Next(exists)}
+		}
+	}
+
+	method ActivateFor(int64 targetID = TARGET_NA)
+	{
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
+		{
+			do
+			{
 				Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:GiveInstruction[INSTRUCTION_ACTIVATE_FOR, ${targetID}]
 			}
 			while ${moduleIDIterator:Next(exists)}
