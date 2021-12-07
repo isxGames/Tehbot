@@ -390,19 +390,19 @@ objectdef obj_Module inherits obj_StateQueue
 		}
 	}
 
-	method _changeAmmo(string ammo, int ammoAmount)
+	method _changeAmmo(int64 ammoID, int ammoAmount)
 	{
 		if ${_lastChangeAmmoTimestamp} == 0
 		{
-			This:LogDebug["Switching ${This.Name} ammo to \ay${ammo}"]
+			This:LogDebug["Switching ${This.Name} ammo to \ay${ammoID}"]
 			_lastChangeAmmoTimestamp:Set[${LavishScript.RunningTime}]
-			This:ChangeAmmo[${ammo}, ${ammoAmount}]
+			This:ChangeAmmo[${ammoID}, ${ammoAmount}]
 		}
 		elseif ${LavishScript.RunningTime} > ${Math.Calc[${_lastChangeAmmoTimestamp} + ${_changeAmmoRetryInterval}]}
 		{
-			This:LogDebug["Retrying ${This.Name} switching ammo to \ay${ammo}"]
+			This:LogDebug["Retrying ${This.Name} switching ammo to \ay${ammoID}"]
 			_lastChangeAmmoTimestamp:Set[${LavishScript.RunningTime}]
-			This:ChangeAmmo[${ammo}, ${ammoAmount}]
+			This:ChangeAmmo[${ammoID}, ${ammoAmount}]
 		}
 	}
 
