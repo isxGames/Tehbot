@@ -67,6 +67,20 @@ objectdef obj_ModuleList
 		}
 	}
 
+	method ReloadDefaultAmmo()
+	{
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
+		{
+			do
+			{
+				Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:GiveInstruction[INSTRUCTION_RELOAD_AMMO, TARGET_NA]
+			}
+			while ${moduleIDIterator:Next(exists)}
+		}
+	}
+
 	method DeactivateAll()
 	{
 		variable iterator moduleIDIterator
@@ -222,24 +236,6 @@ objectdef obj_ModuleList
 	member:float OptimalRange()
 	{
 		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].OptimalRange}
-	}
-
-	member:bool IncludeModule(int64 moduleID)
-	{
-		variable iterator moduleIDIterator
-		ModuleID:GetIterator[moduleIDIterator]
-		if ${moduleIDIterator:First(exists)}
-		{
-			do
-			{
-				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].ID} == ${moduleID}
-				{
-					return TRUE
-				}
-			}
-			while ${moduleIDIterator:Next(exists)}
-		}
-		return FALSE
 	}
 
 	member:string GetFallthroughObject()

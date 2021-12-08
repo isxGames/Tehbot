@@ -76,7 +76,8 @@ objectdef obj_Module inherits obj_StateQueue
 			case INSTRUCTION_DEACTIVATE
 				This:OperateDeactivate
 				break
-			case INSTRUCTION_LOAD_AMMO
+			case INSTRUCTION_RELOAD_AMMO
+				This:OperateReloadAmmo
 				break
 		}
 
@@ -134,9 +135,12 @@ objectdef obj_Module inherits obj_StateQueue
 
 	method ConfigureAmmo(string shortRangeAmmo, string longRangeAmmo)
 	{
-		This:LogDebug["${This.Name} configured ammo as ${shortRangeAmmo} + ${longRangeAmmo}"]
-		Ammo:Set[${shortRangeAmmo}]
-		LongRangeAmmo:Set[${longRangeAmmo}]
+		if (${shortRangeAmmo.NotNULLOrEmpty} && !${shortRangeAmmo.Equal[${Ammo}]}) || (${longRangeAmmo.NotNULLOrEmpty} && !${longRangeAmmo.Equal[${LongRangeAmmo}]})
+		{
+			This:LogDebug["${This.Name} configured ammo as ${shortRangeAmmo} + ${longRangeAmmo}"]
+			Ammo:Set[${shortRangeAmmo}]
+			LongRangeAmmo:Set[${longRangeAmmo}]
+		}
 	}
 
 	; Deactivate module when target doesn't match or need to change ammo, then activate it on specified target.
@@ -208,7 +212,7 @@ objectdef obj_Module inherits obj_StateQueue
 	; Load the optimal ammo and activate module,
 	; Instruction is kept forever.
 	; Used with tracking computers, guidance computers, etc.
-	; The difference from OperateActivateOn is that it won't deactivate module just because target changed.
+	; The difference from OperateActivateOn is that it won't deactivate the module just because target changed.
 	; TODO: Add unload script path when the ISXEVE api is fixed.
 	method OperateActivateFor(int64 targetID)
 	{
@@ -268,9 +272,37 @@ objectdef obj_Module inherits obj_StateQueue
 		}
 	}
 
-	method OperateLoadAmmo()
+	; Load the default ammo,
+	; Instruction is erased when ammo type and amount matches.
+	; Used while warping.
+	method OperateReloadAmmo()
 	{
-		; TODO
+		variable string defaultAmmo
+		if ${This.IsActive}
+		{
+			This:_deactivate
+			return
+		}
+		else
+		{
+			_lastDeactivationTimestamp:Set[0]
+
+			defaultAmmo:Set[${This._getShortRangeAmmo}]
+			if ${defaultAmmo.NotNULLOrEmpty} && \
+			   (!${defaultAmmo.Equal[${This.Charge.Type}]} || \
+			    ((${This.CurrentCharges} < ${This.MaxCharges}) && \
+				 (${This.MaxCharges} <= ${MyShip.Cargo[${ammo}].Quantity})))
+			{
+				This:_findAndChangeAmmo[${defaultAmmo}]
+				return
+			}
+			else
+			{
+				; Finished
+				This:_resetState
+				return
+			}
+		}
 	}
 
 ;;;;;;;;;;private
@@ -462,42 +494,11 @@ objectdef obj_Module inherits obj_StateQueue
 		}
 
 		variable string shortRangeAmmo
+		shortRangeAmmo:Set[${This._getShortRangeAmmo}]
+
 		variable string longRangeAmmo
+		longRangeAmmo:Set[${This._getLongRangeAmmo}]
 
-		; This:LogDebug["_pickOptimalAmmoForTurret"]
-
-		; Set fallback ammo
-		if !${Ammo.NotNULLOrEmpty} || ${MyShip.Cargo[${Ammo}].Quantity} == 0
-		{
-			if ${This.ToItem.GroupID} == GROUP_ENERGYWEAPON
-			{
-				shortRangeAmmo:Set["Conflagration L"]
-			}
-			if ${This.ToItem.GroupID} == GROUP_PROJECTILEWEAPON
-			{
-				shortRangeAmmo:Set["Hail L"]
-			}
-		}
-		else
-		{
-			shortRangeAmmo:Set[${Ammo}]
-		}
-
-		if !${LongRangeAmmo.NotNULLOrEmpty} || ${MyShip.Cargo[${LongRangeAmmo}].Quantity} == 0
-		{
-			if ${This.ToItem.GroupID} == GROUP_ENERGYWEAPON
-			{
-				longRangeAmmo:Set["Scorch L"]
-			}
-			if ${This.ToItem.GroupID} == GROUP_PROJECTILEWEAPON
-			{
-				longRangeAmmo:Set["Barrage L"]
-			}
-		}
-		else
-		{
-			longRangeAmmo:Set[${LongRangeAmmo}]
-		}
 
 		if !${This.Charge(exists)} || \
 			${This.Charge.Type.Find[${shortRangeAmmo}]} || \
@@ -597,6 +598,48 @@ objectdef obj_Module inherits obj_StateQueue
 		}
 
 		return ""
+	}
+
+	member:string _getShortRangeAmmo()
+	{
+		if !${Ammo.NotNULLOrEmpty} || ${MyShip.Cargo[${Ammo}].Quantity} == 0
+		{
+			if ${This.ToItem.GroupID} == GROUP_ENERGYWEAPON
+			{
+				return "Conflagration L"
+			}
+			if ${This.ToItem.GroupID} == GROUP_PROJECTILEWEAPON
+			{
+				return "Hail L"
+			}
+		}
+		else
+		{
+			return "${Ammo}"
+		}
+
+		This:LogCritical["not implemented"]
+	}
+
+	member:string _getLongRangeAmmo()
+	{
+		if !${LongRangeAmmo.NotNULLOrEmpty} || ${MyShip.Cargo[${LongRangeAmmo}].Quantity} == 0
+		{
+			if ${This.ToItem.GroupID} == GROUP_ENERGYWEAPON
+			{
+				return "Scorch L"
+			}
+			if ${This.ToItem.GroupID} == GROUP_PROJECTILEWEAPON
+			{
+				return "Barrage L"
+			}
+		}
+		else
+		{
+			return "${LongRangeAmmo}"
+		}
+
+		This:LogCritical["not implemented"]
 	}
 
 	method _findAndChangeAmmo(string ammo)

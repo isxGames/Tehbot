@@ -87,6 +87,6 @@
 #define INSTRUCTION_NONE																	                    0
 #define INSTRUCTION_ACTIVATE_ON																                    1
 #define INSTRUCTION_DEACTIVATE																                    2
-#define INSTRUCTION_LOAD_AMMO																                    3
+#define INSTRUCTION_RELOAD_AMMO																                    3
 #define INSTRUCTION_ACTIVATE_FOR												                    	        4
 #define INSTRUCTION_ACTIVATE_ONCE														                    	5

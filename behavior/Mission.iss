@@ -2519,6 +2519,13 @@ objectdef obj_Mission inherits obj_StateQueue
 					Ship.ModuleList_Siege:DeactivateAll
 				}
 
+				if ${ammo.NotNULLOrEmpty}
+				{
+					Ship.ModuleList_Weapon:ConfigureAmmo[${ammo}, ${secondaryAmmo}]
+				}
+
+				Ship.ModuleList_Weapon:ReloadDefaultAmmo
+
 				if ${Ship.ModuleList_Regen_Shield.InactiveCount} && ((${MyShip.ShieldPct.Int} < 100 && ${MyShip.CapacitorPct.Int} > ${AutoModule.Config.ActiveShieldCap}) || ${AutoModule.Config.ShieldBoost})
 				{
 					Ship.ModuleList_Regen_Shield:ActivateAll
@@ -2536,53 +2543,6 @@ objectdef obj_Mission inherits obj_StateQueue
 					Ship.ModuleList_Repair_Armor:DeactivateAll
 				}
 
-				if ${ammo.Length}
-				{
-					variable index:module modules
-					variable iterator moduleIterator
-					MyShip:GetModules[modules]
-					modules:GetIterator[moduleIterator]
-					if ${moduleIterator:First(exists)}
-						do
-						{
-							if !${Ship.ModuleList_Weapon.IncludeModule[${moduleIterator.Value.ID}]} || ${moduleIterator.Value.Charge.Type.Equal[${ammo}]} || ${moduleIterator.Value.IsReloading}
-							{
-								continue
-							}
-
-							if ${moduleIterator.Value.Charge.Type.Equal[${Config.KineticAmmo}]} || ${moduleIterator.Value.Charge.Type.Equal[${Config.ThermalAmmo}]} || ${moduleIterator.Value.Charge.Type.Equal[${Config.EMAmmo}]} || ${moduleIterator.Value.Charge.Type.Equal[${Config.ExplosiveAmmo}]}
-							{
-								if (!${EVEWindow[Inventory](exists)})
-								{
-									EVE:Execute[OpenInventory]
-									return FALSE
-								}
-
-								variable index:item items
-								variable iterator itemIterator
-								if !${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo](exists)} || ${EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo].Capacity} < -1
-								{
-									EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:MakeActive
-									return FALSE
-								}
-
-								EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:GetItems[items]
-
-								items:GetIterator[itemIterator]
-								if ${itemIterator:First(exists)}
-									do
-									{
-										if ${itemIterator.Value.Type.Equal[${ammo}]}
-										{
-											moduleIterator.Value:ChangeAmmo[${itemIterator.Value.ID}]
-											return FALSE
-										}
-									}
-									while ${itemIterator:Next(exists)}
-							}
-						}
-						while ${moduleIterator:Next(exists)}
-				}
 			}
 
 			if ${EVEWindow[byCaption, Agent Conversation](exists)}
@@ -2598,8 +2558,6 @@ objectdef obj_Mission inherits obj_StateQueue
 
 			return FALSE
 		}
-
-		Ship.ModuleList_Weapon:ConfigureAmmo[${ammo}, ${secondaryAmmo}]
 
 		return TRUE
 	}
