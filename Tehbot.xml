@@ -262,10 +262,10 @@
 							<Border>1</Border>
 							<Range>3</Range>
 							<OnLoad>
-								This:SetValue[${Script[Tehbot].VariableScope.VariableScope.Config.Common.LogLevelBar:Dec}]
+								This:SetValue[${Script[Tehbot].VariableScope.Config.Common.LogLevelBar:Dec}]
 							</OnLoad>
 							<OnChange>
-								Script[Tehbot].VariableScope.VariableScope.Config.Common:SetLogLevelBar[${This.Value:Inc}]
+								Script[Tehbot].VariableScope.Config.Common:SetLogLevelBar[${This.Value:Inc}]
 							</OnChange>
 						</Slider>
 
