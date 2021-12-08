@@ -11,25 +11,11 @@ objectdef obj_ModuleList
 	{
 		variable iterator moduleIDIterator
 		ModuleID:GetIterator[moduleIDIterator]
-		; Strict inactive first.
 		if ${moduleIDIterator:First(exists)}
 		{
 			do
 			{
-				if !${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsActive}
-				{
-					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:GiveInstruction[INSTRUCTION_ACTIVATE_ON, ${targetID}]
-					return
-				}
-			}
-			while ${moduleIDIterator:Next(exists)}
-		}
-		; Fallback to pick from current active modules.
-		if ${moduleIDIterator:First(exists)}
-		{
-			do
-			{
-				if !${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsInstructionMatch[INSTRUCTION_ACTIVATE_ON, ${targetID}]}
+				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsInstructionMatch[INSTRUCTION_NONE]}
 				{
 					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:GiveInstruction[INSTRUCTION_ACTIVATE_ON, ${targetID}]
 					return
@@ -218,7 +204,7 @@ objectdef obj_ModuleList
 		{
 			do
 			{
-				if !${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsInstructionMatch[INSTRUCTION_ACTIVATE_ON]}
+				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsInstructionMatch[INSTRUCTION_NONE]}
 				{
 					countInactive:Inc
 				}

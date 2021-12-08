@@ -8,12 +8,12 @@ objectdef obj_Module inherits obj_StateQueue
 	variable string LongRangeAmmo
 
 	variable int _lastDeactivationTimestamp
-	variable int _deactivationRetryInterval = 1000
+	variable int _deactivationRetryInterval = 2000
 	variable int _lastChangeAmmoTimestamp
-	variable int _changeAmmoRetryInterval = 1000
+	variable int _changeAmmoRetryInterval = 2000
 	; TODO: Switch ammo when grouped laser weapon is taking too long to activate, may be caused by crystal burnt out.
 	variable int _lastActivationTimestamp
-	variable int _activationRetryInterval = 1000
+	variable int _activationRetryInterval = 2000
 
 	; TODO actually the intervals above are not needed anymore after _tooSoon() is introduced.
 	variable int _intervalBetweenOperations = 1000
@@ -135,10 +135,8 @@ objectdef obj_Module inherits obj_StateQueue
 	; Instruction is erased when the target is destroyed.
 	method OperateActivateOn(int64 targetID)
 	{
-		if (${targetID} != TARGET_NA) && \
-			!(${Entity[${targetID}](exists)} && !${Entity[${targetID}].IsMoribund} && ${Entity[${targetID}].IsLockedTarget})
+		if !${This._isTargetValid[${targetID}]}
 		{
-			This:LogDebug["${This.Name} reset state for target is invalid"]
 			This:_resetState
 			return
 		}
@@ -185,8 +183,7 @@ objectdef obj_Module inherits obj_StateQueue
 			{
 				_lastChangeAmmoTimestamp:Set[0]
 
-				if (${targetID} == TARGET_NA) || \
-					(${Entity[${targetID}]} && !${Entity[${targetID}].IsMoribund} && ${Entity[${targetID}].IsLockedTarget})
+				if ${This._isTargetValid[${targetID}]}
 				{
 					This:_activate[${targetID}]
 				}
@@ -290,6 +287,27 @@ objectdef obj_Module inherits obj_StateQueue
 		return FALSE
 	}
 
+	member:bool _isTargetValid(int64 targetID)
+	{
+		if (${targetID} != TARGET_NA) && \
+			!(${Entity[${targetID}](exists)} && !${Entity[${targetID}].IsMoribund} && ${Entity[${targetID}].IsLockedTarget})
+		{
+			This:LogDebug["${This.Name} reset state for target is invalid."]
+			This:_resetState
+			return FALSE
+		}
+		elseif ((${This.ToItem.GroupID} == GROUP_SALVAGER) || (${This.ToItem.GroupID} == GROUP_TRACTOR_BEAM)) && \
+			(${Entity[${targetID}].Distance} > ${This.Range})
+		{
+			; It's possible that ship moves away from wreck while salvaging.
+			This:LogDebug["${This.Name} reset state for target is out of range."]
+			This:_resetState
+			return FALSE
+		}
+
+		return TRUE
+	}
+
 	method _resetState()
 	{
 		Instruction:Set[INSTRUCTION_NONE]
@@ -346,6 +364,11 @@ objectdef obj_Module inherits obj_StateQueue
 
 	method _activate(int64 targetID)
 	{
+		; if !${This._isTargetValid[${targetID}]}
+		; {
+		; 	This:_resetState
+		; 	return
+		; }
 		if ${_lastActivationTimestamp} == 0
 		{
 			This:LogDebug["Activating ${This.Name} on ${targetID} ${Entity[${targetID}].Name}"]
