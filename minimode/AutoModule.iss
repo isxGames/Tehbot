@@ -209,7 +209,7 @@ objectdef obj_AutoModule inherits obj_StateQueue
 
 		if ${Ship.ModuleList_TrackingComputer.ActiveCount} < ${Ship.ModuleList_TrackingComputer.Count} && ${Config.TrackingComputers}
 		{
-			Ship.ModuleList_TrackingComputer:ActivateAll
+			Ship.ModuleList_TrackingComputer:ActivateFor[TARGET_ANY]
 		}
 
 		if ${Ship.ModuleList_ECCM.ActiveCount} < ${Ship.ModuleList_ECCM.Count} && ${Config.ECCM}

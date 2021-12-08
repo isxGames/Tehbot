@@ -70,6 +70,9 @@ objectdef obj_Module inherits obj_StateQueue
 			case INSTRUCTION_ACTIVATE_ON
 				This:OperateActivateOn[${InstructionTargetID}]
 				break
+			case INSTRUCTION_ACTIVATE_FOR
+				This:OperateActivateFor[${InstructionTargetID}]
+				break
 			case INSTRUCTION_DEACTIVATE
 				This:OperateDeactivate
 				break
@@ -215,7 +218,8 @@ objectdef obj_Module inherits obj_StateQueue
 			optimalAmmo:Set[${This._pickOptimalAmmo[${targetID}]}]
 			if ${optimalAmmo.NotNULLOrEmpty} && !${optimalAmmo.Equal[${This.Charge.Type}]}
 			{
-				This:LogInfo["Deactivating ${This.Name} to change ammo."]
+				This:LogDebug["${This.Name} optimalAmmo is ${optimalAmmo} for ${Entity[${targetID}].Name} distance ${Entity[${targetID}].Distance}"]
+				This:LogDebug["Deactivating ${This.Name} to change ammo to ${optimalAmmo}."]
 				This:_deactivate
 				return
 			}
@@ -419,17 +423,17 @@ objectdef obj_Module inherits obj_StateQueue
 		}
 	}
 
-	method _changeAmmo(int64 ammoID, int ammoAmount)
+	method _changeAmmo(int64 ammoID, int ammoAmount, string ammoName)
 	{
 		if ${_lastChangeAmmoTimestamp} == 0
 		{
-			This:LogDebug["Switching ${This.Name} ammo to \ay${ammoID}"]
+			This:LogInfo["Switching ${This.Name} ammo to \ay${ammoName}"]
 			_lastChangeAmmoTimestamp:Set[${LavishScript.RunningTime}]
 			This:ChangeAmmo[${ammoID}, ${ammoAmount}]
 		}
 		elseif ${LavishScript.RunningTime} > ${Math.Calc[${_lastChangeAmmoTimestamp} + ${_changeAmmoRetryInterval}]}
 		{
-			This:LogDebug["Retrying ${This.Name} switching ammo to \ay${ammoID}"]
+			This:LogInfo["Retrying ${This.Name} switching ammo to \ay${ammoName}"]
 			_lastChangeAmmoTimestamp:Set[${LavishScript.RunningTime}]
 			This:ChangeAmmo[${ammoID}, ${ammoAmount}]
 		}
@@ -451,8 +455,7 @@ objectdef obj_Module inherits obj_StateQueue
 
 	member:string _pickOptimalAmmoForTurret(int64 targetID)
 	{
-		if (${targetID} == TARGET_NA) || \
-			!(${Entity[${targetID}](exists)} && !${Entity[${targetID}].IsMoribund} && ${Entity[${targetID}].IsLockedTarget})
+		if ${targetID.Equal[TARGET_NA]} || !${This._isTargetValid[${targetID}]}
 		{
 			This:LogCritical["Picking turret ammo for invalid target."]
 			return ""
@@ -554,15 +557,9 @@ objectdef obj_Module inherits obj_StateQueue
 
 	member:string _pickOptimalScriptTrackingComputerScript(int64 targetID)
 	{
-		if (${targetID} == TARGET_NA)
+		if ${targetID.Equal[TARGET_NA]} || !${This._isTargetValid[${targetID}]}
 		{
-			return ""
-
-		}
-
-		if !(${Entity[${targetID}](exists)} && !${Entity[${targetID}].IsMoribund} && ${Entity[${targetID}].IsLockedTarget})
-		{
-			This:LogCritical["Picking script for invalid target."]
+			InstructionTargetID:Set[TARGET_NA]
 			return ""
 		}
 
@@ -621,7 +618,7 @@ objectdef obj_Module inherits obj_StateQueue
 			{
 				variable int chargeAmountToLoad
 				chargeAmountToLoad:Set[${Utility.Min[${This.MaxCharges}, ${MyShip.Cargo[${ammo}].Quantity}]}]
-				This:_changeAmmo[${availableAmmoIterator.Value.ID}, ${chargeAmountToLoad}]
+				This:_changeAmmo[${availableAmmoIterator.Value.ID}, ${chargeAmountToLoad}, "${availableAmmoIterator.Value.Name}"]
 				return
 			}
 		}

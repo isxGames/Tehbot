@@ -438,7 +438,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			{
 				; This:LogDebug["Pew Pew: \ar${Entity[${currentTarget}].Name}"]
 				Ship.ModuleList_Weapon:ActivateAll[${currentTarget}]
-				Ship.ModuleList_TrackingComputer:ActivateAll[${currentTarget}]
+				Ship.ModuleList_TrackingComputer:ActivateFor[${currentTarget}]
 			}
 			if ${Entity[${currentTarget}].Distance} <= ${Ship.ModuleList_TargetPainter.Range}
 			{
