@@ -21,7 +21,7 @@ objectdef obj_Module inherits obj_StateQueue
 	method Initialize(int64 ID)
 	{
 		This[parent]:Initialize
-		This.NonGameTiedPulse:Set[TRUE]
+		This.NonGameTiedPulse:Set[FALSE]
 		ModuleID:Set[${ID}]
 		PulseFrequency:Set[100]
 	 	RandomDelta:Set[100]
@@ -46,8 +46,13 @@ objectdef obj_Module inherits obj_StateQueue
 		if !${Me.InSpace}
 		{
 			This:_resetState
+			; When NonGameTiedPulse is true, the module will be affected by Client:Wait.
+			; This is to prevent operating modules too soon after undock which seems to cause black screen?
+			This.NonGameTiedPulse:Set[FALSE]
 			return FALSE
 		}
+
+		This.NonGameTiedPulse:Set[TRUE]
 
 		if !${This.IsActivatable} || \
 			!${This.IsOnline} || \
@@ -364,11 +369,12 @@ objectdef obj_Module inherits obj_StateQueue
 
 	method _activate(int64 targetID)
 	{
-		; if !${This._isTargetValid[${targetID}]}
-		; {
-		; 	This:_resetState
-		; 	return
-		; }
+		if !${This._isTargetValid[${targetID}]}
+		{
+			This:_resetState
+			return
+		}
+
 		if ${_lastActivationTimestamp} == 0
 		{
 			This:LogDebug["Activating ${This.Name} on ${targetID} ${Entity[${targetID}].Name}"]
