@@ -584,8 +584,6 @@ objectdef obj_Mission inherits obj_StateQueue
 									break
 							}
 
-							Ship.ModuleList_Weapon:ConfigureAmmo[${ammo}, ${secondaryAmmo}]
-
 							if ${Client.InSpace} && (${Entity[Type = "Beacon"]} || ${Entity[Type = "Acceleration Gate"]})
 							{
 								This:InsertState["PerformMission"]
@@ -2598,6 +2596,9 @@ objectdef obj_Mission inherits obj_StateQueue
 
 			return FALSE
 		}
+
+		Ship.ModuleList_Weapon:ConfigureAmmo[${ammo}, ${secondaryAmmo}]
+
 		return TRUE
 	}
 
