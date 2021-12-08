@@ -72,7 +72,7 @@ objectdef obj_Ship inherits obj_StateQueue
 		; This:AddModuleList[Passive, "!IsActivatable"]
 		This:Clear
 		This:QueueState["WaitForInSpace"]
-		This:QueueState["UpdateModules"]
+		This:QueueState["UpdateModules", 5000]
 	}
 
 	method AddModuleList(string Name, string QueryString)
