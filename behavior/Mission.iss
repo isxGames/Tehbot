@@ -1257,6 +1257,10 @@ objectdef obj_Mission inherits obj_StateQueue
 				}
 			}
 			This:LogInfo["Primary target: \ar${Entity[${currentTarget}].Name}"]
+			if ${Ship.IsTurretShip}
+			{
+				This:LogInfo["    chance to hit \ao ${Math.Calc[${Ship.TurretChanceToHit[${currentTarget}]} * 100].Deci}%."]
+			}
 		}
 
 		; Nothing is locked.

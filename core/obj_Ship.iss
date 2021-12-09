@@ -44,6 +44,8 @@ objectdef obj_Ship inherits obj_StateQueue
 		This:AddModuleList[ShieldTransporters, "ToItem.GroupID = GROUP_SHIELD_TRANSPORTER"]
 		This:AddModuleList[MiningLaser, "ToItem.GroupID = GROUP_MININGLASER || ToItem.GroupID = GROUP_STRIPMINER || ToItem.GroupID = GROUP_FREQUENCYMININGLASER"]
 		This:AddModuleList[Weapon, "ToItem.GroupID = GROUP_PRECURSORWEAPON || ToItem.GroupID = GROUP_ENERGYWEAPON || ToItem.GroupID = GROUP_PROJECTILEWEAPON || ToItem.GroupID = GROUP_HYBRIDWEAPON || ToItem.GroupID = GROUP_MISSILELAUNCHERRAPIDHEAVY || ToItem.GroupID = GROUP_MISSILELAUNCHER || ToItem.GroupID = GROUP_MISSILELAUNCHERASSAULT || ToItem.GroupID = GROUP_MISSILELAUNCHERBOMB || ToItem.GroupID = GROUP_MISSILELAUNCHERCITADEL || ToItem.GroupID = GROUP_MISSILELAUNCHERCRUISE || ToItem.GroupID = GROUP_MISSILELAUNCHERDEFENDER || ToItem.GroupID = GROUP_MISSILELAUNCHERHEAVY || ToItem.GroupID = GROUP_MISSILELAUNCHERHEAVYASSAULT || ToItem.GroupID = GROUP_MISSILELAUNCHERROCKET || ToItem.GroupID = GROUP_MISSILELAUNCHERTORPEDO || ToItem.GroupID = GROUP_MISSILELAUNCHERSTANDARD"]
+		This:AddModuleList[Turret, "ToItem.GroupID = GROUP_ENERGYWEAPON || ToItem.GroupID = GROUP_PROJECTILEWEAPON || ToItem.GroupID = GROUP_HYBRIDWEAPON"]
+		This:AddModuleList[MissileLauncher, "ToItem.GroupID = GROUP_MISSILELAUNCHERRAPIDHEAVY || ToItem.GroupID = GROUP_MISSILELAUNCHER || ToItem.GroupID = GROUP_MISSILELAUNCHERASSAULT || ToItem.GroupID = GROUP_MISSILELAUNCHERBOMB || ToItem.GroupID = GROUP_MISSILELAUNCHERCITADEL || ToItem.GroupID = GROUP_MISSILELAUNCHERCRUISE || ToItem.GroupID = GROUP_MISSILELAUNCHERDEFENDER || ToItem.GroupID = GROUP_MISSILELAUNCHERHEAVY || ToItem.GroupID = GROUP_MISSILELAUNCHERHEAVYASSAULT || ToItem.GroupID = GROUP_MISSILELAUNCHERROCKET || ToItem.GroupID = GROUP_MISSILELAUNCHERTORPEDO || ToItem.GroupID = GROUP_MISSILELAUNCHERSTANDARD"]
 		This:AddModuleList[ECCM, "ToItem.GroupID = GROUP_ECCM"]
 		This:AddModuleList[ActiveResists, "ToItem.GroupID = GROUP_SHIELD_HARDENER || ToItem.GroupID = GROUP_ARMOR_HARDENERS || ToItem.GroupID = GROUP_ARMOR_RESISTANCE_SHIFT_HARDENER"]
 		This:AddModuleList[DamageControl, "ToItem.GroupID = GROUP_DAMAGE_CONTROL"]
@@ -204,24 +206,31 @@ objectdef obj_Ship inherits obj_StateQueue
 		return TRUE
 	}
 
-	member:bool IsClosebyFrigate(int64 targetID)
+	member:float64 DamageEffciency(int64 targetID)
 	{
-		if (${Entity[${targetID}].Group.Find[Frigate]} && ${Entity[${targetID}].Distance} < 15000) || \
-		   (${Entity[${targetID}].Group.Find[Destroyer]} && ${Entity[${targetID}].Distance} < 10000)
+		if ${This.ModuleList_Turret.Count} > ${This.ModuleList_MissileLauncher.Count}
 		{
-			return TRUE
+			return ${This.TurretChanceToHit[${targetID}]}
 		}
-		else
-		{
-			return FALSE
-		}
+		; TODO Missile
+		return 1.0
 	}
 
 	member:bool IsHardToDealWithTarget(int64 targetID)
 	{
-		; TODO Add Missile judgement
-		return ${This.IsClosebyFrigate[${targetID}]}
+		; Turret as main weapon.
+		if ${This.ModuleList_Turret.Count} > ${This.ModuleList_MissileLauncher.Count}
+		{
+			if ${This.TurretChanceToHit[${targetID}]} <= 0.1
+			{
+				return TRUE
+
+			}
+			return FALSE
+		}
+		return FALSE
 	}
+
 
 	method BuildActiveJammerList()
 	{
@@ -376,7 +385,7 @@ objectdef obj_Ship inherits obj_StateQueue
 		return "Scorch L"
 	}
 
-	member:float TurretChanceToHit(int64 targetID)
+	member:float64 TurretChanceToHit(int64 targetID)
 	{
 		; Target relative coordinate and velocity.
 		variable float64 X
@@ -428,7 +437,7 @@ objectdef obj_Ship inherits obj_StateQueue
 		; This:LogDebug[" target angular velocity ver 2: \ao ${projectionvX} ${projectionvY} ${projectionvZ} ->  ${angularVelocity}"]
 
 		variable float64 trackingSpeed
-		trackingSpeed:Set[${This.ModuleList_Weapon.TrackingSpeed}]
+		trackingSpeed:Set[${This.ModuleList_Turret.TrackingSpeed}]
 
 		variable float64 targetSignatureRadius
 		targetSignatureRadius:Set[${Entity[${targetID}].Radius}]
@@ -439,10 +448,10 @@ objectdef obj_Ship inherits obj_StateQueue
 		This:LogDebug["trackingFactor: \ao ${trackingSpeed} ${targetSignatureRadius} ->  ${trackingFactor}"]
 
 		variable float64 turretOptimalRange
-		turretOptimalRange:Set[${This.ModuleList_Weapon.OptimalRange}]
+		turretOptimalRange:Set[${This.ModuleList_Turret.OptimalRange}]
 
 		variable float64 turretFalloff
-		turretFalloff:Set[${This.ModuleList_Weapon.AccuracyFalloff}]
+		turretFalloff:Set[${This.ModuleList_Turret.AccuracyFalloff}]
 
 		variable float64 decay
 		decay:Set[${targetDistance} - ${turretOptimalRange}]
@@ -461,5 +470,14 @@ objectdef obj_Ship inherits obj_StateQueue
 		This:LogDebug["chanceToHit: \ao ${rangeFactor} ${trackingFactor} ->  ${chanceToHit}"]
 
 		return ${chanceToHit}
+	}
+
+	member:bool IsTurretShip()
+	{
+		if ${This.ModuleList_Turret.Count} > 0
+		{
+			return TRUE
+		}
+		return FALSE
 	}
 }
