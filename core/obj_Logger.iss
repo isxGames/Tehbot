@@ -24,8 +24,6 @@ objectdef obj_Logger
 		}
 		This.LogFile:Set["./Config/Logs/${Me.Name} - ${Time.Date.Replace["\/","."]}.log"]
 
-		This.LogLevelBar:Set[${Config.Common.LogLevelBar}]
-
 		This:InitializeLogs
 	}
 

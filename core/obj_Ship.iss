@@ -39,6 +39,8 @@ objectdef obj_Ship inherits obj_StateQueue
 	method Initialize(int64 ID)
 	{
 		This[parent]:Initialize
+		This.LogLevelBar:Set[${Config.Common.LogLevelBar}]
+
 		This.NonGameTiedPulse:Set[TRUE]
 		This:AddModuleList[ArmorProjectors, "ToItem.GroupID = GROUP_ARMOR_PROJECTOR"]
 		This:AddModuleList[ShieldTransporters, "ToItem.GroupID = GROUP_SHIELD_TRANSPORTER"]
@@ -431,7 +433,7 @@ objectdef obj_Ship inherits obj_StateQueue
 
 		variable float64 angularVelocity
 		angularVelocity:Set[${Math.Calc[${Vt} / ${targetDistance}]}]
-		This:LogDebug["Target angular velocity: \ao ${projectionvX} ${projectionvY} ${projectionvZ} ->  ${angularVelocity}"]
+		This:LogDebug["Target angular velocity: \ao ${projectionvX} ${projectionvY} ${projectionvZ} -> ${angularVelocity}"]
 
 		; angularVelocity:Set[${Math.Calc[${Vt} / ${Entity[${targetID}].Distance}]}]
 		; This:LogDebug[" target angular velocity ver 2: \ao ${projectionvX} ${projectionvY} ${projectionvZ} ->  ${angularVelocity}"]
@@ -445,7 +447,7 @@ objectdef obj_Ship inherits obj_StateQueue
 		variable float64 trackingFactor
 		trackingFactor:Set[${Math.Calc[(${angularVelocity} * 40000 / ${trackingSpeed} / ${targetSignatureRadius}) ^^ 2]}]
 
-		This:LogDebug["trackingFactor: \ao ${trackingSpeed} ${targetSignatureRadius} ->  ${trackingFactor}"]
+		This:LogDebug["trackingFactor: \ao ${trackingSpeed} ${targetSignatureRadius} -> ${trackingFactor}"]
 
 		variable float64 turretOptimalRange
 		turretOptimalRange:Set[${This.ModuleList_Turret.OptimalRange}]
@@ -462,12 +464,12 @@ objectdef obj_Ship inherits obj_StateQueue
 
 		variable float64 rangeFactor
 		rangeFactor:Set[${Math.Calc[(${decay} / ${turretFalloff}) ^^ 2]}]
-		This:LogDebug["rangeFactor: \ao ${turretOptimalRange} ${turretFalloff} ${decay} ->  ${rangeFactor}"]
+		This:LogDebug["rangeFactor: \ao ${turretOptimalRange} ${turretFalloff} ${decay} -> ${rangeFactor}"]
 
 		variable float64 chanceToHit
 		chanceToHit:Set[${Math.Calc[0.5 ^^ (${trackingFactor} + ${rangeFactor})]}]
 
-		This:LogDebug["chanceToHit: \ao ${rangeFactor} ${trackingFactor} ->  ${chanceToHit}"]
+		This:LogDebug["chanceToHit: \ao ${rangeFactor} ${trackingFactor} -> ${chanceToHit}"]
 
 		return ${chanceToHit}
 	}
