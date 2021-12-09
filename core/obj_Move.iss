@@ -93,7 +93,7 @@ objectdef obj_Move inherits obj_StateQueue
 	method Undock()
 	{
 		EVE:Execute[CmdExitStation]
-		Client:Wait[10000]
+		Client:Wait[12000]
 	}
 
 	method DockAtStation(int64 StationID)
