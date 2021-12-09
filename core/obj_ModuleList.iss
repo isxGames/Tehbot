@@ -238,6 +238,16 @@ objectdef obj_ModuleList
 		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].OptimalRange}
 	}
 
+	member:float TrackingSpeed()
+	{
+		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].TrackingSpeed}
+	}
+
+		member:float AccuracyFalloff()
+	{
+		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].AccuracyFalloff}
+	}
+
 	member:string GetFallthroughObject()
 	{
 		return "Ship.${This.ObjectName}.ModuleID"
