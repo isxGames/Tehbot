@@ -265,7 +265,6 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			This:LogInfo["I am in egg, I should flee."]
 			${Config.Common.Tehbot_Mode}:Stop
 			Move:Stop
-			DroneControl:Stop
 			This:QueueState["FleeToStation"]
 			This:QueueState["FightOrFlight"]
 			return TRUE
@@ -279,7 +278,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			This:LogInfo["PVE Low HP - Shield: ${MyShip.ShieldPct.Int}%, Armor: ${MyShip.ArmorPct.Int}%, Hull: ${MyShip.StructurePct.Int}%, Capacitor: ${MyShip.CapacitorPct.Int}%, I should flee."]
 			${Config.Common.Tehbot_Mode}:Stop
 			Move:Stop
-			DroneControl:Stop
+			DroneControl:Recall
 			This:QueueState["FleeToStation"]
 			This:QueueState["Repair"]
 			This:QueueState["LocalSafe"]
@@ -292,7 +291,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			This:LogInfo["Detected many red in local, I should flee."]
 			${Config.Common.Tehbot_Mode}:Stop
 			Move:Stop
-			DroneControl:Stop
+			DroneControl:Recall
 			This:QueueState["FleeToStation"]
 			This:QueueState["Repair"]
 			This:QueueState["LocalSafe"]
@@ -562,7 +561,6 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			${Config.Common.Tehbot_Mode}:Start
 		}
 
-        DroneControl:Start
 		return TRUE
 	}
 
@@ -579,7 +577,9 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			Ship.ModuleList_Siege:DeactivateAll
 		}
 
-		if ${DroneControl.ActiveDrones.Used} > 0
+		variable index:activedrone activeDrones
+		Me:GetActiveDrones[activeDrones]
+		if ${activeDrones.Used} > 0
 		{
 			DroneControl:Recall
 			if ${waitForDrones}
