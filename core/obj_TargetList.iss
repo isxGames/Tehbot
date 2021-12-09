@@ -37,7 +37,8 @@ objectdef obj_TargetList inherits obj_StateQueue
 	method Initialize()
 	{
 		This[parent]:Initialize
-		PulseFrequency:Set[20]
+		PulseFrequency:Set[100]
+		This.NonGameTiedPulse:Set[TRUE]
 		RandomDelta:Set[0]
 		This:QueueState["UpdateList"]
 		DistanceTarget:Set[${MyShip.ID}]

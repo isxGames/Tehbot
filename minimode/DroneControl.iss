@@ -31,6 +31,7 @@ objectdef obj_DroneControl inherits obj_StateQueue
 	{
 		This[parent]:Initialize
 		PulseFrequency:Set[1000]
+		This.NonGameTiedPulse:Set[TRUE]
 		DynamicAddMiniMode("DroneControl", "DroneControl")
 	}
 

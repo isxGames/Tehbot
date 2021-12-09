@@ -32,6 +32,8 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 	variable bool IsAttackedByGankers = FALSE
 	variable bool IsEngagingGankers = FALSE
 
+	variable bool BotRunningFlag = FALSE
+
 	variable obj_TargetList PCs
 	variable obj_TargetList NPCs
 	variable collection:int AttackTimestamp
@@ -43,6 +45,8 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 
 		DynamicAddMiniMode("FightOrFlight", "FightOrFlight")
 		This.PulseFrequency:Set[500]
+
+		This.NonGameTiedPulse:Set[TRUE]
 
 		This:BuildPC
 		NPCs:AddAllNPCs
@@ -193,8 +197,13 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		; Do not disturb manual operation.
 		if ${${Config.Common.Tehbot_Mode}.IsIdle}
 		{
-			; This:LogDebug["Bot is not running."]
+			This:LogDebug["Bot is not running."]
+			BotRunningFlag:Set[FALSE]
 			return FALSE
+		}
+		else
+		{
+			BotRunningFlag:Set[TRUE]
 		}
 
 		IsEngagingGankers:Set[FALSE]
@@ -227,7 +236,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		{
 			This:LogCritical["Entering engage ganker stage."]
 			Ship.ModuleList_Siege:ActivateOne
-			This:QueueState["EngageGankers"]
+			This:QueueState["EngageGankers", 500, FALSE]
 			return TRUE
 		}
 
@@ -296,7 +305,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		return FALSE
 	}
 
-	member:bool EngageGankers()
+	member:bool EngageGankers(bool allowResume)
 	{
 		if ${Me.InStation}
 		{
@@ -307,10 +316,10 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			return TRUE
 		}
 
-		if !${Client.Inspace}
+		if !${Client.InSpace}
 		{
 			; Ship Destroyed?
-			FALSE
+			return FALSE
 		}
 
 		IsEngagingGankers:Set[TRUE]
@@ -331,9 +340,9 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			return TRUE
 		}
 
-		; if !${MyShip.ToEntity.Type.Equal["Capsule"]} && Findmywreck
+		; if !${MyShip.ToEntity.Type.Equal["Capsule"]} && FindMineWreck
 		; {
-		; 	Destroy my wreck
+		; 	Destroy or loot my wreck
 		; 	Then warpoff
 		;	TODO add detection in Traveling status when
 		;			scrambled when ships shows aligned but not really in warp.
@@ -461,20 +470,22 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			; Remain vigilant once entered engage stage.
 			return FALSE
 		}
+		; not detected
 
-		; There is a short time after ship destruction that pod is not detected, we may overlook the
-		; last pod. detect twice to avoid this. (No big deal anyway)
-		Client:Wait[1000]
-		This:DetectOtherPilots[1]
-		if ${IsOtherPilotsDetected}
+		if ${allowResume}
 		{
-			return FALSE
+			This:QueueState["ResumeBot"]
+			This:QueueState["FightOrFlight"]
+			IsEngagingGankers:Set[FALSE]
+			return TRUE
 		}
-
-		${Config.Common.Tehbot_Mode}:Start
-		This:QueueState["FightOrFlight"]
-		IsEngagingGankers:Set[FALSE]
-		return TRUE
+		else
+		{
+			; There is a short time after ship destruction that pod is not detected, we may overlook the
+			; last pod. detect twice to avoid this. (No big deal anyway)
+			This:QueueState["EngageGankers", 1000, TRUE]
+			return TRUE
+		}
 	}
 
 	member:int LocalHostilePilots()
@@ -538,15 +549,19 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 
 	member:bool ResumeBot(bool Undock = FALSE)
 	{
-		This:LogInfo["Resuming bot."]
-
-		; To avoid going back to agent to reload ammos.
-		if ${Undock}
+		if ${BotRunningFlag}
 		{
-			Move:Undock
+			This:LogInfo["Resuming bot."]
+
+			; To avoid going back to agent to reload ammos.
+			if ${Undock}
+			{
+				Move:Undock
+			}
+
+			${Config.Common.Tehbot_Mode}:Start
 		}
 
-		${Config.Common.Tehbot_Mode}:Start
         DroneControl:Start
 		return TRUE
 	}
@@ -649,9 +664,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		}
 
 		variable int MaxTarget
-		MaxTarget:Set[${MyShip.MaxLockedTargets}]
-		if ${Me.MaxLockedTargets} < ${MyShip.MaxLockedTargets}
-			MaxTarget:Set[${Me.MaxLockedTargets}]
+		MaxTarget:Set[${Utility.Min[${Me.MaxLockedTargets}, ${MyShip.MaxLockedTargets}]}]
 
 		This:BuildPC
 		PCs:RequestUpdate
