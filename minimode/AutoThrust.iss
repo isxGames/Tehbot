@@ -24,6 +24,7 @@ objectdef obj_Configuration_AutoThrust
 		This.CommonRef:AddSetting[Orbit_Threshold, 50]
 		This.CommonRef:AddSetting[Velocity_Trigger, 50]
 		This.CommonRef:AddSetting[Velocity_Threshold, 50]
+		; This.CommonRef:AddSetting[OverloadHPThreshold, 50]
 	}
 
 	Setting(bool, NeverDeactivate, SetNeverDeactivate)
@@ -36,8 +37,7 @@ objectdef obj_Configuration_AutoThrust
 	Setting(bool, Velocity, SetVelocity)
 	Setting(int, Velocity_Trigger, SetVelocity_Trigger)
 	Setting(int, Velocity_Threshold, SetVelocity_Threshold)
-
-
+	; Setting(int, OverloadHPThreshold, SetOverloadHPThreshold)
 }
 
 objectdef obj_AutoThrust inherits obj_StateQueue
@@ -47,7 +47,7 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 	method Initialize()
 	{
 		This[parent]:Initialize
-		PulseFrequency:Set[100]
+		PulseFrequency:Set[200]
 		This.NonGameTiedPulse:Set[TRUE]
 		DynamicAddMiniMode("AutoThrust", "AutoThrust")
 	}
@@ -69,6 +69,7 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 
 		if !${Client.InSpace} || ${Me.ToEntity.IsCloaked}
 		{
+			Ship.ModuleList_AB_MWD:SetOverloadHPThreshold[100]
 			return FALSE
 		}
 
@@ -82,6 +83,7 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 		{
 			if ${Me.ToEntity.MaxVelocity} == 0
 			{
+				Ship.ModuleList_AB_MWD:SetOverloadHPThreshold[100]
 				Ship.ModuleList_AB_MWD:DeactivateAll
 				return FALSE
 			}
@@ -90,6 +92,7 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 				if ${Ship.ModuleList_AB_MWD.ActiveCount} && \
 					${MyShip.CapacitorPct.Int} <= ${Config.Approach_Threshold}
 				{
+					Ship.ModuleList_AB_MWD:SetOverloadHPThreshold[100]
 					Ship.ModuleList_AB_MWD:DeactivateAll
 					return FALSE
 				}
@@ -104,6 +107,7 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 				if ${Ship.ModuleList_AB_MWD.ActiveCount} && \
 					${MyShip.CapacitorPct.Int} <= ${Config.Orbit_Threshold}
 				{
+					Ship.ModuleList_AB_MWD:SetOverloadHPThreshold[100]
 					Ship.ModuleList_AB_MWD:DeactivateAll
 					return FALSE
 				}
@@ -117,6 +121,7 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 				if ${Ship.ModuleList_AB_MWD.ActiveCount} && \
 					${MyShip.CapacitorPct.Int} <= ${Config.KeepAtRange_Threshold}
 				{
+					Ship.ModuleList_AB_MWD:SetOverloadHPThreshold[100]
 					Ship.ModuleList_AB_MWD:DeactivateAll
 					return FALSE
 				}
@@ -131,6 +136,7 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 				if ${Ship.ModuleList_AB_MWD.ActiveCount} && \
 					${MyShip.CapacitorPct.Int} <= ${Config.Velocity_Threshold}
 				{
+					Ship.ModuleList_AB_MWD:SetOverloadHPThreshold[100]
 					Ship.ModuleList_AB_MWD:DeactivateAll
 					return FALSE
 				}
@@ -145,15 +151,12 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 			{
 				if ${Ship.ModuleList_AB_MWD.ActiveCount}
 				{
+					Ship.ModuleList_AB_MWD:SetOverloadHPThreshold[100]
 					Ship.ModuleList_AB_MWD:DeactivateAll
 				}
 				return FALSE
 			}
 		}
-
-
-
-
 
 		if ${Config.Approach} && \
 			!${Ship.ModuleList_AB_MWD.ActiveCount} && \
@@ -161,16 +164,19 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 			${Me.ToEntity.Mode} == MOVE_APPROACHING && \
 			${Me.ToEntity.FollowRange} == 50
 		{
-				Ship.ModuleList_AB_MWD:ActivateOne
-				return FALSE
+			; Ship.ModuleList_AB_MWD:SetOverloadHPThreshold[${Config.OverloadHPThreshold}]
+			Ship.ModuleList_AB_MWD:SetOverloadHPThreshold[50]
+			Ship.ModuleList_AB_MWD:ActivateOne
+			return FALSE
 		}
 		if ${Config.Orbit} && \
 			!${Ship.ModuleList_AB_MWD.ActiveCount} && \
 			${MyShip.CapacitorPct.Int} > ${Config.Orbit_Threshold} && \
 			${Me.ToEntity.Mode} == MOVE_ORBITING
 		{
-				Ship.ModuleList_AB_MWD:ActivateOne
-				return FALSE
+			Ship.ModuleList_AB_MWD:SetOverloadHPThreshold[100]
+			Ship.ModuleList_AB_MWD:ActivateOne
+			return FALSE
 		}
 		if ${Config.KeepAtRange} && \
 			!${Ship.ModuleList_AB_MWD.ActiveCount} && \
@@ -178,8 +184,9 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 			${Me.ToEntity.Mode} == MOVE_APPROACHING && \
 			${Me.ToEntity.FollowRange} > 50
 		{
-				Ship.ModuleList_AB_MWD:ActivateOne
-				return FALSE
+			Ship.ModuleList_AB_MWD:SetOverloadHPThreshold[100]
+			Ship.ModuleList_AB_MWD:ActivateOne
+			return FALSE
 		}
 
 		if ${Config.Velocity} && \
@@ -188,15 +195,12 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 			${Me.ToEntity.MaxVelocity} > 0 && \
 			${Math.Calc[${Me.ToEntity.Velocity} / ${Me.ToEntity.MaxVelocity}]} >= ${Math.Calc[${Config.Velocity_Trigger} * .01]}
 		{
-				Ship.ModuleList_AB_MWD:ActivateOne
-				return FALSE
+			Ship.ModuleList_AB_MWD:SetOverloadHPThreshold[100]
+			Ship.ModuleList_AB_MWD:ActivateOne
+			return FALSE
 		}
 
 
 		return FALSE
-	}
-
-	method Flee()
-	{
 	}
 }

@@ -236,6 +236,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		if ${IsAttackedByGankers}
 		{
 			This:LogCritical["Entering engage ganker stage."]
+			${Config.Common.Tehbot_Mode}:Stop
 			Ship.ModuleList_Siege:ActivateOne
 			This:QueueState["EngageGankers", 500, FALSE]
 			return TRUE
@@ -324,7 +325,11 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 
 		IsEngagingGankers:Set[TRUE]
 
-		${Config.Common.Tehbot_Mode}:Stop
+		; Overload modules.
+		Ship.ModuleList_Weapon:SetOverloadHPThreshold[50]
+		Ship.ModuleList_ActiveResists:SetOverloadHPThreshold[50]
+		Ship.ModuleList_Regen_Shield:SetOverloadHPThreshold[50]
+		Ship.ModuleList_Repair_Armor:SetOverloadHPThreshold[50]
 
 		This:DetectWarpScrambleStatus
 		if ${IsWarpScrambled}
@@ -437,6 +442,10 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 				}
 			}
 			This:LogInfo["Primary target: \ar${Entity[${currentTarget}].Name}"]
+			if ${Ship.IsTurretShip}
+			{
+				This:LogInfo["    chance to hit \ao ${Math.Calc[${Ship.TurretChanceToHit[${currentTarget}]} * 100].Deci}%."]
+			}
 		}
 
 		;;;;;;;;;;;;;;;;;;;;Shoot;;;;;;;;;;;;;;;;;;;;;
@@ -474,16 +483,23 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 
 		if ${allowResume}
 		{
+			; Reset overload.
+			Ship.ModuleList_Weapon:SetOverloadHPThreshold[100]
+			Ship.ModuleList_ActiveResists:SetOverloadHPThreshold[100]
+			Ship.ModuleList_Regen_Shield:SetOverloadHPThreshold[100]
+			Ship.ModuleList_Repair_Armor:SetOverloadHPThreshold[100]
+
 			This:QueueState["ResumeBot"]
 			This:QueueState["FightOrFlight"]
 			IsEngagingGankers:Set[FALSE]
+			PCs.AutoLock:Set[FALSE]
 			return TRUE
 		}
 		else
 		{
 			; There is a short time after ship destruction that pod is not detected, we may overlook the
 			; last pod. detect twice to avoid this. (No big deal anyway)
-			This:QueueState["EngageGankers", 1000, TRUE]
+			This:QueueState["EngageGankers", 3000, TRUE]
 			return TRUE
 		}
 	}

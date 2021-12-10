@@ -18,6 +18,21 @@ objectdef obj_Module inherits obj_StateQueue
 	; TODO actually the intervals above are not needed anymore after _tooSoon() is introduced.
 	variable int _intervalBetweenOperations = 1000
 
+	; This flag can be replaced by a member:bool which detects whether module attributes
+	; has changed from base value. So we don't need to manage the value manually.
+	;
+	; But only if the following experiment succeed:
+	;		Manually turn overload on while module is already on, see whether the
+	;		attributes change BEFORE the next module cycle.
+	;
+	; But even if the experiment above shows desired result, the automatic flag is useless to
+	; us until ToggleOn() and ToggleOff() methods are seperated, then it's possible to retry if
+	; current toggling is taking too long -- Even in that case, we will need another variable as timer.
+	;
+	; So this bool flag is already the best option.
+	variable bool _overloadToggledOn = FALSE
+	variable int OverloadIfHPAbovePercent = 100
+
 	method Initialize(int64 ID)
 	{
 		This[parent]:Initialize
@@ -60,6 +75,17 @@ objectdef obj_Module inherits obj_StateQueue
 			return FALSE
 		}
 
+		; Overload will be turned off automatically when module is deactivated, flag should follow.
+		; Actually allow toggling at INSTRUCTION_NONE state as long as the flag reset
+		; is ensured when erasing other instructions.
+		if !${This.IsActive} && \
+			!${This.IsInstructionMatch[INSTRUCTION_ACTIVATE_ON, TARGET_ANY]} && \
+			!${This.IsInstructionMatch[INSTRUCTION_ACTIVATE_FOR, TARGET_ANY]}&& \
+			!${This.IsInstructionMatch[INSTRUCTION_NONE, TARGET_ANY]}
+		{
+			_overloadToggledOn:Set[FALSE]
+		}
+
 		switch ${Instruction}
 		{
 			case INSTRUCTION_ACTIVATE_ON
@@ -73,6 +99,12 @@ objectdef obj_Module inherits obj_StateQueue
 				break
 			case INSTRUCTION_RELOAD_AMMO
 				This:OperateReloadAmmo
+				break
+			case INSTRUCTION_NONE
+				if ${This._toggleOverload}
+				{
+					return FALSE
+				}
 				break
 		}
 
@@ -172,6 +204,12 @@ objectdef obj_Module inherits obj_StateQueue
 			}
 			; ammo already match
 
+			if ${This._toggleOverload}
+			{
+				; Add bit delay.
+				return
+			}
+
 			; Finished
 			This:_resetTimers
 			return
@@ -192,6 +230,12 @@ objectdef obj_Module inherits obj_StateQueue
 
 				if ${This._isTargetValid[${targetID}]}
 				{
+					if ${This._toggleOverload}
+					{
+						; Add bit delay.
+						return
+					}
+
 					This:_activate[${targetID}]
 				}
 				else
@@ -224,6 +268,12 @@ objectdef obj_Module inherits obj_StateQueue
 			}
 			; ammo already match
 
+			if ${This._toggleOverload}
+			{
+				; Add bit delay.
+				return
+			}
+
 			; Finished
 			This:_resetTimers
 			return
@@ -242,6 +292,12 @@ objectdef obj_Module inherits obj_StateQueue
 			{
 				; ammo already match
 				_lastChangeAmmoTimestamp:Set[0]
+
+				if ${This._toggleOverload}
+				{
+					; Add bit delay.
+					return
+				}
 
 				This:_activate[TARGET_NA]
 				return
@@ -348,6 +404,7 @@ objectdef obj_Module inherits obj_StateQueue
 	{
 		Instruction:Set[INSTRUCTION_NONE]
 		InstructionTargetID:Set[TARGET_NA]
+		_overloadToggledOn:Set[FALSE]
 		This:_resetTimers
 	}
 
@@ -436,6 +493,7 @@ objectdef obj_Module inherits obj_StateQueue
 
 	method _deactivate()
 	{
+		_overloadToggledOn:Set[FALSE]
 		if ${_lastDeactivationTimestamp} == 0
 		{
 			This:LogDebug["Deactivating ${This.Name}"]
@@ -643,7 +701,10 @@ objectdef obj_Module inherits obj_StateQueue
 		This:GetAvailableAmmo[availableAmmos]
 		if ${availableAmmos.Used} == 0
 		{
-			This:LogCritical["No Ammo available - dreadful - also, annoying"]
+			if ${Client.InSpace}
+			{
+				This:LogCritical["No Ammo available - dreadful - also, annoying"]
+			}
 			return
 		}
 
@@ -661,6 +722,51 @@ objectdef obj_Module inherits obj_StateQueue
 			}
 		}
 		while ${availableAmmoIterator:Next(exists)}
+	}
+
+	member:float64 _HPPercentage()
+	{
+		if !${This.HP(exists)}
+		{
+			return 0
+		}
+
+		variable float64 percentage
+		percentage:Set[${Math.Calc[(${This.HP} - ${This.Damage}) / ${This.HP} * 100]}]
+
+		return ${percentage}
+	}
+
+	; Return:
+	;	TRUE: Toggled something.
+	;	FALSE: Did nothing.
+	member:bool _toggleOverload()
+	{
+		; Toggle only once, no retry because even if we can detect whether module is overloaded.
+		; We don't want to retry because unlike Activate() and Deactivate() methods, the effect
+		; of Toggle() method is undetermined. Retrying may do evil.
+		if ${This._HPPercentage} > ${This.OverloadIfHPAbovePercent} && !${_overloadToggledOn}
+		{
+			_overloadToggledOn:Set[TRUE]
+			; Turn on
+			This:LogInfo["Turning on overload HP ${This._HPPercentage}% > ${This.OverloadIfHPAbovePercent}%."]
+			This:ToggleOverload
+
+			; This:QueueState["Operate", ${_intervalBetweenOperations}]
+			return TRUE
+		}
+		elseif ${This._HPPercentage} <= ${This.OverloadIfHPAbovePercent} && ${_overloadToggledOn}
+		{
+			_overloadToggledOn:Set[FALSE]
+			; Turn off
+			This:LogInfo["Turning off overload HP ${This._HPPercentage}% < ${This.OverloadIfHPAbovePercent}%."]
+			This:ToggleOverload
+
+			; This:QueueState["Operate", ${_intervalBetweenOperations}]
+			return TRUE
+		}
+
+		return FALSE
 	}
 
 	member:float Range()

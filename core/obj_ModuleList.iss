@@ -148,6 +148,20 @@ objectdef obj_ModuleList
 		}
 	}
 
+	method SetOverloadHPThreshold(int threshold)
+	{
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
+		{
+			do
+			{
+				Ship.RegisteredModule.Element[${moduleIDIterator.Value}].OverloadIfHPAbovePercent:Set[${threshold}]
+			}
+			while ${moduleIDIterator:Next(exists)}
+		}
+	}
+
 	member:bool IsActiveOn(int64 targetID)
 	{
 		variable iterator moduleIDIterator
@@ -243,7 +257,7 @@ objectdef obj_ModuleList
 		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].TrackingSpeed}
 	}
 
-		member:float AccuracyFalloff()
+	member:float AccuracyFalloff()
 	{
 		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].AccuracyFalloff}
 	}

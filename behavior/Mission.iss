@@ -934,11 +934,6 @@ objectdef obj_Mission inherits obj_StateQueue
 					{
 						if ${MyShip.ToEntity.Mode} != MOVE_APPROACHING || ${LavishScript.RunningTime} > ${approachTimer}
 						{
-							if ${Ship.ModuleList_Siege.ActiveCount}
-							{
-								; This:LogInfo["Deactivate siege module due to approaching"]
-								Ship.ModuleList_Siege:DeactivateAll
-							}
 							Entity[${currentLootContainer}]:Approach[1000]
 							This:InsertState["PerformMission"]
 							approachTimer:Set[${Math.Calc[${LavishScript.RunningTime} + 10000]}]
@@ -1271,7 +1266,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		{
 			if ${Ship.ModuleList_Siege.ActiveCount}
 			{
-				; This:LogInfo["Deactivate siege module due to no target"]
+				; This:LogInfo["Deactivate siege module due to no locked target"]
 				Ship.ModuleList_Siege:DeactivateAll
 			}
 			This:LogInfo["Approaching distanced target: \ar${ActiveNPCs.TargetList.Get[1].Name}"]
@@ -1383,6 +1378,12 @@ objectdef obj_Mission inherits obj_StateQueue
 			return TRUE
 		}
 
+		if ${Ship.ModuleList_Siege.ActiveCount}
+		{
+			; This:LogInfo["Deactivate siege module due to no target."]
+			Ship.ModuleList_Siege:DeactivateAll
+		}
+
 		if ${notDone} || ${Busy.IsBusy}
 		{
 			This:InsertState["PerformMission"]
@@ -1453,12 +1454,6 @@ objectdef obj_Mission inherits obj_StateQueue
 
 		if ${Entity[Type = "Acceleration Gate"]} && !${EVEWindow[byName, modal].Text.Find[This gate is locked!]}
 		{
-			if ${Ship.ModuleList_Siege.ActiveCount}
-			{
-				; This:LogInfo["Deactivate siege module due to approaching"]
-				Ship.ModuleList_Siege:DeactivateAll
-			}
-
 			if ${Lootables.TargetList.Used} && ${Config.SalvagePrefix.NotNULLOrEmpty}
 			{
 				EVE:GetBookmarks[BookmarkIndex]
@@ -2532,19 +2527,19 @@ objectdef obj_Mission inherits obj_StateQueue
 
 				Ship.ModuleList_Weapon:ReloadDefaultAmmo
 
-				if ${Ship.ModuleList_Regen_Shield.InactiveCount} && ((${MyShip.ShieldPct.Int} < 100 && ${MyShip.CapacitorPct.Int} > ${AutoModule.Config.ActiveShieldCap}) || ${AutoModule.Config.ShieldBoost})
+				if ${Ship.ModuleList_Regen_Shield.InactiveCount} && ((${MyShip.ShieldPct.Int} < 100 && ${MyShip.CapacitorPct.Int} > ${AutoModule.Config.ActiveShieldCap}) || ${AutoModule.Config.AlwaysShieldBoost})
 				{
 					Ship.ModuleList_Regen_Shield:ActivateAll
 				}
-				if ${Ship.ModuleList_Regen_Shield.ActiveCount} && (${MyShip.ShieldPct.Int} == 100 || ${MyShip.CapacitorPct.Int} < ${AutoModule.Config.ActiveShieldCap}) && !${AutoModule.Config.ShieldBoost}
+				if ${Ship.ModuleList_Regen_Shield.ActiveCount} && (${MyShip.ShieldPct.Int} == 100 || ${MyShip.CapacitorPct.Int} < ${AutoModule.Config.ActiveShieldCap}) && !${AutoModule.Config.AlwaysShieldBoost}
 				{
 					Ship.ModuleList_Regen_Shield:DeactivateAll
 				}
-				if ${Ship.ModuleList_Repair_Armor.InactiveCount} && ((${MyShip.ArmorPct.Int} < 100 && ${MyShip.CapacitorPct.Int} > ${AutoModule.Config.ActiveArmorCap}) || ${AutoModule.Config.ArmorRepair})
+				if ${Ship.ModuleList_Repair_Armor.InactiveCount} && ((${MyShip.ArmorPct.Int} < 100 && ${MyShip.CapacitorPct.Int} > ${AutoModule.Config.ActiveArmorCap}) || ${AutoModule.Config.AlwaysArmorRepair})
 				{
 					Ship.ModuleList_Repair_Armor:ActivateAll
 				}
-				if ${Ship.ModuleList_Repair_Armor.ActiveCount} && (${MyShip.ArmorPct.Int} == 100 || ${MyShip.CapacitorPct.Int} < ${AutoModule.Config.ActiveArmorCap}) && !${AutoModule.Config.ArmorRepair}
+				if ${Ship.ModuleList_Repair_Armor.ActiveCount} && (${MyShip.ArmorPct.Int} == 100 || ${MyShip.CapacitorPct.Int} < ${AutoModule.Config.ActiveArmorCap}) && !${AutoModule.Config.AlwaysArmorRepair}
 				{
 					Ship.ModuleList_Repair_Armor:DeactivateAll
 				}

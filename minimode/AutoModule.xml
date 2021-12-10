@@ -75,14 +75,14 @@
 							Script[Tehbot].VariableScope.AutoModule.Config:SetActiveHardeners[${This.Checked}]
 						</OnLeftClick>
 					</Checkbox>
-					<Checkbox name='ShieldBoost'>
+					<Checkbox name='AlwaysShieldBoost'>
 						<X>1%</X>
 						<Y>24%</Y>
 						<Width>30%</Width>
 						<Height>3%</Height>
 						<Text>Always run shield boosters</Text>
 						<OnLoad>
-							if ${Script[Tehbot].VariableScope.AutoModule.Config.ShieldBoost}
+							if ${Script[Tehbot].VariableScope.AutoModule.Config.AlwaysShieldBoost}
 							{
 								This:SetChecked
 							}
@@ -131,14 +131,14 @@
 							Script[Tehbot].VariableScope.AutoModule.Config:SetActiveShieldCap[${This.Value}]
 						</OnChange>
 					</Slider>
-					<Checkbox name='ArmorRepair'>
+					<Checkbox name='AlwaysArmorRepair'>
 						<X>1%</X>
 						<Y>35%</Y>
 						<Width>30%</Width>
 						<Height>3%</Height>
 						<Text>Armor Repairers</Text>
 						<OnLoad>
-							if ${Script[Tehbot].VariableScope.AutoModule.Config.ArmorRepair}
+							if ${Script[Tehbot].VariableScope.AutoModule.Config.AlwaysArmorRepair}
 							{
 								This:SetChecked
 							}

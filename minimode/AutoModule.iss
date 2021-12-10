@@ -53,13 +53,14 @@ objectdef obj_Configuration_AutoModule
 		This.CommonRef:AddSetting[TrackingComputers, TRUE]
 		This.CommonRef:AddSetting[ECCM, TRUE]
 		This.CommonRef:AddSetting[DroneControlUnit, TRUE]
+		; This.CommonRef:AddSetting[OverloadHPThreshold, 50]
 	}
 
 	Setting(bool, ActiveHardeners, SetActiveHardeners)
-	Setting(bool, ShieldBoost, SetShieldBoost)
+	Setting(bool, AlwaysShieldBoost, SetShieldBoost)
 	Setting(int, ActiveShieldBoost, SetActiveShieldBoost)
 	Setting(int, ActiveShieldCap, SetActiveShieldCap)
-	Setting(bool, ArmorRepair, SetArmorRepair)
+	Setting(bool, AlwaysArmorRepair, SetArmorRepair)
 	Setting(int, ActiveArmorRepair, SetActiveArmorRepair)
 	Setting(int, ActiveArmorCap, SetActiveArmorCap)
 	Setting(bool, Cloak, SetCloak)
@@ -69,7 +70,7 @@ objectdef obj_Configuration_AutoModule
 	Setting(bool, TrackingComputers, SetTrackingComputers)
 	Setting(bool, ECCM, SetECCM)
 	Setting(bool, DroneControlUnit, SetDroneControlUnit)
-
+	; Setting(int, OverloadHPThreshold, SetOverloadHPThreshold)
 }
 
 objectdef obj_AutoModule inherits obj_StateQueue
@@ -111,9 +112,9 @@ objectdef obj_AutoModule inherits obj_StateQueue
 		MyShip:GetModules[modules]
 		modules:GetIterator[m]
 		if ${m:First(exists)}
+		{
 			do
 			{
-
 				if ${m.Value.ToItem.Group.Equal[Cloaking Device]}
 				{
 					cloak:Set[${m.Value.Slot}]
@@ -122,8 +123,9 @@ objectdef obj_AutoModule inherits obj_StateQueue
 				}
 			}
 			while ${m:Next(exists)}
+		}
 
-		if !${cloak.Equal[""]} && ${Config.Cloak}
+		if ${cloak.NotNULLOrEmpty} && ${Config.Cloak}
 		{
 			if ${This.DropCloak}
 			{
@@ -150,40 +152,63 @@ objectdef obj_AutoModule inherits obj_StateQueue
 			}
 		}
 
-		if ${Ship.ModuleList_Regen_Shield.InactiveCount} && ((${MyShip.ShieldPct.Int} < ${Config.ActiveShieldBoost} && ${MyShip.CapacitorPct.Int} > ${Config.ActiveShieldCap}) || ${Config.ShieldBoost})
+		variable int overloadThreshold
+		if ${Ship.ModuleList_Regen_Shield.InactiveCount} && ((${MyShip.ShieldPct.Int} < ${Config.ActiveShieldBoost} && ${MyShip.CapacitorPct.Int} > ${Config.ActiveShieldCap}) || ${Config.AlwaysShieldBoost})
 		{
+			; Overload the module if current damage doubles the threshold.
+			if ${Config.ActiveShieldBoost} < 50
+			{
+				overloadThreshold:Set[0]
+			}
+			else
+			{
+				overloadThreshold:Set[${Math.Calc[100 - (2 * (100 - ${Config.ActiveShieldBoost}))]}]
+			}
+			if ${MyShip.ShieldPct.Int} <= ${overloadThreshold}
+			{
+				; Ship.ModuleList_Regen_Shield:SetOverloadHPThreshold[${Config.OverloadHPThreshold}]
+				Ship.ModuleList_Regen_Shield:SetOverloadHPThreshold[50]
+			}
+			else
+			{
+				Ship.ModuleList_Regen_Shield:SetOverloadHPThreshold[100]
+			}
 			Ship.ModuleList_Regen_Shield:ActivateAll
 		}
-		if ${Ship.ModuleList_Regen_Shield.ActiveCount} && (${MyShip.ShieldPct.Int} > ${Config.ActiveShieldBoost} || ${MyShip.CapacitorPct.Int} < ${Config.ActiveShieldCap}) && !${Config.ShieldBoost}
+		if ${Ship.ModuleList_Regen_Shield.ActiveCount} && (${MyShip.ShieldPct.Int} > ${Config.ActiveShieldBoost} || ${MyShip.CapacitorPct.Int} < ${Config.ActiveShieldCap}) && !${Config.AlwaysShieldBoost}
 		{
+			Ship.ModuleList_Regen_Shield:SetOverloadHPThreshold[100]
 			Ship.ModuleList_Regen_Shield:DeactivateAll
 		}
-		if (${MyShip.ShieldPct.Int} > ${Config.ActiveShieldBoost} || ${MyShip.CapacitorPct.Int} < ${Config.ActiveShieldCap}) && !${Config.ShieldBoost}
-		{
-			MyShip:GetModules[modules]
-			modules:GetIterator[m]
-			if ${m:First(exists)}
-				do
-				{
-					if ${m.Value.ToItem.Group.Equal[Shield Booster]} && ${m.Value.IsActive} && !${m.Value.IsDeactivating}
-					{
-						echo automodule failed to deactivate shield booster
-						m.Value:Deactivate
-						return FALSE
-					}
-				}
-				while ${m:Next(exists)}
 
-		}
-
-		if ${Ship.ModuleList_Repair_Armor.InactiveCount} && ((${MyShip.ArmorPct.Int} < ${Config.ActiveArmorRepair} && ${MyShip.CapacitorPct.Int} > ${Config.ActiveArmorCap}) || ${Config.ArmorRepair}) && ${LavishScript.RunningTime} > ${lastArmorRepActivate}
+		if ${Ship.ModuleList_Repair_Armor.InactiveCount} && ((${MyShip.ArmorPct.Int} < ${Config.ActiveArmorRepair} && ${MyShip.CapacitorPct.Int} > ${Config.ActiveArmorCap}) || ${Config.AlwaysArmorRepair}) && ${LavishScript.RunningTime} > ${lastArmorRepActivate}
 		{
+			; Overload the module if current damage doubles the threshold.
+			if ${Config.ActiveArmorRepair} < 50
+			{
+				overloadThreshold:Set[0]
+			}
+			else
+			{
+				overloadThreshold:Set[${Math.Calc[100 - (2 * (100 - ${Config.ActiveArmorRepair}))]}]
+			}
+			if ${MyShip.ArmorPct.Int} <= ${overloadThreshold}
+			{
+				; Ship.ModuleList_Repair_Armor:SetOverloadHPThreshold[${Config.OverloadHPThreshold}]
+				Ship.ModuleList_Repair_Armor:SetOverloadHPThreshold[50]
+			}
+			else
+			{
+				Ship.ModuleList_Repair_Armor:SetOverloadHPThreshold[100]
+			}
+
 			Ship.ModuleList_Repair_Armor:ActivateAll
-			lastArmorRepActivate:Set[${Math.Calc[${LavishScript.RunningTime} + 3000]}]
+			; lastArmorRepActivate:Set[${Math.Calc[${LavishScript.RunningTime} + 3000]}]
 		}
 
-		if ${Ship.ModuleList_Repair_Armor.ActiveCount} && (${MyShip.ArmorPct.Int} > ${Config.ActiveArmorRepair} || ${MyShip.CapacitorPct.Int} < ${Config.ActiveArmorCap}) && !${Config.ArmorRepair}
+		if ${Ship.ModuleList_Repair_Armor.ActiveCount} && (${MyShip.ArmorPct.Int} > ${Config.ActiveArmorRepair} || ${MyShip.CapacitorPct.Int} < ${Config.ActiveArmorCap}) && !${Config.AlwaysArmorRepair}
 		{
+			Ship.ModuleList_Repair_Armor:SetOverloadHPThreshold[100]
 			Ship.ModuleList_Repair_Armor:DeactivateAll
 		}
 
