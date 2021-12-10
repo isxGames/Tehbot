@@ -560,7 +560,7 @@ objectdef obj_DroneControl inherits obj_StateQueue
 				}
 			}
 		}
-		elseif ${FightOrFlight.IsEngagingGankers} && !${FightOrFlight.currentTarget.Equal[0]}
+		elseif ${FightOrFlight.IsEngagingGankers} && !${FightOrFlight.currentTarget.Equal[0]} && ${Entity[${FightOrFlight.currentTarget}](exists)}
 		{
 			currentTarget:Set[${FightOrFlight.currentTarget}]
 			This:LogInfo["Engaging ganker \ar${Entity[${currentTarget}].Name}"]
