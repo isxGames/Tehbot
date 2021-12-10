@@ -25,7 +25,8 @@ objectdef obj_Configuration_FightOrFlight inherits obj_Base_Configuration
 
 objectdef obj_FightOrFlight inherits obj_StateQueue
 {
-	variable obj_Configuration_FightOrFlight Config
+	; Avoid name conflict with common config.
+	variable obj_Configuration_FightOrFlight FoFConfig
 
 	variable bool IsWarpScrambled = FALSE
 	variable bool IsOtherPilotsDetected = FALSE
@@ -51,7 +52,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		This:BuildPC
 		NPCs:AddAllNPCs
 
-		This.LogLevelBar:Set[${Config.LogLevelBar}]
+		This.LogLevelBar:Set[${FoFConfig.LogLevelBar}]
 	}
 
 	method Start()
@@ -269,10 +270,10 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			This:QueueState["FightOrFlight"]
 			return TRUE
 		}
-		elseif ${MyShip.ShieldPct.Int} < ${Config.FleeShieldThreshold} || \
-			${MyShip.ArmorPct.Int} < ${Config.FleeArmorThreshold} || \
-			${MyShip.StructurePct.Int} < ${Config.FleeHullThreshold} || \
-			${MyShip.CapacitorPct.Int} < ${Config.FleeCapacitorThreshold}
+		elseif ${MyShip.ShieldPct.Int} < ${FoFConfig.FleeShieldThreshold} || \
+			${MyShip.ArmorPct.Int} < ${FoFConfig.FleeArmorThreshold} || \
+			${MyShip.StructurePct.Int} < ${FoFConfig.FleeHullThreshold} || \
+			${MyShip.CapacitorPct.Int} < ${FoFConfig.FleeCapacitorThreshold}
 		{
 			; TODO align and 75% speed before entering flee status, in case last second.
 			This:LogInfo["PVE Low HP - Shield: ${MyShip.ShieldPct.Int}%, Armor: ${MyShip.ArmorPct.Int}%, Hull: ${MyShip.StructurePct.Int}%, Capacitor: ${MyShip.CapacitorPct.Int}%, I should flee."]
@@ -492,7 +493,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		variable index:pilot pilotIndex
 		EVE:GetLocalPilots[pilotIndex]
 
-		if ${pilotIndex.Used} < ${Config.FleeLocalRedThreshold}
+		if ${pilotIndex.Used} < ${FoFConfig.FleeLocalRedThreshold}
 		{
 			return 0
 		}

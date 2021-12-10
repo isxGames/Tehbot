@@ -75,10 +75,10 @@
 						<Border>1</Border>
 						<Range>3</Range>
 						<OnLoad>
-							This:SetValue[${Script[Tehbot].VariableScope.FightOrFlight.Config.LogLevelBar:Dec}]
+							This:SetValue[${Script[Tehbot].VariableScope.FightOrFlight.FoFConfig.LogLevelBar:Dec}]
 						</OnLoad>
 						<OnChange>
-							Script[Tehbot].VariableScope.FightOrFlight.Config:SetLogLevelBar[${This.Value:Inc}]
+							Script[Tehbot].VariableScope.FightOrFlight.FoFConfig:SetLogLevelBar[${This.Value:Inc}]
 						</OnChange>
 					</Slider>
 
@@ -87,7 +87,7 @@
 						<Y>17%</Y>
 						<Width>40%</Width>
 						<Height>3%</Height>
-						<Text>Flee if shields drop below ${Script[Tehbot].VariableScope.FightOrFlight.Config.FleeShieldThreshold}%</Text>
+						<Text>Flee if shields drop below ${Script[Tehbot].VariableScope.FightOrFlight.FoFConfig.FleeShieldThreshold}%</Text>
 					</Text>
 					<Slider name='FleeShieldThreshold'>
 						<X>41%</X>
@@ -96,10 +96,10 @@
 						<Height>4%</Height>
 						<Border>1</Border>
 						<OnLoad>
-							This:SetValue[${Script[Tehbot].VariableScope.FightOrFlight.Config.FleeShieldThreshold}]
+							This:SetValue[${Script[Tehbot].VariableScope.FightOrFlight.FoFConfig.FleeShieldThreshold}]
 						</OnLoad>
 						<OnChange>
-							Script[Tehbot].VariableScope.FightOrFlight.Config:SetFleeShieldThreshold[${This.Value}]
+							Script[Tehbot].VariableScope.FightOrFlight.FoFConfig:SetFleeShieldThreshold[${This.Value}]
 						</OnChange>
 					</Slider>
 
@@ -108,7 +108,7 @@
 						<Y>25%</Y>
 						<Width>40%</Width>
 						<Height>3%</Height>
-						<Text>Flee if armor drop below ${Script[Tehbot].VariableScope.FightOrFlight.Config.FleeArmorThreshold}%</Text>
+						<Text>Flee if armor drop below ${Script[Tehbot].VariableScope.FightOrFlight.FoFConfig.FleeArmorThreshold}%</Text>
 					</Text>
 					<Slider name='FleeArmorThreshold'>
 						<X>41%</X>
@@ -117,10 +117,10 @@
 						<Height>4%</Height>
 						<Border>1</Border>
 						<OnLoad>
-							This:SetValue[${Script[Tehbot].VariableScope.FightOrFlight.Config.FleeArmorThreshold}]
+							This:SetValue[${Script[Tehbot].VariableScope.FightOrFlight.FoFConfig.FleeArmorThreshold}]
 						</OnLoad>
 						<OnChange>
-							Script[Tehbot].VariableScope.FightOrFlight.Config:SetFleeArmorThreshold[${This.Value}]
+							Script[Tehbot].VariableScope.FightOrFlight.FoFConfig:SetFleeArmorThreshold[${This.Value}]
 						</OnChange>
 					</Slider>
 
@@ -129,7 +129,7 @@
 						<Y>33%</Y>
 						<Width>40%</Width>
 						<Height>3%</Height>
-						<Text>Flee if hull drop below ${Script[Tehbot].VariableScope.FightOrFlight.Config.FleeHullThreshold}%</Text>
+						<Text>Flee if hull drop below ${Script[Tehbot].VariableScope.FightOrFlight.FoFConfig.FleeHullThreshold}%</Text>
 					</Text>
 					<Slider name='FleeHullThreshold'>
 						<X>41%</X>
@@ -138,10 +138,10 @@
 						<Height>4%</Height>
 						<Border>1</Border>
 						<OnLoad>
-							This:SetValue[${Script[Tehbot].VariableScope.FightOrFlight.Config.FleeHullThreshold}]
+							This:SetValue[${Script[Tehbot].VariableScope.FightOrFlight.FoFConfig.FleeHullThreshold}]
 						</OnLoad>
 						<OnChange>
-							Script[Tehbot].VariableScope.FightOrFlight.Config:SetFleeHullThreshold[${This.Value}]
+							Script[Tehbot].VariableScope.FightOrFlight.FoFConfig:SetFleeHullThreshold[${This.Value}]
 						</OnChange>
 					</Slider>
 
@@ -150,7 +150,7 @@
 						<Y>41%</Y>
 						<Width>40%</Width>
 						<Height>3%</Height>
-						<Text>Flee if capacitor drop below ${Script[Tehbot].VariableScope.FightOrFlight.Config.FleeCapacitorThreshold}%</Text>
+						<Text>Flee if capacitor drop below ${Script[Tehbot].VariableScope.FightOrFlight.FoFConfig.FleeCapacitorThreshold}%</Text>
 					</Text>
 					<Slider name='FleeCapacitorThreshold'>
 						<X>41%</X>
@@ -159,10 +159,10 @@
 						<Height>4%</Height>
 						<Border>1</Border>
 						<OnLoad>
-							This:SetValue[${Script[Tehbot].VariableScope.FightOrFlight.Config.FleeCapacitorThreshold}]
+							This:SetValue[${Script[Tehbot].VariableScope.FightOrFlight.FoFConfig.FleeCapacitorThreshold}]
 						</OnLoad>
 						<OnChange>
-							Script[Tehbot].VariableScope.FightOrFlight.Config:SetFleeCapacitorThreshold[${This.Value}]
+							Script[Tehbot].VariableScope.FightOrFlight.FoFConfig:SetFleeCapacitorThreshold[${This.Value}]
 						</OnChange>
 					</Slider>
 
@@ -171,7 +171,7 @@
 						<Y>49%</Y>
 						<Width>50%</Width>
 						<Height>3%</Height>
-						<Text>Flee and stay in station if local has ${Script[Tehbot].VariableScope.FightOrFlight.Config.FleeLocalRedThreshold} pilots with bad standing.</Text>
+						<Text>Flee and stay in station if local has ${Script[Tehbot].VariableScope.FightOrFlight.FoFConfig.FleeLocalRedThreshold} pilots with bad standing.</Text>
 					</Text>
 					<Slider name='FleeLocalRedThreshold'>
 						<X>41%</X>
@@ -181,10 +181,10 @@
 						<Border>1</Border>
 						<Range>20</Range>
 						<OnLoad>
-							This:SetValue[${Script[Tehbot].VariableScope.FightOrFlight.Config.FleeLocalRedThreshold}]
+							This:SetValue[${Script[Tehbot].VariableScope.FightOrFlight.FoFConfig.FleeLocalRedThreshold}]
 						</OnLoad>
 						<OnChange>
-							Script[Tehbot].VariableScope.FightOrFlight.Config:SetFleeLocalRedThreshold[${This.Value}]
+							Script[Tehbot].VariableScope.FightOrFlight.FoFConfig:SetFleeLocalRedThreshold[${This.Value}]
 						</OnChange>
 					</Slider>
 
