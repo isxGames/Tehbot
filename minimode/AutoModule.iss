@@ -192,7 +192,7 @@ objectdef obj_AutoModule inherits obj_StateQueue
 			Ship.ModuleList_ActiveResists:ActivateAll
 		}
 
-		if ${Ship.ModuleList_GangLinks.ActiveCount} < ${Ship.ModuleList_GangLinks.Count} && ${Me.ToEntity.Mode} != 3 && ${Config.GangLink}
+		if ${Ship.ModuleList_GangLinks.ActiveCount} < ${Ship.ModuleList_GangLinks.Count} && ${Me.ToEntity.Mode} != MOVE_WARPING && ${Config.GangLink}
 		{
 			Ship.ModuleList_GangLinks:ActivateAll
 		}

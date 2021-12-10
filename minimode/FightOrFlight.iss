@@ -608,7 +608,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 	member:bool Traveling()
 	{
 		; This:LogDebug["Traveling."]
-		if ${Cargo.Processing} || ${Move.Traveling} || ${Me.ToEntity.Mode} == 3
+		if ${Cargo.Processing} || ${Move.Traveling} || ${Me.ToEntity.Mode} == MOVE_WARPING
 		{
 			if ${Me.InSpace}
 			{

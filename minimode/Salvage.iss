@@ -179,7 +179,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 
 	member:bool Salvage()
 	{
-		if !${Client.InSpace} || ${Me.ToEntity.Mode} == 3 || ${MyShip.CapacitorPct.Int} < 35 || ${FightOrFlight.IsEngagingGankers}
+		if !${Client.InSpace} || ${Me.ToEntity.Mode} == MOVE_WARPING || ${MyShip.CapacitorPct.Int} < 35 || ${FightOrFlight.IsEngagingGankers}
 		{
 			return FALSE
 		}
@@ -294,7 +294,7 @@ objectdef obj_LootCans inherits obj_StateQueue
 		variable index:item cargo
 		variable iterator cargoIterator
 
-		if !${Client.InSpace} || ${Me.ToEntity.Mode} == 3
+		if !${Client.InSpace} || ${Me.ToEntity.Mode} == MOVE_WARPING
 		{
 			return FALSE
 		}

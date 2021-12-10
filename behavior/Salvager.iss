@@ -354,7 +354,7 @@ objectdef obj_Salvager inherits obj_StateQueue
 
 	member:bool Traveling()
 	{
-		if ${Cargo.Processing} || ${Move.Traveling} || ${Me.ToEntity.Mode} == 3
+		if ${Cargo.Processing} || ${Move.Traveling} || ${Me.ToEntity.Mode} == MOVE_WARPING
 		{
 			return FALSE
 		}

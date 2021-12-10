@@ -835,7 +835,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		Ship.ModuleList_ActiveResists:ActivateAll
 		variable index:bookmark BookmarkIndex
 
-		if ${Me.ToEntity.Mode} == 3
+		if ${Me.ToEntity.Mode} == MOVE_WARPING
 		{
 			This:InsertState["PerformMission"]
 			return TRUE
@@ -932,7 +932,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				{
 					if ${Entity[${currentLootContainer}].Distance} > 2500
 					{
-						if ${MyShip.ToEntity.Mode} != 1 || ${LavishScript.RunningTime} > ${approachTimer}
+						if ${MyShip.ToEntity.Mode} != MOVE_APPROACHING || ${LavishScript.RunningTime} > ${approachTimer}
 						{
 							if ${Ship.ModuleList_Siege.ActiveCount}
 							{
@@ -1072,7 +1072,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			notDone:Set[FALSE]
 			if ${Entity[Type = "Acceleration Gate"]}
 			{
-				if ${MyShip.ToEntity.Mode} != 4 && ${MyShip.ToEntity.Mode} != 1
+				if ${MyShip.ToEntity.Mode} != MOVE_ORBITING && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
 				{
 					Entity[Type = "Acceleration Gate"]:Orbit[2000]
 					This:InsertState["PerformMission"]
@@ -1081,7 +1081,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			}
 			elseif ${Entity[Name = "Acceleration Gate (Locked Down)"]}
 			{
-				if ${MyShip.ToEntity.Mode} != 4 && ${MyShip.ToEntity.Mode} != 1
+				if ${MyShip.ToEntity.Mode} != MOVE_ORBITING && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
 				{
 					Entity[Name = "Acceleration Gate (Locked Down)"]:Orbit[2000]
 					This:InsertState["PerformMission"]
@@ -1090,7 +1090,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			}
 			elseif ${Entity[Type = "Beacon"]}
 			{
-				if ${MyShip.ToEntity.Mode} != 4 && ${MyShip.ToEntity.Mode} != 1
+				if ${MyShip.ToEntity.Mode} != MOVE_ORBITING && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
 				{
 					Entity[Type = "Beacon"]:Orbit[2000]
 					This:InsertState["PerformMission"]
@@ -1267,7 +1267,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		if ${ActiveNPCs.TargetList.Used} && \
 		   (${currentTarget} == 0 || ${currentTarget} == ${ActiveNPCs.TargetList.Get[1].ID}) && \
 		   ${ActiveNPCs.TargetList.Get[1].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * 0.95]} && \
-		   ${MyShip.ToEntity.Mode} != 1
+		   ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
 		{
 			if ${Ship.ModuleList_Siege.ActiveCount}
 			{
@@ -1329,7 +1329,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 		if ${NPCs.TargetList.Used}
 		{
-			if ${NPCs.TargetList.Get[1].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * .95]} && ${MyShip.ToEntity.Mode} != 1
+			if ${NPCs.TargetList.Get[1].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * .95]} && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
 			{
 				if ${Ship.ModuleList_Siege.ActiveCount}
 				{
@@ -1354,7 +1354,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 		if ${Entity[${targetToDestroy}]}
 		{
-			if ${Entity[${targetToDestroy}].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * .95]} && ${MyShip.ToEntity.Mode} != 1
+			if ${Entity[${targetToDestroy}].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * .95]} && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
 			{
 				if ${Ship.ModuleList_Siege.ActiveCount}
 				{
@@ -2516,7 +2516,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 	member:bool Traveling()
 	{
-		if ${Cargo.Processing} || ${Move.Traveling} || ${Me.ToEntity.Mode} == 3
+		if ${Cargo.Processing} || ${Move.Traveling} || ${Me.ToEntity.Mode} == MOVE_WARPING
 		{
 			if ${Me.InSpace}
 			{

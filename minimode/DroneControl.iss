@@ -449,7 +449,7 @@ objectdef obj_DroneControl inherits obj_StateQueue
 			return FALSE
 		}
 
-		if ${Me.ToEntity.Mode} == 3
+		if ${Me.ToEntity.Mode} == MOVE_WARPING
 		{
 			if ${Drones.ActiveCount["ToEntity.GroupID = GROUP_SCOUT_DRONE || ToEntity.GroupID = GROUP_COMBAT_DRONE"]} > 0
 			{

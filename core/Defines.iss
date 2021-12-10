@@ -1,3 +1,4 @@
+; Entity category
 #define CATEGORYID_CELESTIAL																					2
 #define CATEGORYID_STATION 																						3
 #define CATEGORYID_SHIP    																						6
@@ -6,6 +7,7 @@
 #define CATEGORYID_STRUCTURE                                                                                    65
 #define CATEGORYID_STARBASE		                                                                                23
 
+; Module group id
 #define GROUPID_CONTROL_TOWER                                                                                   365
 #define GROUP_FREQUENCY_MINING_LASER 																			483
 #define GROUP_ENERGYWEAPON 																						53
@@ -71,22 +73,33 @@
 #define GROUP_SCOUT_DRONE 																						100
 #define GROUP_COMBAT_DRONE 																						549
 
+; Drone race
 #define DRONE_RACE_CALDARI 																						1
 #define DRONE_RACE_MINMATAR 																					2
 #define DRONE_RACE_AMARR 																						4
 #define DRONE_RACE_GALLENTE 																					8
 
+; Log level
 #define LOG_DEBUG                                                                                               1
 #define LOG_INFO                                                                                                2
 #define LOG_CRITICAL                                                                                            3
 
+; Module target
 ; Don't need to distinguish these 2 in our case.
 #define TARGET_NA																			                    0
 #define TARGET_ANY																			                    0
 
+; Module instruction
 #define INSTRUCTION_NONE																	                    0
 #define INSTRUCTION_ACTIVATE_ON																                    1
 #define INSTRUCTION_DEACTIVATE																                    2
 #define INSTRUCTION_RELOAD_AMMO																                    3
 #define INSTRUCTION_ACTIVATE_FOR												                    	        4
 #define INSTRUCTION_ACTIVATE_ONCE														                    	5
+
+; Ship mode
+#define MOVE_ALIGNED                                                                                            0
+#define MOVE_APPROACHING                                                                                        1
+#define MOVE_STOPPED                                                                                            2
+#define MOVE_WARPING                                                                                            3
+#define MOVE_ORBITING                                                                                           4

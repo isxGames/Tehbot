@@ -72,7 +72,7 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 			return FALSE
 		}
 
-		if ${Me.ToEntity.Mode} == 3
+		if ${Me.ToEntity.Mode} == MOVE_WARPING
 		{
 			Ship.ModuleList_AB_MWD:DeactivateAll
 			return FALSE
@@ -93,7 +93,7 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 					Ship.ModuleList_AB_MWD:DeactivateAll
 					return FALSE
 				}
-				if ${Me.ToEntity.Mode} == 1 && \
+				if ${Me.ToEntity.Mode} == MOVE_APPROACHING && \
 					${Me.ToEntity.FollowRange} == 50
 				{
 					TurnOff:Set[FALSE]
@@ -107,7 +107,7 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 					Ship.ModuleList_AB_MWD:DeactivateAll
 					return FALSE
 				}
-				if ${Me.ToEntity.Mode} == 4
+				if ${Me.ToEntity.Mode} == MOVE_ORBITING
 				{
 					TurnOff:Set[FALSE]
 				}
@@ -120,7 +120,7 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 					Ship.ModuleList_AB_MWD:DeactivateAll
 					return FALSE
 				}
-				if ${Me.ToEntity.Mode} == 1 && \
+				if ${Me.ToEntity.Mode} == MOVE_APPROACHING && \
 					${Me.ToEntity.FollowRange} > 50
 				{
 					TurnOff:Set[FALSE]
@@ -135,7 +135,7 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 					return FALSE
 				}
 
-				if	${Me.ToEntity.Mode} != 2
+				if	${Me.ToEntity.Mode} == MOVE_STOPPED
 				{
 					TurnOff:Set[FALSE]
 				}
@@ -158,7 +158,7 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 		if ${Config.Approach} && \
 			!${Ship.ModuleList_AB_MWD.ActiveCount} && \
 			${MyShip.CapacitorPct.Int} > ${Config.Approach_Threshold} && \
-			${Me.ToEntity.Mode} == 1 && \
+			${Me.ToEntity.Mode} == MOVE_APPROACHING && \
 			${Me.ToEntity.FollowRange} == 50
 		{
 				Ship.ModuleList_AB_MWD:ActivateOne
@@ -167,7 +167,7 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 		if ${Config.Orbit} && \
 			!${Ship.ModuleList_AB_MWD.ActiveCount} && \
 			${MyShip.CapacitorPct.Int} > ${Config.Orbit_Threshold} && \
-			${Me.ToEntity.Mode} == 4
+			${Me.ToEntity.Mode} == MOVE_ORBITING
 		{
 				Ship.ModuleList_AB_MWD:ActivateOne
 				return FALSE
@@ -175,7 +175,7 @@ objectdef obj_AutoThrust inherits obj_StateQueue
 		if ${Config.KeepAtRange} && \
 			!${Ship.ModuleList_AB_MWD.ActiveCount} && \
 			${MyShip.CapacitorPct.Int} > ${Config.KeepAtRange_Threshold} && \
-			${Me.ToEntity.Mode} == 1 && \
+			${Me.ToEntity.Mode} == MOVE_APPROACHING && \
 			${Me.ToEntity.FollowRange} > 50
 		{
 				Ship.ModuleList_AB_MWD:ActivateOne

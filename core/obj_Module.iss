@@ -794,7 +794,7 @@ objectdef obj_Module inherits obj_StateQueue
 	; 	{
 	; 		if ${This.IsActive}
 	; 		{
-	; 			if (${Me.ToEntity.Mode} == 3 && ${This.ToItem.GroupID} == GROUP_AFTERBURNER)
+	; 			if (${Me.ToEntity.Mode} == MOVE_WARPING && ${This.ToItem.GroupID} == GROUP_AFTERBURNER)
 	; 			{
 	; 				Activated:Set[FALSE]
 	; 				InstructionTargetID:Set[-1]

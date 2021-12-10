@@ -618,7 +618,7 @@ objectdef obj_Cargo inherits obj_StateQueue
 
 	member:bool Traveling()
 	{
-		if ${Move.Traveling} || ${Me.ToEntity.Mode} == 3
+		if ${Move.Traveling} || ${Me.ToEntity.Mode} == MOVE_WARPING
 		{
 			return FALSE
 		}

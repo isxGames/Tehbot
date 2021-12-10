@@ -26,19 +26,19 @@ objectdef obj_InstaWarp inherits obj_StateQueue
 			return FALSE
 		}
 
-		if ${Me.ToEntity.Mode} == 3 && ${InstaWarp_Cooldown} && ${Ship.ModuleList_AB_MWD.ActiveCount}
+		if ${Me.ToEntity.Mode} == MOVE_WARPING && ${InstaWarp_Cooldown} && ${Ship.ModuleList_AB_MWD.ActiveCount}
 		{
 			Ship.ModuleList_AB_MWD:DeactivateAll
 			return FALSE
 		}
 
-		if ${Me.ToEntity.Mode} == 3 && !${InstaWarp_Cooldown}
+		if ${Me.ToEntity.Mode} == MOVE_WARPING && !${InstaWarp_Cooldown}
 		{
 			Ship.ModuleList_AB_MWD:ActivateOne
 			InstaWarp_Cooldown:Set[TRUE]
 			return FALSE
 		}
-		if ${Me.ToEntity.Mode} != 3
+		if ${Me.ToEntity.Mode} != MOVE_WARPING
 		{
 			InstaWarp_Cooldown:Set[FALSE]
 			return FALSE

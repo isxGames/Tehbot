@@ -243,7 +243,7 @@ objectdef obj_TargetList inherits obj_StateQueue
 
 	member:bool UpdateList()
 	{
-		if !${NeedUpdate} || !${Client.InSpace} || ${Me.ToEntity.Mode} == 3
+		if !${NeedUpdate} || !${Client.InSpace} || ${Me.ToEntity.Mode} == MOVE_WARPING
 		{
 			return FALSE
 		}
@@ -449,7 +449,7 @@ objectdef obj_TargetList inherits obj_StateQueue
 		variable iterator LockIterator
 		variable int LowestPriority = 999999999
 		variable int64 LowestLock = -1
-		if !${Client.InSpace} || ${Me.ToEntity.Mode} == 3
+		if !${Client.InSpace} || ${Me.ToEntity.Mode} == MOVE_WARPING
 		{
 			return TRUE
 		}

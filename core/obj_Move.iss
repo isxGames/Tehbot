@@ -44,7 +44,7 @@ objectdef obj_Move inherits obj_StateQueue
 
 	method TravelToSystem(int64 DestinationSystemID)
 	{
-		if ${Me.ToEntity.Mode} == 3 || ${DestinationSystemID.Equal[${Me.SolarSystemID}]} || ${Me.AutoPilotOn}
+		if ${Me.ToEntity.Mode} == MOVE_WARPING || ${DestinationSystemID.Equal[${Me.SolarSystemID}]} || ${Me.AutoPilotOn}
 		{
 			return
 		}
@@ -65,7 +65,7 @@ objectdef obj_Move inherits obj_StateQueue
 
 	method TravelToStation(int64 StationID)
 	{
-		if ${Me.ToEntity.Mode} == 3 || ${Me.AutoPilotOn}
+		if ${Me.ToEntity.Mode} == MOVE_WARPING || ${Me.AutoPilotOn}
 		{
 			return
 		}
@@ -295,7 +295,7 @@ objectdef obj_Move inherits obj_StateQueue
 			return TRUE
 		}
 
-		if ${Me.ToEntity.Mode} == 3
+		if ${Me.ToEntity.Mode} == MOVE_WARPING
 		{
 			return FALSE
 		}
@@ -344,7 +344,7 @@ objectdef obj_Move inherits obj_StateQueue
 			return FALSE
 		}
 
-		if ${Me.ToEntity.Mode} == 3
+		if ${Me.ToEntity.Mode} == MOVE_WARPING
 		{
 			return FALSE
 		}
@@ -432,7 +432,7 @@ objectdef obj_Move inherits obj_StateQueue
 			return FALSE
 		}
 
-		if ${Me.ToEntity.Mode} == 3
+		if ${Me.ToEntity.Mode} == MOVE_WARPING
 		{
 			return FALSE
 		}
@@ -616,7 +616,7 @@ objectdef obj_Move inherits obj_StateQueue
 								return FALSE
 							}
 						}
-						if !${Client.InSpace} || ${Me.ToEntity.Mode} == 3
+						if !${Client.InSpace} || ${Me.ToEntity.Mode} == MOVE_WARPING
 							return FALSE
 						if ${b.Value.SolarSystemID} != ${Me.SolarSystemID}
 						{
@@ -731,7 +731,7 @@ objectdef obj_Move inherits obj_StateQueue
 			}
 		}
 
-		if ${Me.ToEntity.Mode} == 3 || !${Client.InSpace}
+		if ${Me.ToEntity.Mode} == MOVE_WARPING || !${Client.InSpace}
 		{
 			return FALSE
 		}
@@ -785,7 +785,7 @@ objectdef obj_Move inherits obj_StateQueue
 			return FALSE
 		}
 
-		if ${Me.ToEntity.Mode} == 3
+		if ${Me.ToEntity.Mode} == MOVE_WARPING
 		{
 			return FALSE
 		}
@@ -818,7 +818,7 @@ objectdef obj_Move inherits obj_StateQueue
 			return FALSE
 		}
 
-		if ${Me.ToEntity.Mode} == 3 || !${Client.InSpace}
+		if ${Me.ToEntity.Mode} == MOVE_WARPING || !${Client.InSpace}
 		{
 			return FALSE
 		}
@@ -869,11 +869,11 @@ objectdef obj_Move inherits obj_StateQueue
 	variable int64 orbitTarget = 0
 	method Orbit(int64 ID, int distance=0)
 	{
-		if ${Me.ToEntity.Mode} == 3 || !${Entity[${ID}](exists)}
+		if ${Me.ToEntity.Mode} == MOVE_WARPING || !${Entity[${ID}](exists)}
 			return
 
 		;	Find out if we need to approach the target
-		if ${Me.ToEntity.Mode} != 4 || ${orbitTarget} != ${ID}
+		if ${Me.ToEntity.Mode} != MOVE_ORBITING || ${orbitTarget} != ${ID}
 		{
 			Logger:Log["Move", "Orbiting ${Entity[${ID}].Name} at ${Tehbot.MetersToKM_Str[${distance}]}", "g"]
 			Entity[${ID}]:Orbit[${distance}]
@@ -938,13 +938,13 @@ objectdef obj_Approach inherits obj_StateQueue
 	member:bool CheckApproach(int64 ID, int distance)
 	{
 		;	Clear approach if we're in warp or the entity no longer exists
-		if ${Me.ToEntity.Mode} == 3 || !${Entity[${ID}](exists)}
+		if ${Me.ToEntity.Mode} == MOVE_WARPING || !${Entity[${ID}](exists)}
 		{
 			return TRUE
 		}
 
 		;	Find out if we need to approach the target
-		if ${Entity[${ID}].Distance} >= ${distance} && ${Me.ToEntity.Mode} != 1
+		if ${Entity[${ID}].Distance} >= ${distance} && ${Me.ToEntity.Mode} != MOVE_APPROACHING
 		{
 			Logger:Log["Move", "Approaching to within ${Tehbot.MetersToKM_Str[${distance}]} of ${Entity[${ID}].Name}", "g"]
 			Entity[${ID}]:Approach[${distance}]
@@ -952,7 +952,7 @@ objectdef obj_Approach inherits obj_StateQueue
 		}
 
 		;	If we're approaching a target, find out if we need to stop doing so
-		if ${Entity[${ID}].Distance} < ${distance} && ${Me.ToEntity.Mode} == 1
+		if ${Entity[${ID}].Distance} < ${distance} && ${Me.ToEntity.Mode} == MOVE_APPROACHING
 		{
 			Logger:Log["Move", "Within ${Tehbot.MetersToKM_Str[${distance}]} of ${Entity[${ID}].Name}", "g"]
 			EVE:Execute[CmdStopShip]
