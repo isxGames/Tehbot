@@ -69,7 +69,7 @@ objectdef obj_Module inherits obj_StateQueue
 			${This.IsBeingRepaired} || \
 			${This.IsReloading} || \
 			${This.IsDeactivating} || \
-			${Instruction.Equal[INSTRUCTION_NONE]} || \
+			; ${Instruction.Equal[INSTRUCTION_NONE]} || \
 			${This._tooSoon}
 		{
 			return FALSE
