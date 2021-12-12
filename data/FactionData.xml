@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<InnerSpaceSettings>
+  <Set Name="Factions">
+    <Set Name="Caldari State">
+      <Setting Name="ID">500001</Setting>
+      <Setting Name="DamageToDeal">Kinetic</Setting>
+    </Set>
+    <Set Name="Minmatar Republic">
+      <Setting Name="ID">500002</Setting>
+      <Setting Name="DamageToDeal">Explosive</Setting>
+    </Set>
+    <Set Name="Amarr Empire">
+      <Setting Name="ID">500003</Setting>
+      <Setting Name="DamageToDeal">EM</Setting>
+    </Set>
+    <Set Name="Gallente Federation">
+      <Setting Name="ID">500004</Setting>
+      <Setting Name="DamageToDeal">Kinetic</Setting>
+    </Set>
+    <Set Name="Jove Empire">
+      <Setting Name="ID">500005</Setting>
+      <Setting Name="DamageToDeal"></Setting>
+    </Set>
+    <Set Name="CONCORD Assembly">
+      <Setting Name="ID">500006</Setting>
+      <Setting Name="DamageToDeal">Kinetic</Setting>
+    </Set>
+    <Set Name="Ammatar">
+      <Setting Name="ID">500007</Setting>
+      <Setting Name="DamageToDeal">Thermal</Setting>
+    </Set>
+    <Set Name="Khanid Kingdom">
+      <Setting Name="ID">500008</Setting>
+      <Setting Name="DamageToDeal">EM</Setting>
+    </Set>
+    <Set Name="The Syndicate">
+      <Setting Name="ID">500009</Setting>
+      <Setting Name="DamageToDeal"></Setting>
+    </Set>
+    <Set Name="Guristas Pirates">
+      <Setting Name="ID">500010</Setting>
+      <Setting Name="DamageToDeal">Kinetic</Setting>
+    </Set>
+    <Set Name="Angel Cartel">
+      <Setting Name="ID">500011</Setting>
+      <Setting Name="DamageToDeal">Explosive</Setting>
+    </Set>
+    <Set Name="The Blood Raider Covenant">
+      <Setting Name="ID">500012</Setting>
+      <Setting Name="DamageToDeal">EM</Setting>
+    </Set>
+    <Set Name="The InterBus">
+      <Setting Name="ID">500013</Setting>
+      <Setting Name="DamageToDeal"></Setting>
+    </Set>
+    <Set Name="ORE">
+      <Setting Name="ID">500014</Setting>
+      <Setting Name="DamageToDeal"></Setting>
+    </Set>
+    <Set Name="Thukker Tribe">
+      <Setting Name="ID">500015</Setting>
+      <Setting Name="DamageToDeal">Thermal</Setting>
+    </Set>
+    <Set Name="The Servant Sisters of EVE">
+      <Setting Name="ID">500016</Setting>
+      <Setting Name="DamageToDeal"></Setting>
+    </Set>
+    <Set Name="The Society">
+      <Setting Name="ID">500017</Setting>
+      <Setting Name="DamageToDeal"></Setting>
+    </Set>
+    <Set Name="Mordu's Legion Command">
+      <Setting Name="ID">500018</Setting>
+      <Setting Name="DamageToDeal">Kinetic</Setting>
+    </Set>
+    <Set Name="Sansha's Nation">
+      <Setting Name="ID">500019</Setting>
+      <Setting Name="DamageToDeal">EM</Setting>
+    </Set>
+    <Set Name="Serpentis">
+      <Setting Name="ID">500020</Setting>
+      <Setting Name="DamageToDeal">Kinetic</Setting>
+    </Set>
+  </Set>
+
+</InnerSpaceSettings>

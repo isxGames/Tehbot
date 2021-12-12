@@ -10,6 +10,7 @@
 ; Keep and updated
 #include core/obj_TehbotUI.iss
 #include core/obj_Logger.iss
+#include core/obj_MissionParser.iss
 ; Need to implement menu/config item for accepting fleet invites from corp members
 ; Update undock warp bookmark search to use aligned once it's moved to production out of dev version
 ; Probably need to restore undock minimode check, think undocks always happen right now
@@ -39,6 +40,7 @@
 
 ; clear
 #include core/obj_NPCData.iss
+#include core/obj_FactionData.iss
 #include core/obj_PrioritizedTargets.iss
 #include core/obj_Utility.iss
 
@@ -70,12 +72,14 @@ function main(string Character="")
 
 	declarevariable UI obj_TehbotUI script
 	declarevariable Logger obj_Logger script
+	declarevariable MissionParser obj_MissionParser script
 	declarevariable Tehbot obj_Tehbot script
 	declarevariable BaseConfig obj_Configuration_BaseConfig script
 	declarevariable Config obj_Configuration script
 	UI:Reload
 
 	declarevariable NPCData obj_NPCData script
+	declarevariable FactionData obj_FactionData script
 	declarevariable PrioritizedTargets obj_PrioritizedTargets script
 	declarevariable Utility obj_Utility script
 	declarevariable TehbotLogin obj_Login script
