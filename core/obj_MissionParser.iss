@@ -272,6 +272,130 @@ objectdef obj_MissionParser inherits obj_Logger
         return FALSE
 	}
 
+    ; DON'T TOUCH THIS
+    ; BUGGY LAVISHSCRIPT STRING SUCH PAIN IN THE ASS
+    member:string AquireItem()
+	{
+        ; Find[] is not case sensitive so it may confuse quantity x with moon index X.
+		variable string journalText = ${EVEWindow[ByCaption, Mission journal - ${AgentName}].HTML.Escape.ReplaceSubstring[" X -", "MOON_10_ESCAPE-"]}
+        if !${journalText.Find["The following rewards will be yours if you complete this mission"]}
+        {
+            This:LogCritical["journal length not fully retrieved."]
+            return
+        }
+
+        if !${journalText.Find["Acquire these goods:"]}
+        {
+            return ""
+        }
+
+        ; journal example:
+        ; <tr valign=middle>
+        ;     n
+        ;     <td><img src=icon:38_195 size=16></td>
+        ;     n
+        ;     <td width=32><a href=showinfo:19398><img src=typeicon:19398 width=32 height=32 align=left></a></td>
+        ;     n
+        ;     <td>Item</td>
+        ;     n
+        ;     <td>60 x Confiscated Viral Agent (30.0 m³)</td>
+        ;     n
+        ; </tr>
+        variable int left
+        variable int right
+        variable string itemtd = "<td>Item</td>"
+
+        ; Actually Find[] won't work correctly with those spaces, hopefully this won't affect us with Trim[]
+        variable string quantityMark = " x "
+        variable string leftParenthesis = " ("
+
+        variable string itemName
+        left:Set[${journalText.Find[${itemtd}]}]
+
+        ; Token[] only working with shorter strings.
+        if ${left} > 0
+        {
+            left:Inc[${itemtd.Length}]
+            journalText:Set[${journalText.Mid[${left}, 100]}]
+
+            This:LogDebug["slice "${journalText}]
+            itemName:Set[${journalText.Token[2, ${quantityMark}].Token[1, ${leftParenthesis}].Trim}]
+            This:LogDebug["Item name: ${itemName}"]
+        }
+
+        if !${itemName.NotNULLOrEmpty}
+		{
+			This:LogCritical["Failed to parse item name"]
+		}
+
+        return ${itemName}
+	}
+
+    ; DON'T TOUCH THIS
+    ; BUGGY LAVISHSCRIPT STRING SUCH PAIN IN THE ASS
+    member:string DeliverItem()
+	{
+		variable string journalText = ${EVEWindow[ByCaption, Mission journal - ${AgentName}].HTML.Escape}
+        if !${journalText.Find["The following rewards will be yours if you complete this mission"]}
+        {
+            This:LogCritical["journal length not fully retrieved."]
+            return
+        }
+
+        ; Finding longer string doesn't work either...
+        variable string grantItemTitle = "Granted Items"
+        if !${journalText.Find[${grantItemTitle}]}
+        {
+            return ""
+        }
+
+        ; journal example
+        ; n <br>n <br>n <span id=subheader>Granted Items</span>n
+        ; <div id=basetext>The following item will be granted to you when the mission is accepted</div>
+        ; n
+        ; <div>
+        ;     <table>
+        ;         n n
+        ;         <tr valign=middle>
+        ;         n
+        ;         <td width=36><a href=showinfo:2250><img src=typeicon:2250 width=32 height=32 align=left></a></td>
+        ;         n
+        ;         <td width=352>1 x Neurowave Pattern Scanner</td>
+        ;         n
+        ;         </tr>
+        ;         n
+        ;     </table>
+        ; </div>
+        variable string itemName
+        variable int left
+        variable int right
+
+        ; Find[] function won't work correctly with those strings with spaces.
+        ; Find[] is not case sensitive so it may confuse quantity x with moon index X.
+        journalText:Set[${EVEWindow[ByCaption, Mission journal - ${AgentName}].HTML.Escape.Replace[" ", "_"].ReplaceSubstring["_X_-", "MOON_10_ESCAPE-"]}]
+        variable string quantityIcon = "_x_"
+        left:Set[${journalText.Find[${quantityIcon}]}]
+
+        if ${left} > 0
+        {
+            itemName:Set[${journalText.Mid[${left:Inc[3]}, 50]}]
+            This:LogDebug["slice " ${itemName}]
+
+            right:Set[${itemName.Find["<"]}]
+            right:Dec[1]
+
+            itemName:Set[${itemName.Left[${right}].Replace["_", " "]}]
+            This:LogDebug["Item name: ${itemName}"]
+        }
+
+        if !${itemName.NotNULLOrEmpty}
+		{
+			This:LogCritical["Failed to parse item name"]
+		}
+
+        return ${itemName}
+	}
+
 	method ParseCaption()
 	{
 		This.Caption:Set["${amIterator.Value.Name}"]
