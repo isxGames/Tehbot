@@ -164,7 +164,8 @@ objectdef obj_Configuration_Mission
 objectdef obj_Mission inherits obj_StateQueue
 {
 	;;;;;;;;;; Mission database.
-	variable set BlackListedMissions
+	variable index:string DontFightFaction
+	variable set BlackListedMission
 	variable collection:string DamageType
 	variable collection:string TargetToDestroy
 	variable collection:string ContainerToLoot
@@ -174,8 +175,6 @@ objectdef obj_Mission inherits obj_StateQueue
 	; Look for mission key in cargo if didn't bring
 	variable collection:string GateKeyContainer
 	; To be deprecated.
-	variable collection:string AquireItem
-	variable collection:string DeliverItem
 	variable collection:string DeliverItemContainer
 
 	;;;;;;;;;; Used when picking agents.
@@ -266,8 +265,8 @@ objectdef obj_Mission inherits obj_StateQueue
 		AgentList:Clear
 		DamageType:Clear
 		ContainerToLoot:Clear
-		AquireItem:Clear
-		BlackListedMissions:Clear
+		BlackListedMission:Clear
+		DontFightFaction:Clear
 		TargetToDestroy:Clear
 		GateKey:Clear
 		GateKeyContainer:Clear
@@ -366,19 +365,22 @@ objectdef obj_Mission inherits obj_StateQueue
 					return FALSE
 				}
 
+				; Must ensure that ${EVEWindow[ByCaption, Mission journal - ${AgentName}].HTML.Escape} already returns full length
+    			; journal BEFORE using mission parser.
 				variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${EVE.Agent[${currentAgentIndex}].Name}].HTML.Escape}
-				if !${missionJournalText.NotNULLOrEmpty} || !${missionJournalText.Find["The following rewards will be yours if you complete this mission"]}
+				if !${missionJournalText.Find["The following rewards will be yours if you complete this mission"]}
 				{
 					missionIterator.Value:GetDetails
 					return FALSE
 				}
 
+				MissionParser.AgentName:Set[${EVE.Agent[${currentAgentIndex}].Name}]
 				missionName:Set[${missionIterator.Value.Name.Trim}]
 
 				; offered
 				if ${missionIterator.Value.State} == 1
 				{
-					if ${Config.DeclineLowSec} && ${missionJournalText.Find["low security system"]}
+					if ${Config.DeclineLowSec} && ${MissionParser.IsLowSec}
 					{
 						This:LogInfo["Declining low security mission \ao${missionName}"]
 						This:InsertState["Cleanup"]
@@ -387,7 +389,16 @@ objectdef obj_Mission inherits obj_StateQueue
 						return TRUE
 					}
 
-					if ${BlackListedMissions.Contains[${missionName}]}
+					if !${This.AllowFightFaction[${MissionParser.EnemyFactionName}]}
+					{
+						This:LogInfo["Declining mission \ao${missionName} for I don't want to fight ${MissionParser.EnemyFactionName}"]
+						This:InsertState["Cleanup"]
+						This:InsertState["CheckForWork"]
+						This:InsertState["InteractAgent", 1500, "DECLINE"]
+						return TRUE
+					}
+
+					if ${BlackListedMission.Contains[${missionName}]}
 					{
 						This:LogInfo["Declining mission \ao${missionName}"]
 						This:InsertState["Cleanup"]
@@ -425,12 +436,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				{
 					if ${DamageType.Element[${missionName}](exists)}
 					{
-						variable string checkmarkIcon = "icon:38_193"
-						variable string circlemarkIcon = "icon:38_195"
-						if ${missionJournalText.Find[${missionName} Objectives Complete]} || \
-						(${Math.Calc[${missionJournalText.Length} - ${missionJournalText.ReplaceSubstring[${checkmarkIcon}, ""].Length}].Int} >= ${Math.Calc[${checkmarkIcon.Length} * 2].Int} && \
-						; No unfinished targets(circle) or the circle appears before the first check implies that the ship is not docked at the dropoff station
-						(!${missionJournalText.Find[${circlemarkIcon}]} || ${missionJournalText.Find[${circlemarkIcon}]} < ${missionJournalText.Find[${checkmarkIcon}]}))
+						if ${MissionParser.IsComplete}
 						{
 							This:LogInfo["Mission Complete \ao${missionName}"]
 							This:Clear
@@ -440,7 +446,7 @@ objectdef obj_Mission inherits obj_StateQueue
 							return TRUE
 						}
 
-						if ${missionJournalText.Find[${missionName} Objectives]}
+						if ${MissionParser.IsOngoing}
 						{
 							This:LogInfo["Ongoing mission identified \ao${missionName}"]
 
@@ -458,11 +464,10 @@ objectdef obj_Mission inherits obj_StateQueue
 								containerToLoot:Set[${ContainerToLoot.Element[${missionName}]}]
 							}
 
-							aquireItem:Set[""]
-							if ${AquireItem.Element[${missionName}](exists)}
+							aquireItem:Set[${MissionParser.AquireItem}]}]
+							if ${aquireItem.NotNULLOrEmpty}
 							{
-								This:LogInfo["Acquire item: \ao${AquireItem.Element[${missionName}]}"]
-								aquireItem:Set[${AquireItem.Element[${missionName}]}]
+								This:LogInfo["Acquire item: \ao${aquireItem}"]
 							}
 
 							gateKey:Set[""]
@@ -501,12 +506,11 @@ objectdef obj_Mission inherits obj_StateQueue
 								}
 							}
 
-							deliverItem:Set[""]
+							deliverItem:Set[${MissionParser.DeliverItem}]
 							deliverItemContainer:Set[""]
-							if ${DeliverItem.Element[${missionName}](exists)}
+							if ${deliverItem.NotNULLOrEmpty}
 							{
-								This:LogInfo["Deliver item: \ao${DeliverItem.Element[${missionName}]}"]
-								deliverItem:Set[${DeliverItem.Element[${missionName}]}]
+								This:LogInfo["Deliver item: \ao${deliverItem}"]
 
 								haveDeliveryInCargo:Set[FALSE]
 								if (!${EVEWindow[Inventory](exists)})
@@ -541,7 +545,14 @@ objectdef obj_Mission inherits obj_StateQueue
 							}
 
 							; echo damagetype ${DamageType.Element[${missionName}].Lower}
-							switch ${DamageType.Element[${missionName}].Lower}
+							variable string damageType
+							damageType:Set[${DamageType.Element[${missionName}].Lower}]
+							if ${damageType.Equal["auto"]} && ${MissionParser.EnemyFactionName.NotNULLOrEmpty} && ${MissionParser.EnemyDamageToDeal.NotNULLOrEmpty}
+							{
+								This:LogInfo["Using damage type ${MissionParser.EnemyDamageToDeal} on ${MissionParser.EnemyFactionName}."]
+								damageType:Set[${MissionParser.EnemyDamageToDeal.Lower}]
+							}
+							switch ${damageType}
 							{
 								case kinetic
 									ammo:Set[${Config.KineticAmmo}]
@@ -1418,13 +1429,16 @@ objectdef obj_Mission inherits obj_StateQueue
 					return FALSE
 				}
 
+				; Must ensure that ${EVEWindow[ByCaption, Mission journal - ${AgentName}].HTML.Escape} already returns full length
+    			; journal BEFORE using mission parser.
 				variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${EVE.Agent[${currentAgentIndex}].Name}].HTML.Escape}
-				if !${missionJournalText.NotNULLOrEmpty} || !${missionJournalText.Find["The following rewards will be yours if you complete this mission"]}
+				if !${missionJournalText.Find["The following rewards will be yours if you complete this mission"]}
 				{
 					missionIterator.Value:GetDetails
 					return FALSE
 				}
 
+				MissionParser.AgentName:Set[${EVE.Agent[${currentAgentIndex}].Name}]
 				missionName:Set[${missionIterator.Value.Name.Trim}]
 
 				; accepted
@@ -1432,12 +1446,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				{
 					if ${DamageType.Element[${missionName}](exists)}
 					{
-						variable string checkmarkIcon = "icon:38_193"
-						variable string circlemarkIcon = "icon:38_195"
-						if ${missionJournalText.Find[${missionName} Objectives Complete]} || \
-						(${Math.Calc[${missionJournalText.Length} - ${missionJournalText.ReplaceSubstring[${checkmarkIcon}, ""].Length}].Int} >= ${Math.Calc[${checkmarkIcon.Length} * 2].Int} && \
-						; No unfinished targets(circle) or the circle appears before the first check which means the ship is not docked at the dropoff station
-						(!${missionJournalText.Find[${circlemarkIcon}]} || ${missionJournalText.Find[${circlemarkIcon}]} < ${missionJournalText.Find[${checkmarkIcon}]}))
+						if ${MissionParser.IsComplete}
 						{
 							This:LogInfo["Mission Complete \ao${missionName}"]
 							This:Clear
@@ -1601,8 +1610,9 @@ objectdef obj_Mission inherits obj_StateQueue
 		}
 		else
 		{
-			UIElement[Run@TitleBar@Tehbot]:SetText[Run]
+			This:QueueState["HaltBot"]
 		}
+
 		halt:Set[FALSE]
 		This:InsertState["DropOffLoot"]
 		This:InsertState["Cleanup"]
@@ -2511,7 +2521,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 	member:bool Traveling()
 	{
-		if ${Cargo.Processing} || ${Move.Traveling} || ${Me.ToEntity.Mode} == MOVE_WARPING
+		if ${Move.Traveling} && ${Me.ToEntity.Mode} == MOVE_WARPING
 		{
 			if ${Me.InSpace}
 			{
@@ -2751,18 +2761,26 @@ objectdef obj_Mission inherits obj_StateQueue
 							return FALSE
 						}
 
-						; Can't reliablely copy the string to vairable due to Lavish script bug.
-						; variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${agentName}].HTML.Escape}
-						if !${EVEWindow[ByCaption, Mission journal - ${agentName}].HTML.Escape.Find["The following rewards will be yours if you complete this mission"]}
+						; Must ensure that ${EVEWindow[ByCaption, Mission journal - ${AgentName}].HTML.Escape} already returns full length
+    					; journal BEFORE using mission parser.
+						variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${agentName}].HTML.Escape}
+						if !${missionJournalText.Find["The following rewards will be yours if you complete this mission"]}
 						{
 							missionIterator.Value:GetDetails
 							return FALSE
 						}
 
-						This:LogDebug["Found mission for ${agentName} ${missionName}."]
+						MissionParser.AgentName:Set[${agentName}]
+
+						This:LogDebug["Found mission for ${agentName} ${missionName} ${missionJournalText.Length}."]
+						This:LogDebug["Mission journal ${missionJournalText}."]
+						This:LogDebug["Mission enemy and damage type: "${MissionParser.EnemyFactionName} - ${MissionParser.EnemyDamageToDeal}]
+						This:LogDebug["Mission aquire item: "${MissionParser.AquireItem}]
+						This:LogDebug["Mission deliver item: "${MissionParser.DeliverItem}]
+
 						offered:Set[TRUE]
 
-						if ${BlackListedMissions.Contains[${missionName}]} || (${Config.DeclineLowSec} && ${EVEWindow[ByCaption, Mission journal - ${agentName}].HTML.Escape.Find["low security system"]})
+						if ${BlackListedMission.Contains[${missionName}]} || (${Config.DeclineLowSec} && ${MissionParser.IsLowSec}) || !${This.AllowFightFaction[${MissionParser.EnemyFactionName}]}
 						{
 							variable int agentDeclineWaitTime
 							agentDeclineWaitTime:Set[${Agents.SecondsTillDeclineable[${agentName}]}]
@@ -2894,6 +2912,31 @@ objectdef obj_Mission inherits obj_StateQueue
 			return FALSE
 		}
 
+		return TRUE
+	}
+
+	member:bool AllowFightFaction(string factionName)
+	{
+		variable iterator factionIterator
+		DontFightFaction:GetIterator[factionIterator]
+		if ${factionIterator:First(exists)}
+		{
+			do
+			{
+				if ${factionName.Lower.Find[${factionIterator.Value.Lower}]}
+				{
+					return FALSE
+				}
+			}
+			while ${factionIterator:Next(exists)}
+		}
+
+		return TRUE
+	}
+
+	member:bool HaltBot()
+	{
+		This:Stop
 		return TRUE
 	}
 }

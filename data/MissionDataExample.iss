@@ -11,11 +11,27 @@ function main()
 	Script[Tehbot].VariableScope.Mission.AgentList:Insert["Bro"]
 
 	;
+	; Add the factions you don't want to fight against so missions with their logos will be declined.
+	; Missions without faction logo won't be declined because they don't hurt faction standing.
+	; The names don't need to be full names as long as they are not ambiguious.
+	;
+	Script[Tehbot].VariableScope.Mission.DontFightFaction:Insert["Amarr"]
+	Script[Tehbot].VariableScope.Mission.DontFightFaction:Insert["Minmatar"]
+	Script[Tehbot].VariableScope.Mission.DontFightFaction:Insert["Gallente"]
+	Script[Tehbot].VariableScope.Mission.DontFightFaction:Insert["Caldari"]
+
+	;
 	; For most missions, all you need to do is use the DamageType collection to specify the mission name and the damage type.
 	; Thus, the bot knows the mission is valid and what type of ammo to load.
+	; For missions with faction logo in the journal, you can set the damage type to 'auto' and the bot will detect damage type automatically.
 	; The bot will fly to the mission location, kill everything, and follow gates until it sees the mission is done.
 	;
-	Script[Tehbot].VariableScope.Mission.DamageType:Set["Gone Berserk", "Kinetic"]
+	Script[Tehbot].VariableScope.Mission.DamageType:Set["The Blockade", "Auto"]
+
+	;
+	; For missions without faction logo or when you want to force the damage type, you need to set the damage type manually.
+	;
+	Script[Tehbot].VariableScope.Mission.DamageType:Set["Attack of the Drones", "EM"]
 
 	;
 	; Some missions also require that you kill a target. To configure these, use the TargetToDestroy collection.
@@ -25,21 +41,12 @@ function main()
 	Script[Tehbot].VariableScope.Mission.TargetToDestroy:Set["The Right Hand Of Zazzmatazz", "Name = \"Outpost Headquarters\""]
 
 	;
-	; Some missions further require that you receive an item. To configure these, use the AquireItem collection.
-	; This collection requires the mission name and the name of the item. Note that this will not loot the item from a container - it's for missions that deposit an item in your cargo hold
-	; when you kill a target. For looting a needed item, see the next section.
-	;
-	Script[Tehbot].VariableScope.Mission.DamageType:Set["The Damsel In Distress", "Kinetic"]
-	Script[Tehbot].VariableScope.Mission.TargetToDestroy:Set["The Damsel In Distress", "Name = \"Kruul's Pleasure Gardens\""]
-	Script[Tehbot].VariableScope.Mission.AquireItem:Set["The Damsel In Distress", "The Damsel"]
-
-	;
-	; For some missions, you must loot an item. To configure these, use the ContainerToLoot AND the AquireItem collections.
+	; For some missions, you must loot an item. To configure these, use the ContainerToLoot collections.
 	; This collection requires the mission name and a search string. Most of these use the Name member, but also empty wrecks need to be excluded. Note the single equal and the \ escaped quotes!
 	;
 	Script[Tehbot].VariableScope.Mission.DamageType:Set["Worlds Collide", "EM"]
 	Script[Tehbot].VariableScope.Mission.ContainerToLoot:Set["Worlds Collide", "Name = \"Damaged Heron\" && !IsWreckEmpty"]
-	Script[Tehbot].VariableScope.Mission.AquireItem:Set["Worlds Collide", "Ship's Crew"]
+	; Script[Tehbot].VariableScope.Mission.AquireItem:Set["Worlds Collide", "Ship's Crew"]	<-- Not required anymore
 
 	;
 	; For some missions, you need a gate key to activate the acceleration gate.
@@ -59,25 +66,25 @@ function main()
 	Script[Tehbot].VariableScope.Mission.GateKeyContainer:Set["The Anomaly (1 of 3)", "Type = \"Life Pod\""]
 	Script[Tehbot].VariableScope.Mission.TargetToDestroy:Set["The Anomaly (1 of 3)", "Name = \"Pressure Silo Debris\""]
 	Script[Tehbot].VariableScope.Mission.ContainerToLoot:Set["The Anomaly (1 of 3)", "Name = \"Cargo Container\""]
-	Script[Tehbot].VariableScope.Mission.AquireItem:Set["The Anomaly (1 of 3)", "Fajah Ateshi"]
+	; Script[Tehbot].VariableScope.Mission.AquireItem:Set["The Anomaly (1 of 3)", "Fajah Ateshi"]	<-- Not required anymore
 
 	;
 	; For some missions, you need to deliver an item to a container.
 	; Set the delivery as below.
 	;
 	Script[Tehbot].VariableScope.Mission.DamageType:Set["The Anomaly (2 of 3)", "EM"]
-	Script[Tehbot].VariableScope.Mission.DeliverItem:Set["The Anomaly (2 of 3)", "Neurowave Pattern Scanner"]
+	; Script[Tehbot].VariableScope.Mission.DeliverItem:Set["The Anomaly (2 of 3)", "Neurowave Pattern Scanner"]	<-- Not required anymore
 	Script[Tehbot].VariableScope.Mission.DeliverItemContainer:Set["The Anomaly (2 of 3)", "Name = \"The Anomaly\""]
 
 	Script[Tehbot].VariableScope.Mission.DamageType:Set["The Anomaly (3 of 3)", "EM"]
-	Script[Tehbot].VariableScope.Mission.DeliverItem:Set["The Anomaly (3 of 3)", "Fajah Ateshi"]
+	; Script[Tehbot].VariableScope.Mission.DeliverItem:Set["The Anomaly (3 of 3)", "Fajah Ateshi"]	<-- Not required anymore
 	Script[Tehbot].VariableScope.Mission.DeliverItemContainer:Set["The Anomaly (3 of 3)", "Name = \"The Anomaly\""]
 
 	;
-	; Finally, use the BlackListedMissions set to specify mission the bot should skip. TAKE NOTE, this is NOT a collection like all the above tools.
+	; Finally, use the BlackListedMission set to specify mission the bot should skip. TAKE NOTE, this is NOT a collection like all the above tools.
 	; It only takes one argument (the name of the mission) and uses the "Add" method instead of the "Set" method.
 	;
-	Script[Tehbot].VariableScope.Mission.BlackListedMissions:Add["Surprise Surprise"]
+	Script[Tehbot].VariableScope.Mission.BlackListedMission:Add["Surprise Surprise"]
 
 	echo done
 }
