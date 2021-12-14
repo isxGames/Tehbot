@@ -704,14 +704,14 @@
 
 					<Text name='LogLevelLabel'>
 						<X>1%</X>
-						<Y>7%</Y>
+						<Y>6%</Y>
 						<Width>30%</Width>
 						<Height>3%</Height>
 						<Text>Log level: 0 - DEBUG, 1 - INFO, ... 4 - NONE</Text>
 					</Text>
 					<Slider name='LogLevel'>
 						<X>1%</X>
-						<Y>11%</Y>
+						<Y>10%</Y>
 						<Width>20%</Width>
 						<Height>3%</Height>
 						<Border>1</Border>
@@ -726,7 +726,7 @@
 
 					<Text name='AmmoSupplyTitle'>
 						<X>1%</X>
-						<Y>17%</Y>
+						<Y>16%</Y>
 						<Width>30%</Width>
 						<Height>5%</Height>
 						<Alignment>Center</Alignment>
@@ -760,7 +760,7 @@
 						<Font template='Button.Font' />
 						<BackgroundColor>FF000000</BackgroundColor>
 						<X>22%</X>
-						<Y>20%</Y>
+						<Y>19%</Y>
 						<Width>3%</Width>
 						<Height>5%</Height>
 						<Text>1</Text>
@@ -779,7 +779,7 @@
 						<Font template='Button.Font' />
 						<BackgroundColor>FF000000</BackgroundColor>
 						<X>25%</X>
-						<Y>20%</Y>
+						<Y>19%</Y>
 						<Width>3%</Width>
 						<Height>5%</Height>
 						<Text>10</Text>
@@ -798,7 +798,7 @@
 						<Font template='Button.Font' />
 						<BackgroundColor>FF000000</BackgroundColor>
 						<X>28%</X>
-						<Y>20%</Y>
+						<Y>19%</Y>
 						<Width>3%</Width>
 						<Height>5%</Height>
 						<Text>100</Text>
@@ -817,7 +817,7 @@
 						<Font template='Button.Font' />
 						<BackgroundColor>FF000000</BackgroundColor>
 						<X>1%</X>
-						<Y>20%</Y>
+						<Y>19%</Y>
 						<Width>3%</Width>
 						<Height>5%</Height>
 						<Text>100</Text>
@@ -836,7 +836,7 @@
 						<Font template='Button.Font' />
 						<BackgroundColor>FF000000</BackgroundColor>
 						<X>4%</X>
-						<Y>20%</Y>
+						<Y>19%</Y>
 						<Width>3%</Width>
 						<Height>5%</Height>
 						<Text>10</Text>
@@ -855,7 +855,7 @@
 						<Font template='Button.Font' />
 						<BackgroundColor>FF000000</BackgroundColor>
 						<X>7%</X>
-						<Y>20%</Y>
+						<Y>19%</Y>
 						<Width>3%</Width>
 						<Height>5%</Height>
 						<Text>1</Text>
@@ -873,10 +873,10 @@
 
 					<Checkbox name='RangeLimit'>
 						<X>1%</X>
-						<Y>27%</Y>
+						<Y>25%</Y>
 						<Width>30%</Width>
 						<Height>5%</Height>
-						<Text>No shooting out of range targets</Text>
+						<Text>Don't shoot out of range targets</Text>
 						<OnLoad>
 							if ${Script[Tehbot].VariableScope.Mission.Config.RangeLimit}
 							{
@@ -896,7 +896,7 @@
 
 					<Checkbox name='DeclineLowSec'>
 						<X>1%</X>
-						<Y>31%</Y>
+						<Y>29%</Y>
 						<Width>30%</Width>
 						<Height>5%</Height>
 						<Text>Decline Low-Sec Missions</Text>
@@ -919,7 +919,7 @@
 
 					<Checkbox name='AggressiveMode'>
 						<X>1%</X>
-						<Y>35%</Y>
+						<Y>33%</Y>
 						<Width>30%</Width>
 						<Height>5%</Height>
 						<Text>Aggressive Mode</Text>
@@ -933,7 +933,7 @@
 							Script[Tehbot].VariableScope.Mission.Config:SetAggressiveMode[${This.Checked}]
 						</OnLeftClick>
 						<OnMouseEnter>
-							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText["The bot will lock and shoot all enemies together in the room disregarding whether they are triggered, more effciency with more risk."]
+							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText["The bot will lock and shoot all enemies alltogether in the room disregarding whether they are triggered, more effciency with more risk."]
 						</OnMouseEnter>
 						<OnMouseExit>
 							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
@@ -942,7 +942,7 @@
 
 					<Checkbox name='IgnoreNPCSentries'>
 						<X>1%</X>
-						<Y>39%</Y>
+						<Y>37%</Y>
 						<Width>30%</Width>
 						<Height>5%</Height>
 						<Text>Ignore NPC Sentries</Text>
@@ -965,7 +965,7 @@
 
 					<Checkbox name='DeactivateSiegeModuleEarly'>
 						<X>1%</X>
-						<Y>43%</Y>
+						<Y>41%</Y>
 						<Width>30%</Width>
 						<Height>5%</Height>
 						<Text>DeactivateSiegeModuleEarly</Text>
@@ -986,9 +986,32 @@
 						</OnMouseExit>
 					</Checkbox>
 
+					<Checkbox name='OverloadThrust'>
+						<X>1%</X>
+						<Y>45%</Y>
+						<Width>30%</Width>
+						<Height>5%</Height>
+						<Text>Overload Thruster</Text>
+						<OnLoad>
+							if ${Script[Tehbot].VariableScope.Mission.Config.OverloadThrust}
+							{
+								This:SetChecked
+							}
+						</OnLoad>
+						<OnLeftClick>
+							Script[Tehbot].VariableScope.Mission.Config:SetOverloadThrust[${This.Checked}]
+						</OnLeftClick>
+						<OnMouseEnter>
+							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText["The bot overload thruster when approaching distanced target."]
+						</OnMouseEnter>
+						<OnMouseExit>
+							UIElement[Information@InformationFrame@Tehbot_CombatMissions_Frame@Tehbot_CombatMissions]:SetText[""]
+						</OnMouseExit>
+					</Checkbox>
+
 					<Checkbox name='UseDrones'>
 						<X>1%</X>
-						<Y>47%</Y>
+						<Y>49%</Y>
 						<Width>30%</Width>
 						<Height>5%</Height>
 						<Text>Use Drones</Text>
@@ -1021,7 +1044,7 @@
 						<Font template='Information.Font' />
 						<BackgroundColor>FF000000</BackgroundColor>
 						<X>1%</X>
-						<Y>52%</Y>
+						<Y>53%</Y>
 						<Width>30%</Width>
 						<Height>5%</Height>
 						<OnLoad>

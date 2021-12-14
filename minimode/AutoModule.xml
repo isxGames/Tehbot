@@ -92,14 +92,14 @@
 						</OnLeftClick>
 					</Checkbox>
 					<Text name='ActiveShieldBoostText'>
-						<X>1%</X>
+						<X>5%</X>
 						<Y>28%</Y>
 						<Width>50%</Width>
 						<Height>3%</Height>
 						<Text>If above is false, run shield boosters if shields drop below ${Script[Tehbot].VariableScope.AutoModule.Config.ActiveShieldBoost}%</Text>
 					</Text>
 					<Slider name='ActiveShieldBoost'>
-						<X>46%</X>
+						<X>50%</X>
 						<Y>27%</Y>
 						<Width>30%</Width>
 						<Height>4%</Height>
@@ -112,14 +112,14 @@
 						</OnChange>
 					</Slider>
 					<Text name='ActiveShieldCapText'>
-						<X>19%</X>
+						<X>5%</X>
 						<Y>32%</Y>
 						<Width>40%</Width>
 						<Height>3%</Height>
 						<Text>but only if Capacitor is above ${Script[Tehbot].VariableScope.AutoModule.Config.ActiveShieldCap}%</Text>
 					</Text>
 					<Slider name='ActiveShieldCap'>
-						<X>46%</X>
+						<X>50%</X>
 						<Y>31%</Y>
 						<Width>30%</Width>
 						<Height>4%</Height>
@@ -131,12 +131,32 @@
 							Script[Tehbot].VariableScope.AutoModule.Config:SetActiveShieldCap[${This.Value}]
 						</OnChange>
 					</Slider>
-					<Checkbox name='AlwaysArmorRepair'>
-						<X>1%</X>
+					<Text name='ShieldBoostOverloadText'>
+						<X>5%</X>
+						<Y>36%</Y>
+						<Width>50%</Width>
+						<Height>3%</Height>
+						<Text>Overload shield boosters if shields drop below ${Script[Tehbot].VariableScope.AutoModule.Config.ShieldBoostOverloadThreshold}%</Text>
+					</Text>
+					<Slider name='ShieldBoostOverload'>
+						<X>50%</X>
 						<Y>35%</Y>
 						<Width>30%</Width>
+						<Height>4%</Height>
+						<Border>1</Border>
+						<OnLoad>
+							This:SetValue[${Script[Tehbot].VariableScope.AutoModule.Config.ShieldBoostOverloadThreshold}]
+						</OnLoad>
+						<OnChange>
+							Script[Tehbot].VariableScope.AutoModule.Config:SetShieldBoostOverloadThreshold[${This.Value}]
+						</OnChange>
+					</Slider>
+					<Checkbox name='AlwaysArmorRepair'>
+						<X>1%</X>
+						<Y>39%</Y>
+						<Width>30%</Width>
 						<Height>3%</Height>
-						<Text>Armor Repairers</Text>
+						<Text>Always run armor repairers</Text>
 						<OnLoad>
 							if ${Script[Tehbot].VariableScope.AutoModule.Config.AlwaysArmorRepair}
 							{
@@ -148,15 +168,15 @@
 						</OnLeftClick>
 					</Checkbox>
 					<Text name='ActiveArmorRepairText'>
-						<X>1%</X>
-						<Y>39%</Y>
+						<X>5%</X>
+						<Y>43%</Y>
 						<Width>50%</Width>
 						<Height>3%</Height>
 						<Text>If above is false, run armor repairers if armor drops below ${Script[Tehbot].VariableScope.AutoModule.Config.ActiveArmorRepair}%</Text>
 					</Text>
 					<Slider name='ActiveArmorRepair'>
-						<X>46%</X>
-						<Y>38%</Y>
+						<X>50%</X>
+						<Y>42%</Y>
 						<Width>30%</Width>
 						<Height>4%</Height>
 						<Border>1</Border>
@@ -168,15 +188,15 @@
 						</OnChange>
 					</Slider>
 					<Text name='ActiveArmorCapText'>
-						<X>19%</X>
-						<Y>43%</Y>
+						<X>5%</X>
+						<Y>47%</Y>
 						<Width>40%</Width>
 						<Height>3%</Height>
 						<Text>but only if Capacitor is above ${Script[Tehbot].VariableScope.AutoModule.Config.ActiveArmorCap}%</Text>
 					</Text>
 					<Slider name='ActiveArmorCap'>
-						<X>46%</X>
-						<Y>42%</Y>
+						<X>50%</X>
+						<Y>46%</Y>
 						<Width>30%</Width>
 						<Height>4%</Height>
 						<Border>1</Border>
@@ -187,38 +207,26 @@
 							Script[Tehbot].VariableScope.AutoModule.Config:SetActiveArmorCap[${This.Value}]
 						</OnChange>
 					</Slider>
-					<Checkbox name='Cloaks'>
-						<X>1%</X>
-						<Y>46%</Y>
-						<Width>30%</Width>
+					<Text name='ArmorRepairOverloadText'>
+						<X>5%</X>
+						<Y>51%</Y>
+						<Width>50%</Width>
 						<Height>3%</Height>
-						<Text>Cloaking Devices</Text>
-						<OnLoad>
-							if ${Script[Tehbot].VariableScope.AutoModule.Config.Cloak}
-							{
-								This:SetChecked
-							}
-						</OnLoad>
-						<OnLeftClick>
-							Script[Tehbot].VariableScope.AutoModule.Config:SetCloak[${This.Checked}]
-						</OnLeftClick>
-					</Checkbox>
-					<Checkbox name='GangLinks'>
-						<X>1%</X>
+						<Text>Overload armor repairers if armor drop below ${Script[Tehbot].VariableScope.AutoModule.Config.ArmorRepairOverloadThreshold}%</Text>
+					</Text>
+					<Slider name='ArmorRepairOverload'>
+						<X>50%</X>
 						<Y>50%</Y>
 						<Width>30%</Width>
-						<Height>3%</Height>
-						<Text>Gang Links</Text>
+						<Height>4%</Height>
+						<Border>1</Border>
 						<OnLoad>
-							if ${Script[Tehbot].VariableScope.AutoModule.Config.GangLink}
-							{
-								This:SetChecked
-							}
+							This:SetValue[${Script[Tehbot].VariableScope.AutoModule.Config.ArmorRepairOverloadThreshold}]
 						</OnLoad>
-						<OnLeftClick>
-							Script[Tehbot].VariableScope.AutoModule.Config:SetGangLink[${This.Checked}]
-						</OnLeftClick>
-					</Checkbox>
+						<OnChange>
+							Script[Tehbot].VariableScope.AutoModule.Config:SetArmorRepairOverloadThreshold[${This.Value}]
+						</OnChange>
+					</Slider>
 					<Checkbox name='SensorBoosters'>
 						<X>1%</X>
 						<Y>54%</Y>
@@ -297,6 +305,38 @@
 						</OnLoad>
 						<OnLeftClick>
 							Script[Tehbot].VariableScope.AutoModule.Config:SetAutoTarget[${This.Checked}]
+						</OnLeftClick>
+					</Checkbox>
+					<Checkbox name='Cloaks'>
+						<X>1%</X>
+						<Y>74%</Y>
+						<Width>30%</Width>
+						<Height>3%</Height>
+						<Text>Cloaking Devices</Text>
+						<OnLoad>
+							if ${Script[Tehbot].VariableScope.AutoModule.Config.Cloak}
+							{
+								This:SetChecked
+							}
+						</OnLoad>
+						<OnLeftClick>
+							Script[Tehbot].VariableScope.AutoModule.Config:SetCloak[${This.Checked}]
+						</OnLeftClick>
+					</Checkbox>
+					<Checkbox name='GangLinks'>
+						<X>1%</X>
+						<Y>78%</Y>
+						<Width>30%</Width>
+						<Height>3%</Height>
+						<Text>Gang Links</Text>
+						<OnLoad>
+							if ${Script[Tehbot].VariableScope.AutoModule.Config.GangLink}
+							{
+								This:SetChecked
+							}
+						</OnLoad>
+						<OnLeftClick>
+							Script[Tehbot].VariableScope.AutoModule.Config:SetGangLink[${This.Checked}]
 						</OnLeftClick>
 					</Checkbox>
 

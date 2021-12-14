@@ -53,7 +53,8 @@ objectdef obj_Configuration_AutoModule
 		This.CommonRef:AddSetting[TrackingComputers, TRUE]
 		This.CommonRef:AddSetting[ECCM, TRUE]
 		This.CommonRef:AddSetting[DroneControlUnit, TRUE]
-		; This.CommonRef:AddSetting[OverloadHPThreshold, 50]
+		This.CommonRef:AddSetting[ShieldBoostOverloadThreshold, 50]
+		This.CommonRef:AddSetting[ArmorRepairOverloadThreshold, 50]
 	}
 
 	Setting(bool, ActiveHardeners, SetActiveHardeners)
@@ -70,7 +71,8 @@ objectdef obj_Configuration_AutoModule
 	Setting(bool, TrackingComputers, SetTrackingComputers)
 	Setting(bool, ECCM, SetECCM)
 	Setting(bool, DroneControlUnit, SetDroneControlUnit)
-	; Setting(int, OverloadHPThreshold, SetOverloadHPThreshold)
+	Setting(int, ShieldBoostOverloadThreshold, SetShieldBoostOverloadThreshold)
+	Setting(int, ArmorRepairOverloadThreshold, SetArmorRepairOverloadThreshold)
 }
 
 objectdef obj_AutoModule inherits obj_StateQueue
@@ -152,21 +154,11 @@ objectdef obj_AutoModule inherits obj_StateQueue
 			}
 		}
 
-		variable int overloadThreshold
 		if ${Ship.ModuleList_Regen_Shield.InactiveCount} && ((${MyShip.ShieldPct.Int} < ${Config.ActiveShieldBoost} && ${MyShip.CapacitorPct.Int} > ${Config.ActiveShieldCap}) || ${Config.AlwaysShieldBoost})
 		{
-			; Overload the module if current damage doubles the threshold.
-			if ${Config.ActiveShieldBoost} < 50
+			if ${MyShip.ShieldPct.Int} < ${Config.ShieldBoostOverloadThreshold}
 			{
-				overloadThreshold:Set[0]
-			}
-			else
-			{
-				overloadThreshold:Set[${Math.Calc[100 - (2 * (100 - ${Config.ActiveShieldBoost}))]}]
-			}
-			if ${MyShip.ShieldPct.Int} <= ${overloadThreshold}
-			{
-				; Ship.ModuleList_Regen_Shield:SetOverloadHPThreshold[${Config.OverloadHPThreshold}]
+				; 50 is module hp percent not the shield percent.
 				Ship.ModuleList_Regen_Shield:SetOverloadHPThreshold[50]
 			}
 			else
@@ -183,18 +175,9 @@ objectdef obj_AutoModule inherits obj_StateQueue
 
 		if ${Ship.ModuleList_Repair_Armor.InactiveCount} && ((${MyShip.ArmorPct.Int} < ${Config.ActiveArmorRepair} && ${MyShip.CapacitorPct.Int} > ${Config.ActiveArmorCap}) || ${Config.AlwaysArmorRepair}) && ${LavishScript.RunningTime} > ${lastArmorRepActivate}
 		{
-			; Overload the module if current damage doubles the threshold.
-			if ${Config.ActiveArmorRepair} < 50
+			if ${MyShip.ArmorPct.Int} < ${Config.ArmorRepairOverloadThreshold}
 			{
-				overloadThreshold:Set[0]
-			}
-			else
-			{
-				overloadThreshold:Set[${Math.Calc[100 - (2 * (100 - ${Config.ActiveArmorRepair}))]}]
-			}
-			if ${MyShip.ArmorPct.Int} <= ${overloadThreshold}
-			{
-				; Ship.ModuleList_Repair_Armor:SetOverloadHPThreshold[${Config.OverloadHPThreshold}]
+				; 50 is module hp percent not the armor percent.
 				Ship.ModuleList_Repair_Armor:SetOverloadHPThreshold[50]
 			}
 			else

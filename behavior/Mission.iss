@@ -129,6 +129,7 @@ objectdef obj_Configuration_Mission
 		This.CommonRef:AddSetting[DeclineLowSec, TRUE]
 		This.CommonRef:AddSetting[AggressiveMode, FALSE]
 		This.CommonRef:AddSetting[IgnoreNPCSentries, FALSE]
+		This.CommonRef:AddSetting[OverloadThrust, FALSE]
 		This.CommonRef:AddSetting[DeactivateSiegeModuleEarly, FALSE]
 		This.CommonRef:AddSetting[SalvagePrefix, "Salvage: "]
 		This.CommonRef:AddSetting[LogLevelBar, LOG_INFO]
@@ -142,6 +143,7 @@ objectdef obj_Configuration_Mission
 	Setting(bool, DropOffToContainer, SetDropOffToContainer)
 	Setting(bool, AggressiveMode, SetAggressiveMode)
 	Setting(bool, IgnoreNPCSentries, SetIgnoreNPCSentries)
+	Setting(bool, OverloadThrust, SetOverloadThrust)
 	Setting(bool, DeactivateSiegeModuleEarly, SetDeactivateSiegeModuleEarly)
 	Setting(string, SalvagePrefix, SetSalvagePrefix)
 	Setting(string, DropOffContainerName, SetDropOffContainerName)
@@ -880,6 +882,10 @@ objectdef obj_Mission inherits obj_StateQueue
 			Ship.ModuleList_Siege:DeactivateAll
 		}
 
+		; Should do nothing when ship is not approaching yet so the Approaching eneity is null.
+		; Will deactivate overload when the target is near.
+		This:ManageThrusterOverload[${MyShip.ToEntity.Approaching.ID}]
+
 		; Hack: Approach to spawn Fajah Ateshi in Anomaly 1, not worth adding another mission configue for this one mission
 		variable string containerQuery = "(Type = \"Ancient Ship Structure\")"
 		variable string seperator = " || "
@@ -945,6 +951,7 @@ objectdef obj_Mission inherits obj_StateQueue
 					{
 						if ${MyShip.ToEntity.Mode} != MOVE_APPROACHING || ${LavishScript.RunningTime} > ${approachTimer}
 						{
+							This:ManageThrusterOverload[${Entity[${currentLootContainer}].ID}]
 							Entity[${currentLootContainer}]:Approach[1000]
 							This:InsertState["PerformMission"]
 							approachTimer:Set[${Math.Calc[${LavishScript.RunningTime} + 10000]}]
@@ -1281,6 +1288,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				Ship.ModuleList_Siege:DeactivateAll
 			}
 			This:LogInfo["Approaching distanced target: \ar${ActiveNPCs.TargetList.Get[1].Name}"]
+			This:ManageThrusterOverload[${ActiveNPCs.TargetList.Get[1].ID}]
 			ActiveNPCs.TargetList.Get[1]:Approach
 			This:InsertState["PerformMission"]
 			return TRUE
@@ -1342,6 +1350,8 @@ objectdef obj_Mission inherits obj_StateQueue
 					; This:LogInfo["Deactivate siege module due to approaching"]
 					Ship.ModuleList_Siege:DeactivateAll
 				}
+
+				This:ManageThrusterOverload[${NPCs.TargetList.Get[1].ID}]
 				NPCs.TargetList.Get[1]:Approach
 			}
 
@@ -1367,6 +1377,8 @@ objectdef obj_Mission inherits obj_StateQueue
 					; This:LogInfo["Deactivate siege module due to approaching"]
 					Ship.ModuleList_Siege:DeactivateAll
 				}
+
+				This:ManageThrusterOverload[${Entity[${targetToDestroy}].ID}]
 				Entity[${targetToDestroy}]:Approach
 			}
 
@@ -2938,6 +2950,35 @@ objectdef obj_Mission inherits obj_StateQueue
 	{
 		This:Stop
 		return TRUE
+	}
+
+	method ManageThrusterOverload(int64 targetID)
+	{
+		if !${Entity[${targetID}](exists)}
+		{
+			; keep current status.
+			return
+		}
+
+		if !${Config.OverloadThrust} || \
+			${Ship.ModuleList_Siege.IsActiveOn[TARGET_ANY]} || \
+			${Ship.RegisteredModule.Element[${Ship.ModuleList_Siege.ModuleID.Get[1]}].IsActive} || \
+			(${Entity[${targetID}].Distance} <= 10000)
+		{
+			; turn off
+			This:LogDebug["turn off ${Ship.ModuleList_Siege.IsActiveOn[TARGET_ANY]} ${Ship.RegisteredModule.Element[${Ship.ModuleList_Siege.ModuleID.Get[1]}].IsActive} ${Entity[${targetID}].Name} ${Entity[${targetID}].Distance}"]
+			Ship.ModuleList_AB_MWD:SetOverloadHPThreshold[100]
+		}
+
+		if ${Config.OverloadThrust} && \
+			${Entity[${targetID}].Distance} > 10000 && \
+			!${Ship.ModuleList_Siege.IsActiveOn[TARGET_ANY]} && \
+			!${Ship.RegisteredModule.Element[${Ship.ModuleList_Siege.ModuleID.Get[1]}].IsActive}
+		{
+			; turn on
+			This:LogDebug["turn on ${Entity[${targetID}].Name} ${Entity[${targetID}].Distance}"]
+			Ship.ModuleList_AB_MWD:SetOverloadHPThreshold[50]
+		}
 	}
 }
 
