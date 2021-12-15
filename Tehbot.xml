@@ -452,59 +452,6 @@
 							</OnLeftClick>
 						</Button>
 					</Tab>
-					<Tab Name='Donate'>
-						<frame name='DonateFillerFrame'>
-							<BackgroundColor>FF000000</BackgroundColor>
-							<Border>1</Border>
-							<BorderColor>FFFFFFFF</BorderColor>
-							<X>0</X>
-							<Y>0</Y>
-							<Height>100%</Height>
-							<Width>100%</Width>
-							<OnLoad>
-								This:SetLeftClickThru[TRUE]
-							</OnLoad>
-						</frame>
-
-						<Text name='DonateTitle'>
-							<X>0%</X>
-							<Y>2%</Y>
-							<Width>100%</Width>
-							<Height>10%</Height>
-							<Font>
-								<Size>40</Size>
-							</Font>
-							<Alignment>Center</Alignment>
-							<Text>Consider Donating!</Text>
-						</Text>
-
-						<Text name='DonateText'>
-							<X>2%</X>
-							<Y>15%</Y>
-							<Width>96%</Width>
-							<Height>50%</Height>
-							<Font>
-								<Color>AAAA4400 </Color>
-								<Bold />
-							</Font>
-							<Alignment>Left</Alignment>
-							<Wrap />
-							<Text>I've put a lot of work into this bot (and its predecessor) over the years.  I'm not looking for big donations, and I won't be doing any kind of subscription service.  If you can kick a few bucks my way I'd appreciate it and I promise I'll buy only the best bottom shelf booze with it.  To keep things secure and anonymous I'm only taking donations via bitcoin.  If you want to donate, you can click the button below for a direct link, or use the address directly: 31vArgW2AwpKUkMkKMTj5UFmjCYLp6F1Ck</Text>
-						</Text>
-
-						<Button name="Bitcoin_Activate">
-							<Font template='Button.Font' />
-							<BackgroundColor>FF000000</BackgroundColor>
-							<X>25%</X>
-							<Y>62%</Y>
-							<Width>50%</Width>
-							<Height>30%</Height>
-							<Text>Open Bitcoin Address Link</Text>
-							<OnLeftClick>
-								timedcommand 0 "OSExecute bitcoin:31vArgW2AwpKUkMkKMTj5UFmjCYLp6F1Ck?label=Tehbot%20Donations"
-							</OnLeftClick>
-						</Button>
-					</Tab>
 				</Tabs>
 				<OnSelect>
 					Script[Tehbot].VariableScope.Config.Common:SetActiveTab[${This.SelectedTab.Name}]
