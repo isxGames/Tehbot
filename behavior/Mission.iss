@@ -466,7 +466,7 @@ objectdef obj_Mission inherits obj_StateQueue
 								containerToLoot:Set[${ContainerToLoot.Element[${missionName}]}]
 							}
 
-							aquireItem:Set[${MissionParser.AquireItem}]}]
+							aquireItem:Set[${MissionParser.AquireItem}]
 							if ${aquireItem.NotNULLOrEmpty}
 							{
 								This:LogInfo["Acquire item: \ao${aquireItem}"]
@@ -2966,7 +2966,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			(${Entity[${targetID}].Distance} <= 10000)
 		{
 			; turn off
-			This:LogDebug["turn off ${Ship.ModuleList_Siege.IsActiveOn[TARGET_ANY]} ${Ship.RegisteredModule.Element[${Ship.ModuleList_Siege.ModuleID.Get[1]}].IsActive} ${Entity[${targetID}].Name} ${Entity[${targetID}].Distance}"]
+			; This:LogDebug["turn off ${Ship.ModuleList_Siege.IsActiveOn[TARGET_ANY]} ${Ship.RegisteredModule.Element[${Ship.ModuleList_Siege.ModuleID.Get[1]}].IsActive} ${Entity[${targetID}].Name} ${Entity[${targetID}].Distance}"]
 			Ship.ModuleList_AB_MWD:SetOverloadHPThreshold[100]
 		}
 
@@ -2976,7 +2976,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			!${Ship.RegisteredModule.Element[${Ship.ModuleList_Siege.ModuleID.Get[1]}].IsActive}
 		{
 			; turn on
-			This:LogDebug["turn on ${Entity[${targetID}].Name} ${Entity[${targetID}].Distance}"]
+			; This:LogDebug["turn on ${Entity[${targetID}].Name} ${Entity[${targetID}].Distance}"]
 			Ship.ModuleList_AB_MWD:SetOverloadHPThreshold[50]
 		}
 	}
