@@ -89,4 +89,14 @@ objectdef obj_Utility
 
 		return ${b}
 	}
+
+	member:int Max(int a, int b)
+	{
+		if ${a} < ${b}
+		{
+			return ${b}
+		}
+
+		return ${a}
+	}
 }

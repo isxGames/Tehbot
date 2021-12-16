@@ -33,6 +33,8 @@ objectdef obj_Module inherits obj_StateQueue
 	variable bool _overloadToggledOn = FALSE
 	variable int OverloadIfHPAbovePercent = 100
 
+	variable float64 _shortRangeAmmoRange = 0
+
 	method Initialize(int64 ID)
 	{
 		This[parent]:Initialize
@@ -567,11 +569,17 @@ objectdef obj_Module inherits obj_StateQueue
 		variable string longRangeAmmo
 		longRangeAmmo:Set[${This._getLongRangeAmmo}]
 
+		if ${This.Charge(exists)} && ${This.Charge.Type.Find[${shortRangeAmmo}]}
+		{
+			; Memorize the short range ammo range.
+			_shortRangeAmmoRange:Set[${Utility.Max[${_shortRangeAmmoRange}, ${This.Range}]}]
+		}
+
 		if !${This.Charge(exists)} || \
 			${This.Charge.Type.Find[${shortRangeAmmo}]} || \
 			!${This.Charge.Type.Find[${longRangeAmmo}]}	/* this means unknown ammo is loaded */
 		{
-			if ${Entity[${targetID}].Distance} <= ${This.Range}
+			if ${Entity[${targetID}].Distance} <=  ${Utility.Max[${This.Range}, ${_shortRangeAmmoRange}]}
 			{
 				if  ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0
 				{
@@ -596,7 +604,7 @@ objectdef obj_Module inherits obj_StateQueue
 		}
 		elseif ${This.Charge.Type.Find[${longRangeAmmo}]}
 		{
-			if ${Entity[${targetID}].Distance} <= ${Math.Calc[${This.Range} * 0.4]}
+			if ${Entity[${targetID}].Distance} <= ${Utility.Max[${Math.Calc[${This.Range} * 0.3]}, ${_shortRangeAmmoRange}]}
 			{
 				if  ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0
 				{
@@ -869,11 +877,8 @@ objectdef obj_Module inherits obj_StateQueue
 		turretFalloff:Set[${Ship.ModuleList_Turret.AccuracyFalloff}]
 
 		variable float64 decay
-		decay:Set[${targetDistance} - ${turretOptimalRange}]
-		if ${decay} < 0
-		{
-			decay:Set[0]
-		}
+		decay:Set[${Math.Calc[${targetDistance} - ${turretOptimalRange}]}]
+		decay:Set[${Utility.Max[0, ${decay}]}]
 
 		variable float64 rangeFactor
 		rangeFactor:Set[${Math.Calc[(${decay} / ${turretFalloff}) ^^ 2]}]
