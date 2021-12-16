@@ -441,11 +441,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 					currentTarget:Set[${CapsuleTarget}]
 				}
 			}
-			This:LogInfo["Primary target: \ar${Entity[${currentTarget}].Name}"]
-			if ${Ship.IsTurretShip}
-			{
-				This:LogInfo["    chance to hit \ao ${Math.Calc[${Ship.TurretChanceToHit[${currentTarget}]} * 100].Deci}%."]
-			}
+			This:LogInfo["Primary target: \ar${Entity[${currentTarget}].Name}, effciency ${Math.Calc[${Ship.ModuleList_Weapon.DamageEfficiency[${currentTarget}]} * 100].Deci}%."]
 		}
 
 		;;;;;;;;;;;;;;;;;;;;Shoot;;;;;;;;;;;;;;;;;;;;;

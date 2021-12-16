@@ -529,17 +529,32 @@ objectdef obj_Module inherits obj_StateQueue
 		switch ${This.ToItem.GroupID}
 		{
 			case GROUP_ENERGYWEAPON
-			case GROUP_PROJECTILEWEAPON
-				return ${This._pickOptimalAmmoForTurret[${InstructionTargetID}]}
+				return ${This._pickOptimalAmmoForEnergyWeapon[${InstructionTargetID}]}
 			case GROUP_TRACKINGCOMPUTER
 				return ${This._pickOptimalScriptTrackingComputerScript[${InstructionTargetID}]}
+			; case GROUP_PROJECTILEWEAPON
+			; 	return ${This._pickOptimalAmmoForProjectileTurret[${InstructionTargetID}]}
+			; case GROUP_MISSILELAUNCHERRAPIDHEAVY
+			; case GROUP_MISSILELAUNCHER
+			; case GROUP_MISSILELAUNCHERASSAULT
+			; case GROUP_MISSILELAUNCHERBOMB
+			; case GROUP_MISSILELAUNCHERCITADEL
+			; case GROUP_MISSILELAUNCHERCRUISE
+			; case GROUP_MISSILELAUNCHERDEFENDER
+			; case GROUP_MISSILELAUNCHERHEAVY
+			; case GROUP_MISSILELAUNCHERHEAVYASSAULT
+			; case GROUP_MISSILELAUNCHERROCKET
+			; case GROUP_MISSILELAUNCHERTORPEDO
+			; case GROUP_MISSILELAUNCHERSTANDARD"]
+			; 	return ${This._pickOptimalAmmoForProjectileTurret[${InstructionTargetID}]}
 		}
 
 		return ""
 	}
 
-	member:string _pickOptimalAmmoForTurret(int64 targetID)
+	member:string _pickOptimalAmmoForEnergyWeapon(int64 targetID)
 	{
+		; Energy weapons can switch ammo immediately so it can always simply pick the optimal ammo for the current target.
 		if ${targetID.Equal[TARGET_NA]} || !${This._isTargetValid[${targetID}]}
 		{
 			This:LogCritical["Picking turret ammo for invalid target."]
@@ -551,7 +566,6 @@ objectdef obj_Module inherits obj_StateQueue
 
 		variable string longRangeAmmo
 		longRangeAmmo:Set[${This._getLongRangeAmmo}]
-
 
 		if !${This.Charge(exists)} || \
 			${This.Charge.Type.Find[${shortRangeAmmo}]} || \
@@ -633,7 +647,7 @@ objectdef obj_Module inherits obj_StateQueue
 				; }
 			}
 		}
-		elseif ${Entity[${targetID}].Distance} < ${Math.Calc[${Ship.ModuleList_Turret.OptimalRange.Int} * 0.6]}
+		elseif ${This._turretTrackingDecayFactor[${targetID}]} > 0.2 /*roughly 93.3% hit chance*/
 		{
 			; echo need tracking
 			if !${This.Charge.Type(exists)} || ${This.Charge.Type.Find["Optimal Range Script"]}
@@ -657,42 +671,24 @@ objectdef obj_Module inherits obj_StateQueue
 	{
 		if !${Ammo.NotNULLOrEmpty} || ${MyShip.Cargo[${Ammo}].Quantity} == 0
 		{
-			if ${This.ToItem.GroupID} == GROUP_ENERGYWEAPON
-			{
-				return "Conflagration L"
-			}
-			if ${This.ToItem.GroupID} == GROUP_PROJECTILEWEAPON
-			{
-				return "Hail L"
-			}
+			return ${This.FallbackAmmo}
 		}
 		else
 		{
 			return "${Ammo}"
 		}
-
-		This:LogCritical["not implemented"]
 	}
 
 	member:string _getLongRangeAmmo()
 	{
 		if !${LongRangeAmmo.NotNULLOrEmpty} || ${MyShip.Cargo[${LongRangeAmmo}].Quantity} == 0
 		{
-			if ${This.ToItem.GroupID} == GROUP_ENERGYWEAPON
-			{
-				return "Scorch L"
-			}
-			if ${This.ToItem.GroupID} == GROUP_PROJECTILEWEAPON
-			{
-				return "Barrage L"
-			}
+			return ${This.FallbackSecondaryAmmo}
 		}
 		else
 		{
 			return "${LongRangeAmmo}"
 		}
-
-		This:LogCritical["not implemented"]
 	}
 
 	method _findAndChangeAmmo(string ammo)
@@ -749,7 +745,7 @@ objectdef obj_Module inherits obj_StateQueue
 		{
 			_overloadToggledOn:Set[TRUE]
 			; Turn on
-			This:LogInfo["Turning on overload HP ${This._HPPercentage}% > ${This.OverloadIfHPAbovePercent}%."]
+			This:LogDebug["Turning on overload HP ${This._HPPercentage}% > ${This.OverloadIfHPAbovePercent}%."]
 			This:ToggleOverload
 
 			; This:QueueState["Operate", ${_intervalBetweenOperations}]
@@ -759,7 +755,7 @@ objectdef obj_Module inherits obj_StateQueue
 		{
 			_overloadToggledOn:Set[FALSE]
 			; Turn off
-			This:LogInfo["Turning off overload HP ${This._HPPercentage}% < ${This.OverloadIfHPAbovePercent}%."]
+			This:LogDebug["Turning off overload HP ${This._HPPercentage}% < ${This.OverloadIfHPAbovePercent}%."]
 			This:ToggleOverload
 
 			; This:QueueState["Operate", ${_intervalBetweenOperations}]
@@ -792,8 +788,188 @@ objectdef obj_Module inherits obj_StateQueue
 			return ${Math.Calc[${This.Charge.MaxFlightTime} * ${This.Charge.MaxVelocity}]}
 		}
 	}
-}
 
+	member:string FallbackAmmo()
+	{
+		switch ${This.ToItem.TypeID}
+		{
+			case TYPE_MEGA_PULSE_LASER
+				return "Conflagration L"
+			case TYPE_TORPEDO_LAUNCHER
+				return "Scourge Rage Torpedo"
+			; case TYPE_800MM_AUTOCANNON
+			; 	return "Hail L"
+		}
+
+		return ""
+	}
+
+	member:string FallbackSecondaryAmmo()
+	{
+		switch ${This.ToItem.TypeID}
+		{
+			case TYPE_MEGA_PULSE_LASER
+				return "Scorch L"
+			case TYPE_TORPEDO_LAUNCHER
+				return "Scourge Javelin Torpedo"
+			; case TYPE_800MM_AUTOCANNON
+			; 	return "Barrage L"
+		}
+
+		return ""
+	}
+
+	member:float DamageEfficiency(int64 targetID)
+	{
+		switch ${This.ToItem.GroupID}
+		{
+			case GROUP_ENERGYWEAPON
+			case GROUP_PROJECTILEWEAPON
+			case GROUP_HYBRIDWEAPON
+				return ${This.TurretChanceToHit[${targetID}]}
+			case GROUP_MISSILELAUNCHERRAPIDHEAVY
+			case GROUP_MISSILELAUNCHER
+			case GROUP_MISSILELAUNCHERASSAULT
+			case GROUP_MISSILELAUNCHERBOMB
+			case GROUP_MISSILELAUNCHERCITADEL
+			case GROUP_MISSILELAUNCHERCRUISE
+			case GROUP_MISSILELAUNCHERDEFENDER
+			case GROUP_MISSILELAUNCHERHEAVY
+			case GROUP_MISSILELAUNCHERHEAVYASSAULT
+			case GROUP_MISSILELAUNCHERROCKET
+			case GROUP_MISSILELAUNCHERTORPEDO
+			case GROUP_MISSILELAUNCHERSTANDARD"]
+				return ${This.MissileDamageEfficiency[${targetID}]}
+		}
+
+		return 0
+	}
+
+;;;;;;;;;;turret
+	member:float64 _turretRangeDecayFactor(int64 targetID)
+	{
+		; Target relative coordinate.
+		variable float64 X
+		variable float64 Y
+		variable float64 Z
+		X:Set[${Math.Calc[${Entity[${targetID}].X} - ${MyShip.ToEntity.X}]}]
+		Y:Set[${Math.Calc[${Entity[${targetID}].Y} - ${MyShip.ToEntity.Y}]}]
+		Z:Set[${Math.Calc[${Entity[${targetID}].Z} - ${MyShip.ToEntity.Z}]}]
+
+		; Distance calculated from coordinate is somewhat 500m larger than Entity.Distance,
+		; actually the later one gives the same angular velocity number as shown in the overview tab,
+		; But I will take the coordinate one as the difference to chance to hit should be small and won't need to deal with devide by zero error.
+		variable float64 targetDistance
+		targetDistance:Set[${Math.Distance[${X}, ${Y}, ${Z}, 0, 0, 0]}]
+
+		variable float64 turretOptimalRange
+		turretOptimalRange:Set[${Ship.ModuleList_Turret.OptimalRange}]
+
+		variable float64 turretFalloff
+		turretFalloff:Set[${Ship.ModuleList_Turret.AccuracyFalloff}]
+
+		variable float64 decay
+		decay:Set[${targetDistance} - ${turretOptimalRange}]
+		if ${decay} < 0
+		{
+			decay:Set[0]
+		}
+
+		variable float64 rangeFactor
+		rangeFactor:Set[${Math.Calc[(${decay} / ${turretFalloff}) ^^ 2]}]
+		This:LogDebug["rangeFactor: \ao ${turretOptimalRange} ${turretFalloff} ${decay} -> ${rangeFactor}"]
+
+		return ${rangeFactor}
+	}
+
+	member:float64 _turretTrackingDecayFactor(int64 targetID)
+	{
+		; Target relative coordinate and velocity.
+		variable float64 X
+		variable float64 Y
+		variable float64 Z
+		variable float64 vX
+		variable float64 vY
+		variable float64 vZ
+		X:Set[${Math.Calc[${Entity[${targetID}].X} - ${MyShip.ToEntity.X}]}]
+		Y:Set[${Math.Calc[${Entity[${targetID}].Y} - ${MyShip.ToEntity.Y}]}]
+		Z:Set[${Math.Calc[${Entity[${targetID}].Z} - ${MyShip.ToEntity.Z}]}]
+		vX:Set[${Math.Calc[${Entity[${targetID}].vX} - ${MyShip.ToEntity.vX}]}]
+		vY:Set[${Math.Calc[${Entity[${targetID}].vY} - ${MyShip.ToEntity.vY}]}]
+		vZ:Set[${Math.Calc[${Entity[${targetID}].vZ} - ${MyShip.ToEntity.vZ}]}]
+
+		variable float64 dotProduct
+		dotProduct:Set[${Math.Calc[${vX} * ${X} + ${vY} * ${Y} + ${vZ} * ${Z}]}]
+
+		; Distance calculated from coordinate is somewhat 500m larger than Entity.Distance,
+		; actually the later one gives the same angular velocity number as shown in the overview tab,
+		; But I will take the coordinate one as the difference to chance to hit should be small and won't need to deal with devide by zero error.
+		variable float64 targetDistance
+		targetDistance:Set[${Math.Distance[${X}, ${Y}, ${Z}, 0, 0, 0]}]
+
+		variable float64 norm
+		norm:Set[${Math.Calc[${targetDistance} * ${targetDistance}]}]
+
+		; Orthogonal(radical) velocity ratio.
+		variable float64 ratio
+		ratio:Set[${Math.Calc[${dotProduct} / ${norm}]}]
+
+		; Tangent velocity.
+		variable float64 projectionvX
+		variable float64 projectionvY
+		variable float64 projectionvZ
+		projectionvX:Set[${Math.Calc[${vX} - ${ratio} * ${X}]}]
+		projectionvY:Set[${Math.Calc[${vY} - ${ratio} * ${Y}]}]
+		projectionvZ:Set[${Math.Calc[${vZ} - ${ratio} * ${Z}]}]
+
+		; Tangent velocity scalar.
+		variable float64 Vt
+		Vt:Set[${Math.Sqrt[${projectionvX} * ${projectionvX} + ${projectionvY} * ${projectionvY} + ${projectionvZ} * ${projectionvZ}]}]
+
+		variable float64 angularVelocity
+		angularVelocity:Set[${Math.Calc[${Vt} / ${targetDistance}]}]
+		This:LogDebug["Target angular velocity: \ao ${projectionvX} ${projectionvY} ${projectionvZ} -> ${angularVelocity}"]
+
+		; angularVelocity:Set[${Math.Calc[${Vt} / ${Entity[${targetID}].Distance}]}]
+		; This:LogDebug[" target angular velocity ver 2: \ao ${projectionvX} ${projectionvY} ${projectionvZ} ->  ${angularVelocity}"]
+
+		variable float64 trackingSpeed
+		trackingSpeed:Set[${Ship.ModuleList_Turret.TrackingSpeed}]
+
+		variable float64 targetSignatureRadius
+		targetSignatureRadius:Set[${Entity[${targetID}].Radius}]
+
+		variable float64 trackingFactor
+		trackingFactor:Set[${Math.Calc[(${angularVelocity} * 40000 / ${trackingSpeed} / ${targetSignatureRadius}) ^^ 2]}]
+		This:LogDebug["trackingFactor: \ao ${trackingSpeed} ${targetSignatureRadius} -> ${trackingFactor}"]
+
+		return ${trackingFactor}
+	}
+
+	member:float64 TurretChanceToHit(int64 targetID)
+	{
+		variable float64 trackingFactor
+		trackingFactor:Set[${This._turretTrackingDecayFactor[${targetID}]}]
+
+		variable float64 rangeFactor
+		rangeFactor:Set[${This._turretRangeDecayFactor[${targetID}]}]
+
+		variable float64 chanceToHit
+		chanceToHit:Set[${Math.Calc[0.5 ^^ (${trackingFactor} + ${rangeFactor})]}]
+
+		This:LogDebug["chanceToHit: \ao ${rangeFactor} ${trackingFactor} -> ${chanceToHit}"]
+
+		return ${chanceToHit}
+	}
+
+;;;;;;;;;;missile launcher
+	member:float64 MissileDamageEfficiency(int64 targetID)
+	{
+		; TODO
+		return 1
+	}
+
+}
 
 	; if ${This.ToItem.GroupID} == GROUP_MISSILELAUNCHERTORPEDO
 	; 		{
@@ -892,27 +1068,5 @@ objectdef obj_Module inherits obj_StateQueue
 	; 	}
 
 	; 	return FALSE
-	; }
-
-	; member:bool ActivateOn(int64 targetID)
-	; {
-	; 	if ${targetID.Equal[-1]} || ${targetID.Equal[0]}
-	; 	{
-	; 		if ${This.IsActive}
-	; 		{
-	; 			if (${Me.ToEntity.Mode} == MOVE_WARPING && ${This.ToItem.GroupID} == GROUP_AFTERBURNER)
-	; 			{
-	; 				Activated:Set[FALSE]
-	; 				InstructionTargetID:Set[-1]
-	; 				This:Clear
-	; 			}
-	; 			return TRUE
-	; 		}
-	; 		This:Activate
-	; 		InstructionTargetID:Set[-1]
-	; 		Activated:Set[TRUE]
-	; 		This:InsertState["WaitTillActive", 50, 20]
-	; 		return TRUE
-	; 	}
 	; }
 

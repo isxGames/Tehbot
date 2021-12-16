@@ -208,31 +208,15 @@ objectdef obj_Ship inherits obj_StateQueue
 		return TRUE
 	}
 
-	member:float64 DamageEffciency(int64 targetID)
-	{
-		if ${This.ModuleList_Turret.Count} > ${This.ModuleList_MissileLauncher.Count}
-		{
-			return ${This.TurretChanceToHit[${targetID}]}
-		}
-		; TODO Missile
-		return 1.0
-	}
-
 	member:bool IsHardToDealWithTarget(int64 targetID)
 	{
-		; Turret as main weapon.
-		if ${This.ModuleList_Turret.Count} > ${This.ModuleList_MissileLauncher.Count}
+		if ${This.ModuleList_Weapon.DamageEfficiency[${targetID}]} <= 0.1
 		{
-			if ${This.TurretChanceToHit[${targetID}]} <= 0.1
-			{
-				return TRUE
+			return TRUE
 
-			}
-			return FALSE
 		}
 		return FALSE
 	}
-
 
 	method BuildActiveJammerList()
 	{
@@ -374,104 +358,6 @@ objectdef obj_Ship inherits obj_StateQueue
 		{
 			This:LogCritical["not equal!", "r"]
 		}
-	}
-
-	; TODO: update for other ships
-	member:string FallbackAmmo()
-	{
-		return "Conflagration L"
-	}
-
-	member:string FallbackSecondaryAmmo()
-	{
-		return "Scorch L"
-	}
-
-	member:float64 TurretChanceToHit(int64 targetID)
-	{
-		; Target relative coordinate and velocity.
-		variable float64 X
-		variable float64 Y
-		variable float64 Z
-		variable float64 vX
-		variable float64 vY
-		variable float64 vZ
-		X:Set[${Math.Calc[${Entity[${targetID}].X} - ${MyShip.ToEntity.X}]}]
-		Y:Set[${Math.Calc[${Entity[${targetID}].Y} - ${MyShip.ToEntity.Y}]}]
-		Z:Set[${Math.Calc[${Entity[${targetID}].Z} - ${MyShip.ToEntity.Z}]}]
-		vX:Set[${Math.Calc[${Entity[${targetID}].vX} - ${MyShip.ToEntity.vX}]}]
-		vY:Set[${Math.Calc[${Entity[${targetID}].vY} - ${MyShip.ToEntity.vY}]}]
-		vZ:Set[${Math.Calc[${Entity[${targetID}].vZ} - ${MyShip.ToEntity.vZ}]}]
-
-		variable float64 dotProduct
-		dotProduct:Set[${Math.Calc[${vX} * ${X} + ${vY} * ${Y} + ${vZ} * ${Z}]}]
-
-		; Distance calculated from coordinate is somewhat 500m larger than Entity.Distance,
-		; actually the later one gives the same angular velocity number as shown in the overview tab,
-		; But I will take the coordinate one as the difference to chance to hit should be small and won't need to deal with devide by zero error.
-		variable float64 targetDistance
-		targetDistance:Set[${Math.Distance[${X}, ${Y}, ${Z}, 0, 0, 0]}]
-
-		variable float64 norm
-		norm:Set[${Math.Calc[${targetDistance} * ${targetDistance}]}]
-
-		; Orthogonal(radical) velocity ratio.
-		variable float64 ratio
-		ratio:Set[${Math.Calc[${dotProduct} / ${norm}]}]
-
-		; Tangent velocity.
-		variable float64 projectionvX
-		variable float64 projectionvY
-		variable float64 projectionvZ
-		projectionvX:Set[${Math.Calc[${vX} - ${ratio} * ${X}]}]
-		projectionvY:Set[${Math.Calc[${vY} - ${ratio} * ${Y}]}]
-		projectionvZ:Set[${Math.Calc[${vZ} - ${ratio} * ${Z}]}]
-
-		; Tangent velocity scalar.
-		variable float64 Vt
-		Vt:Set[${Math.Sqrt[${projectionvX} * ${projectionvX} + ${projectionvY} * ${projectionvY} + ${projectionvZ} * ${projectionvZ}]}]
-
-		variable float64 angularVelocity
-		angularVelocity:Set[${Math.Calc[${Vt} / ${targetDistance}]}]
-		This:LogDebug["Target angular velocity: \ao ${projectionvX} ${projectionvY} ${projectionvZ} -> ${angularVelocity}"]
-
-		; angularVelocity:Set[${Math.Calc[${Vt} / ${Entity[${targetID}].Distance}]}]
-		; This:LogDebug[" target angular velocity ver 2: \ao ${projectionvX} ${projectionvY} ${projectionvZ} ->  ${angularVelocity}"]
-
-		variable float64 trackingSpeed
-		trackingSpeed:Set[${This.ModuleList_Turret.TrackingSpeed}]
-
-		variable float64 targetSignatureRadius
-		targetSignatureRadius:Set[${Entity[${targetID}].Radius}]
-
-		variable float64 trackingFactor
-		trackingFactor:Set[${Math.Calc[(${angularVelocity} * 40000 / ${trackingSpeed} / ${targetSignatureRadius}) ^^ 2]}]
-
-		This:LogDebug["trackingFactor: \ao ${trackingSpeed} ${targetSignatureRadius} -> ${trackingFactor}"]
-
-		variable float64 turretOptimalRange
-		turretOptimalRange:Set[${This.ModuleList_Turret.OptimalRange}]
-
-		variable float64 turretFalloff
-		turretFalloff:Set[${This.ModuleList_Turret.AccuracyFalloff}]
-
-		variable float64 decay
-		decay:Set[${targetDistance} - ${turretOptimalRange}]
-		if ${decay} < 0
-		{
-			decay:Set[0]
-		}
-
-		variable float64 rangeFactor
-		rangeFactor:Set[${Math.Calc[(${decay} / ${turretFalloff}) ^^ 2]}]
-		This:LogDebug["rangeFactor: \ao ${turretOptimalRange} ${turretFalloff} ${decay} -> ${rangeFactor}"]
-
-		variable float64 chanceToHit
-		chanceToHit:Set[${Math.Calc[0.5 ^^ (${trackingFactor} + ${rangeFactor})]}]
-
-		This:LogDebug["chanceToHit: \ao ${rangeFactor} ${trackingFactor} -> ${chanceToHit}"]
-
-		return ${chanceToHit}
 	}
 
 	member:bool IsTurretShip()

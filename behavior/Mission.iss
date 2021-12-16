@@ -1269,11 +1269,7 @@ objectdef obj_Mission inherits obj_StateQueue
 					maxAttackTime:Set[${Math.Calc[${LavishScript.RunningTime} + (${switchTargetAfter} * 1000)]}]
 				}
 			}
-			This:LogInfo["Primary target: \ar${Entity[${currentTarget}].Name}"]
-			if ${Ship.IsTurretShip}
-			{
-				This:LogInfo["    chance to hit \ao ${Math.Calc[${Ship.TurretChanceToHit[${currentTarget}]} * 100].Deci}%."]
-			}
+			This:LogInfo["Primary target: \ar${Entity[${currentTarget}].Name}, effciency ${Math.Calc[${Ship.ModuleList_Weapon.DamageEfficiency[${currentTarget}]} * 100].Deci}%."]
 		}
 
 		; Nothing is locked.

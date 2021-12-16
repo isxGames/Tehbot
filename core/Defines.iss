@@ -7,6 +7,11 @@
 #define CATEGORYID_STRUCTURE                                                                                    65
 #define CATEGORYID_STARBASE		                                                                                23
 
+; Module type id
+#define TYPE_MEGA_PULSE_LASER                                                                                   3057
+#define TYPE_TORPEDO_LAUNCHER                                                                                   2420
+; #define TYPE_800MM_AUTOCANNON
+
 ; Module group id
 #define GROUPID_CONTROL_TOWER                                                                                   365
 #define GROUP_FREQUENCY_MINING_LASER 																			483

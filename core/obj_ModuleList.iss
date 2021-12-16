@@ -262,6 +262,21 @@ objectdef obj_ModuleList
 		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].AccuracyFalloff}
 	}
 
+	member:float DamageEfficiency(int64 targetID)
+	{
+		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].DamageEfficiency[${targetID}]}
+	}
+
+	member:float FallbackAmmo()
+	{
+		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].FallbackAmmo}
+	}
+
+	member:float FallbackSecondaryAmmo()
+	{
+		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].FallbackSecondaryAmmo}
+	}
+
 	member:string GetFallthroughObject()
 	{
 		return "Ship.${This.ObjectName}.ModuleID"

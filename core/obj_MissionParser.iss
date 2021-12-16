@@ -28,8 +28,8 @@ objectdef obj_MissionParser inherits obj_Logger
 
 	method Initialize(string Details)
 	{
-		; This.LogLevelBar:Set[${FoFConfig.LogLevelBar}]
-		This.LogLevelBar:Set[LOG_DEBUG]
+		This.LogLevelBar:Set[${FoFConfig.LogLevelBar}]
+		; This.LogLevelBar:Set[LOG_DEBUG]
 	}
 
     member:string EnemyFactionName()
