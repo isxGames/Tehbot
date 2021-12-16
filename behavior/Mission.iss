@@ -296,8 +296,8 @@ objectdef obj_Mission inherits obj_StateQueue
 		}
 
 		This:BuildNpcQueries
-		ActiveNPCs.AutoLock:Set[TRUE]
-		NPCs.AutoLock:Set[TRUE]
+		ActiveNPCs.AutoLock:Set[FALSE]
+		NPCs.AutoLock:Set[FALSE]
 		UIElement[Run@TitleBar@Tehbot]:SetText[Stop]
 	}
 
@@ -842,6 +842,9 @@ objectdef obj_Mission inherits obj_StateQueue
 	member:bool PerformMission(int nextwaitcomplete = 0)
 	{
 		variable iterator itemIterator
+
+		ActiveNPCs.AutoLock:Set[TRUE]
+		NPCs.AutoLock:Set[TRUE]
 		ActiveNPCs:RequestUpdate
 		NPCs:RequestUpdate
 		Lootables:RequestUpdate
@@ -2533,6 +2536,9 @@ objectdef obj_Mission inherits obj_StateQueue
 		{
 			if ${Me.InSpace}
 			{
+				ActiveNPCs.AutoLock:Set[FALSE]
+				NPCs.AutoLock:Set[FALSE]
+
 				if ${Ship.ModuleList_Siege.ActiveCount}
 				{
 					Ship.ModuleList_Siege:DeactivateAll
