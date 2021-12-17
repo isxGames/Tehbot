@@ -28,7 +28,8 @@ objectdef obj_MissionParser inherits obj_Logger
 
 	method Initialize(string Details)
 	{
-		This.LogLevelBar:Set[${FoFConfig.LogLevelBar}]
+		This[parent]:Initializes
+		This.LogLevelBar:Set[${Config.Common.LogLevelBar}]
 		; This.LogLevelBar:Set[LOG_DEBUG]
 	}
 
@@ -91,7 +92,7 @@ objectdef obj_MissionParser inherits obj_Logger
             return ""
 		}
 
-        This:LogInfo["EnemyDamageToDeal" ${journalText.Length} -- ${factionID} -- ${FactionData.FactionDamageToDeal[${factionID}]}]
+        This:LogDebug["EnemyDamageToDeal" ${journalText.Length} -- ${factionID} -- ${FactionData.FactionDamageToDeal[${factionID}]}]
 
         return ${FactionData.FactionDamageToDeal[${factionID}]}
 	}
@@ -404,11 +405,11 @@ objectdef obj_MissionParser inherits obj_Logger
 		if ${left} > 0
 		{
 			This:LogInfo["WARNING: Mission name contains u2013"]
-			This:LogInfo["DEBUG: amIterator.Value.Name = ${amIterator.Value.Name}"]
+			This:LogDebug["DEBUG: amIterator.Value.Name = ${amIterator.Value.Name}"]
 
 			This.Caption:Set["${This.Caption.Right[${Math.Calc[${This.Caption.Length} - ${left} - 5]}]}"]
 
-			This:LogInfo["DEBUG: This.Caption = ${This.Caption}"]
+			This:LogDebug["DEBUG: This.Caption = ${This.Caption}"]
 		}
 	}
 

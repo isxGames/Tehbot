@@ -70,12 +70,11 @@ function main(string Character="")
 
 	echo "${Time} Tehbot: Starting"
 
-	declarevariable UI obj_TehbotUI script
-	declarevariable Logger obj_Logger script
-	declarevariable MissionParser obj_MissionParser script
-	declarevariable Tehbot obj_Tehbot script
 	declarevariable BaseConfig obj_Configuration_BaseConfig script
 	declarevariable Config obj_Configuration script
+	declarevariable UI obj_TehbotUI script
+	declarevariable Logger obj_Logger script
+	declarevariable Tehbot obj_Tehbot script
 	UI:Reload
 
 	declarevariable NPCData obj_NPCData script
@@ -87,6 +86,7 @@ function main(string Character="")
 
 	declarevariable MiniMode obj_MiniMode script
 	declarevariable Salvager obj_Salvager script
+	declarevariable MissionParser obj_MissionParser script
 	declarevariable Mission obj_Mission script
 
 	declarevariable Automate obj_Automate script
