@@ -639,7 +639,7 @@ objectdef obj_Module inherits obj_StateQueue
 			return ""
 		}
 
-		if ${Entity[${targetID}].Distance} > ${Ship.ModuleList_Turret.OptimalRange.Int}
+		if ${Entity[${targetID}].Distance} > ${Ship.ModuleList_Turret.OptimalRange}
 		{
 			; echo need range
 			if !${This.Charge.Type(exists)} || ${This.Charge.Type.Find["Tracking Speed Script"]}
@@ -655,7 +655,7 @@ objectdef obj_Module inherits obj_StateQueue
 				; }
 			}
 		}
-		elseif ${This._turretTrackingDecayFactor[${targetID}]} > 0.2 /*roughly 93.3% hit chance*/
+		elseif ${Ship.ModuleList_Turret.TurretTrackingDecayFactor[${targetID}]} > 0.2 /*roughly 93.3% hit chance*/
 		{
 			; echo need tracking
 			if !${This.Charge.Type(exists)} || ${This.Charge.Type.Find["Optimal Range Script"]}
@@ -871,10 +871,10 @@ objectdef obj_Module inherits obj_StateQueue
 		targetDistance:Set[${Math.Distance[${X}, ${Y}, ${Z}, 0, 0, 0]}]
 
 		variable float64 turretOptimalRange
-		turretOptimalRange:Set[${Ship.ModuleList_Turret.OptimalRange}]
+		turretOptimalRange:Set[${This.OptimalRange}]
 
 		variable float64 turretFalloff
-		turretFalloff:Set[${Ship.ModuleList_Turret.AccuracyFalloff}]
+		turretFalloff:Set[${This.AccuracyFalloff}]
 
 		variable float64 decay
 		decay:Set[${Math.Calc[${targetDistance} - ${turretOptimalRange}]}]
@@ -939,7 +939,7 @@ objectdef obj_Module inherits obj_StateQueue
 		; This:LogDebug[" target angular velocity ver 2: \ao ${projectionvX} ${projectionvY} ${projectionvZ} ->  ${angularVelocity}"]
 
 		variable float64 trackingSpeed
-		trackingSpeed:Set[${Ship.ModuleList_Turret.TrackingSpeed}]
+		trackingSpeed:Set[${This.TrackingSpeed}]
 
 		variable float64 targetSignatureRadius
 		targetSignatureRadius:Set[${Entity[${targetID}].Radius}]

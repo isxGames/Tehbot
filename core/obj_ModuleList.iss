@@ -267,6 +267,11 @@ objectdef obj_ModuleList
 		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].DamageEfficiency[${targetID}]}
 	}
 
+	member:float TurretTrackingDecayFactor(int64 targetID)
+	{
+		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}]._turretTrackingDecayFactor[${targetID}]}
+	}
+
 	member:float FallbackAmmo()
 	{
 		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].FallbackAmmo}
