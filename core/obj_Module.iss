@@ -196,7 +196,7 @@ objectdef obj_Module inherits obj_StateQueue
 			if ${targetID} != TARGET_NA
 			{
 				optimalAmmo:Set[${This._pickOptimalAmmo[${targetID}]}]
-				if ${optimalAmmo.NotNULLOrEmpty} && !${optimalAmmo.Equal[${This.Charge.Type}]}
+				if ${optimalAmmo.NotNULLOrEmpty} && !${This.Charge.Type.Equal[${optimalAmmo}]}
 				{
 					This:LogDebug["${This.Name} optimalAmmo is ${optimalAmmo} for ${Entity[${targetID}].Name} distance ${Entity[${targetID}].Distance}"]
 					This:LogDebug["Deactivating ${This.Name} to change ammo to ${optimalAmmo}."]
@@ -554,9 +554,9 @@ objectdef obj_Module inherits obj_StateQueue
 		return ""
 	}
 
+	; Energy weapons can switch ammo immediately so it should always simply pick the optimal ammo for the current target.
 	member:string _pickOptimalAmmoForEnergyWeapon(int64 targetID)
 	{
-		; Energy weapons can switch ammo immediately so it can always simply pick the optimal ammo for the current target.
 		if ${targetID.Equal[TARGET_NA]} || !${This._isTargetValid[${targetID}]}
 		{
 			This:LogCritical["Picking turret ammo for invalid target."]
@@ -569,42 +569,53 @@ objectdef obj_Module inherits obj_StateQueue
 		variable string longRangeAmmo
 		longRangeAmmo:Set[${This._getLongRangeAmmo}]
 
-		if ${This.Charge(exists)} && ${This.Charge.Type.Find[${shortRangeAmmo}]}
+		if ${This.Charge(exists)} && ${This.Charge.Type.Equal[${shortRangeAmmo}]}
 		{
+			; Giveup memorizing short range ammo for it won't work correctly when tracking disrupted.
 			; Memorize the short range ammo range.
-			_shortRangeAmmoRange:Set[${Utility.Max[${_shortRangeAmmoRange}, ${This.Range}]}]
-		}
+			; Band-aid of a bug that range update is dealyed after swiching.
+			; if ${This.Range} < 70
+			; {
+			; 	_shortRangeAmmoRange:Set[${Utility.Max[${_shortRangeAmmoRange}, ${This.Range}]}]
+			; }
+			; This:LogInfo["Ammo match: ${This.Charge.Type} = ${shortRangeAmmo} ? ${This.Charge.Type.Equal[${shortRangeAmmo}]}"]
+			; This:LogInfo["Cached range: ${_shortRangeAmmoRange}, ${This.Range} -> ${_shortRangeAmmoRange}"]
 
-		if !${This.Charge(exists)} || \
-			${This.Charge.Type.Find[${shortRangeAmmo}]} || \
-			!${This.Charge.Type.Find[${longRangeAmmo}]}	/* this means unknown ammo is loaded */
+			if ${Entity[${targetID}].Distance} <= ${This.Range}
+			{
+				return ${shortRangeAmmo}
+			}
+			elseif ${MyShip.Cargo[${longRangeAmmo}].Quantity} > 0
+			{
+				return ${longRangeAmmo}
+			}
+			else
+			{
+				; Keep as is.
+				return ${shortRangeAmmo}
+			}
+		}
+		elseif ${This.Charge(exists)} && ${This.Charge.Type.Equal[${longRangeAmmo}]}
 		{
-			if ${Entity[${targetID}].Distance} <=  ${Utility.Max[${This.Range}, ${_shortRangeAmmoRange}]}
+			if ${Entity[${targetID}].Distance} <= ${Math.Calc[${This.Range} * 0.4]}
 			{
 				if  ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0
 				{
 					return ${shortRangeAmmo}
 				}
-				elseif ${MyShip.Cargo[${longRangeAmmo}].Quantity} > 0
+				else
 				{
 					return ${longRangeAmmo}
 				}
 			}
 			else
 			{
-				if ${MyShip.Cargo[${longRangeAmmo}].Quantity} > 0
-				{
-					return ${longRangeAmmo}
-				}
-				elseif  ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0
-				{
-					return ${shortRangeAmmo}
-				}
+				return ${longRangeAmmo}
 			}
 		}
-		elseif ${This.Charge.Type.Find[${longRangeAmmo}]}
+		else /*no ammo exist or unknown ammo loaded*/
 		{
-			if ${Entity[${targetID}].Distance} <= ${Utility.Max[${Math.Calc[${This.Range} * 0.3]}, ${_shortRangeAmmoRange}]}
+			if ${Entity[${targetID}].Distance} <= ${This.Range}
 			{
 				if  ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0
 				{
@@ -642,14 +653,14 @@ objectdef obj_Module inherits obj_StateQueue
 		if ${Entity[${targetID}].Distance} > ${Ship.ModuleList_Turret.OptimalRange}
 		{
 			; echo need range
-			if !${This.Charge.Type(exists)} || ${This.Charge.Type.Find["Tracking Speed Script"]}
+			if !${This.Charge.Type(exists)} || ${This.Charge.Type.Equal["Tracking Speed Script"]}
 			{
 				if ${MyShip.Cargo["Optimal Range Script"].Quantity} > 0
 				{
 					return "Optimal Range Script"
 				}
 				; BUG of ISXEVE: UnloadToCargo method is not working
-				; elseif ${This.Charge.Type.Find["Tracking Speed Script"]}
+				; elseif ${This.Charge.Type.Equal["Tracking Speed Script"]}
 				; {
 				; 	return "unload"
 				; }
@@ -658,14 +669,14 @@ objectdef obj_Module inherits obj_StateQueue
 		elseif ${Ship.ModuleList_Turret.TurretTrackingDecayFactor[${targetID}]} > 0.2 /*roughly 93.3% hit chance*/
 		{
 			; echo need tracking
-			if !${This.Charge.Type(exists)} || ${This.Charge.Type.Find["Optimal Range Script"]}
+			if !${This.Charge.Type(exists)} || ${This.Charge.Type.Equal["Optimal Range Script"]}
 			{
 				if ${MyShip.Cargo["Tracking Speed Script"].Quantity} > 0
 				{
 					return "Tracking Speed Script"
 				}
 				; BUG of ISXEVE: UnloadToCargo method is not working
-				; elseif ${This.Charge.Type.Find["Optimal Range Script"]}
+				; elseif ${This.Charge.Type.Equal["Optimal Range Script"]}
 				; {
 				; 	return "unload"
 				; }
@@ -976,58 +987,6 @@ objectdef obj_Module inherits obj_StateQueue
 
 }
 
-	; if ${This.ToItem.GroupID} == GROUP_MISSILELAUNCHERTORPEDO
-	; 		{
-	; 			if ${MyShip.Cargo[${shortRangeAmmo}].Quantity} == 0
-	; 			{
-	; 				if ${MyShip.Cargo["Scourge Rage Torpedo"].Quantity} > 0
-	; 				{
-	; 					shortRangeAmmo:Set["Scourge Rage Torpedo"]
-	; 				}
-	; 				elseif ${MyShip.Cargo["Mjolnir Rage Torpedo"].Quantity} > 0
-	; 				{
-	; 					shortRangeAmmo:Set["Mjolnir Rage Torpedo"]
-	; 				}
-	; 				elseif ${MyShip.Cargo["Nova Rage Torpedo"].Quantity} > 0
-	; 				{
-	; 					shortRangeAmmo:Set["Nova Rage Torpedo"]
-	; 				}
-	; 				elseif ${MyShip.Cargo["Inferno Rage Torpedo"].Quantity} > 0
-	; 				{
-	; 					shortRangeAmmo:Set["Inferno Rage Torpedo"]
-	; 				}
-	; 			}
-
-	; 			if ${MyShip.Cargo[${longRangeAmmo}].Quantity} == 0
-	; 			{
-	; 				if ${MyShip.Cargo["Scourge Javelin Torpedo"].Quantity} > 0
-	; 				{
-	; 					longRangeAmmo:Set["Scourge Javelin Torpedo"]
-	; 				}
-	; 				elseif ${MyShip.Cargo["Mjolnir Javelin Torpedo"].Quantity} > 0
-	; 				{
-	; 					longRangeAmmo:Set["Mjolnir Javelin Torpedo"]
-	; 				}
-	; 				elseif ${MyShip.Cargo["Nova Javelin Torpedo"].Quantity} > 0
-	; 				{
-	; 					longRangeAmmo:Set["Nova Javelin Torpedo"]
-	; 				}
-	; 				elseif ${MyShip.Cargo["Inferno Javelin Torpedo"].Quantity} > 0
-	; 				{
-	; 					longRangeAmmo:Set["Inferno Javelin Torpedo"]
-	; 				}
-	; 			}
-
-	; 			if ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0 && ${Entity[${targetID}].Distance} < 62000
-	; 			{
-	; 				This:QueueState["_findAndChangeAmmo", 50, ${shortRangeAmmo}]
-	; 			}
-
-	; 			if ${MyShip.Cargo[${longRangeAmmo}].Quantity} > 0 && ${Entity[${targetID}].Distance} > 62000
-	; 			{
-	; 				This:QueueState["_findAndChangeAmmo", 50, ${longRangeAmmo}]
-	; 			}
-	; 		}
 	; 		elseif ${This.ToItem.GroupID} == GROUP_PRECURSORWEAPON
 	; 		{
 	; 			if ${Entity[${targetID}].Distance} > 70000 || ${Mission.RudeEwar}
