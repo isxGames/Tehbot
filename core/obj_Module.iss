@@ -347,7 +347,7 @@ objectdef obj_Module inherits obj_StateQueue
 				This:_findAndChangeAmmo[${defaultAmmo}]
 				return
 			}
-			elseif ${defaultAmmo.Equal[${This.Charge.Type}]} && (${This.CurrentCharges} < ${This.MaxCharges}) &&  && (${MyShip.Cargo[${defaultAmmo}].Quantity} > 0)
+			elseif ${defaultAmmo.Equal[${This.Charge.Type}]} && (${This.CurrentCharges} < ${This.MaxCharges}) && (${MyShip.Cargo[${defaultAmmo}].Quantity} > 0)
 			{
 				This:_reloadAmmo
 				return
