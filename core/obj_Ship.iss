@@ -51,7 +51,7 @@ objectdef obj_Ship inherits obj_StateQueue
 		This:AddModuleList[ECCM, "ToItem.GroupID = GROUP_ECCM"]
 		This:AddModuleList[ActiveResists, "ToItem.GroupID = GROUP_SHIELD_HARDENER || ToItem.GroupID = GROUP_ARMOR_HARDENERS || ToItem.GroupID = GROUP_ARMOR_RESISTANCE_SHIFT_HARDENER"]
 		This:AddModuleList[DamageControl, "ToItem.GroupID = GROUP_DAMAGE_CONTROL"]
-		This:AddModuleList[Regen_Shield, "ToItem.GroupID = GROUP_SHIELD_BOOSTER"]
+		This:AddModuleList[Regen_Shield, "ToItem.GroupID = GROUP_ANCILLARY_SHIELD_BOOSTER || ToItem.GroupID = GROUP_SHIELD_BOOSTER"]
 		This:AddModuleList[Repair_Armor, "ToItem.GroupID = GROUP_ARMOR_REPAIRERS"]
 		This:AddModuleList[Repair_Hull, "ToItem.GroupID = NONE"]
 		This:AddModuleList[AB_MWD, "ToItem.GroupID = GROUP_AFTERBURNER"]

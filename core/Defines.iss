@@ -42,6 +42,7 @@
 #define GROUP_DRONECONTROLUNIT																					407
 #define GROUP_AFTERBURNER 																						46
 #define GROUP_SHIELD_BOOSTER 																					40
+#define GROUP_ANCILLARY_SHIELD_BOOSTER 																					1156
 #define GROUP_SHIELD_HARDENER 																					77
 #define GROUP_ARMOR_REPAIRERS 																					62
 #define GROUP_ARMOR_HARDENERS 																					328
