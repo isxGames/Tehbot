@@ -305,6 +305,7 @@ objectdef obj_Mission inherits obj_StateQueue
 	{
 		This:LogInfo["Stopping."]
 		This:Clear
+		Tehbot.Paused:Set[TRUE]
 		UIElement[Run@TitleBar@Tehbot]:SetText[Run]
 	}
 
@@ -644,7 +645,7 @@ objectdef obj_Mission inherits obj_StateQueue
 								Move:AgentBookmark[${bookmarkIterator.Value.ID}]
 								This:BuildNpcQueries
 								This:InsertState["PerformMission"]
-								This:InsertState["Traveling"]
+								This:InsertState["Traveling", 5000]
 								This:InsertState["Cleanup"]
 								reload:Set[TRUE]
 								return TRUE
