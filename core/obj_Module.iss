@@ -347,11 +347,10 @@ objectdef obj_Module inherits obj_StateQueue
 				This:_findAndChangeAmmo[${defaultAmmo}]
 				return
 			}
-			elseif ${defaultAmmo.Equal[${This.Charge.Type}]} && (${This.CurrentCharges} < ${This.MaxCharges}) && (${MyShip.Cargo[${defaultAmmo}].Quantity} > ${Math.Calc[${This.MaxCharges} * ${Ship.ModuleList_Weapon.Count}]})
+			elseif ${defaultAmmo.Equal[${This.Charge.Type}]} && (${This.CurrentCharges} < ${This.MaxCharges}) && (${MyShip.Cargo[${defaultAmmo}].Quantity} > ${Ship.ModuleList_Weapon.Count})
 			{
-				This:_findAndChangeAmmo[${defaultAmmo}]
-				; API not working.
-				; This:_reloadAmmo
+				; This:_findAndChangeAmmo[${defaultAmmo}]
+				This:_reloadAmmo
 				return
 			}
 			else
@@ -531,22 +530,21 @@ objectdef obj_Module inherits obj_StateQueue
 		}
 	}
 
-	; API not working.
-	; method _reloadAll()
-	; {
-	; 	if ${_lastChangeAmmoTimestamp} == 0
-	; 	{
-	; 		This:LogInfo["Reloading ammo."]
-	; 		_lastChangeAmmoTimestamp:Set[${LavishScript.RunningTime}]
-	; 		This:ReloadAll
-	; 	}
-	; 	elseif ${LavishScript.RunningTime} > ${Math.Calc[${_lastChangeAmmoTimestamp} + ${_changeAmmoRetryInterval}]}
-	; 	{
-	; 		This:LogInfo["Retrying reload ammo."]
-	; 		_lastChangeAmmoTimestamp:Set[${LavishScript.RunningTime}]
-	; 		This:ReloadAll
-	; 	}
-	; }
+	method _reloadAll()
+	{
+		if ${_lastChangeAmmoTimestamp} == 0
+		{
+			This:LogInfo["Reloading ammo."]
+			_lastChangeAmmoTimestamp:Set[${LavishScript.RunningTime}]
+			EVE:Execute[CmdReloadAmmo]
+		}
+		elseif ${LavishScript.RunningTime} > ${Math.Calc[${_lastChangeAmmoTimestamp} + ${_changeAmmoRetryInterval}]}
+		{
+			This:LogInfo["Retrying reload ammo."]
+			_lastChangeAmmoTimestamp:Set[${LavishScript.RunningTime}]
+			EVE:Execute[CmdReloadAmmo]
+		}
+	}
 
 	member:string _pickOptimalAmmo(int64 targetID)
 	{
@@ -897,10 +895,10 @@ objectdef obj_Module inherits obj_StateQueue
 		while ${availableAmmoIterator:Next(exists)}
 	}
 
-	; method _reloadAmmo(string ammo)
-	; {
-	; 	This:_reloadAll
-	; }
+	method _reloadAmmo(string ammo)
+	{
+		This:_reloadAll
+	}
 
 	member:float64 _HPPercentage()
 	{
