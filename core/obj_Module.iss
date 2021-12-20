@@ -341,12 +341,15 @@ objectdef obj_Module inherits obj_StateQueue
 			_lastDeactivationTimestamp:Set[0]
 
 			defaultAmmo:Set[${This._getShortRangeAmmo}]
-			if ${defaultAmmo.NotNULLOrEmpty} && \
-			   (!${defaultAmmo.Equal[${This.Charge.Type}]} || \
-			    ((${This.CurrentCharges} < ${This.MaxCharges}) && \
-				 (${This.MaxCharges} <= ${MyShip.Cargo[${ammo}].Quantity})))
+			This:LogInfo["Loading default ammo ${defaultAmmo}."]
+			if (!${defaultAmmo.NotNULLOrEmpty} || !${defaultAmmo.Equal[${This.Charge.Type}]}) && (${MyShip.Cargo[${defaultAmmo}].Quantity} > 0)
 			{
 				This:_findAndChangeAmmo[${defaultAmmo}]
+				return
+			}
+			elseif ${defaultAmmo.Equal[${This.Charge.Type}]} && (${This.CurrentCharges} < ${This.MaxCharges}) &&  && (${MyShip.Cargo[${defaultAmmo}].Quantity} > 0)
+			{
+				This:_reloadAmmo
 				return
 			}
 			else
@@ -526,40 +529,64 @@ objectdef obj_Module inherits obj_StateQueue
 		}
 	}
 
+	method _reloadAll()
+	{
+		if ${_lastChangeAmmoTimestamp} == 0
+		{
+			This:LogInfo["Reloading ammo."]
+			_lastChangeAmmoTimestamp:Set[${LavishScript.RunningTime}]
+			This:ReloadAll
+		}
+		elseif ${LavishScript.RunningTime} > ${Math.Calc[${_lastChangeAmmoTimestamp} + ${_changeAmmoRetryInterval}]}
+		{
+			This:LogInfo["Retrying reload ammo."]
+			_lastChangeAmmoTimestamp:Set[${LavishScript.RunningTime}]
+			This:ReloadAll
+		}
+	}
+
 	member:string _pickOptimalAmmo(int64 targetID)
 	{
 		switch ${This.ToItem.GroupID}
 		{
+			case GROUP_PROJECTILEWEAPON
 			case GROUP_ENERGYWEAPON
-				return ${This._pickOptimalAmmoForEnergyWeapon[${InstructionTargetID}]}
+				return ${This._pickOptimalAmmoForTurret[${InstructionTargetID}]}
 			case GROUP_TRACKINGCOMPUTER
 				return ${This._pickOptimalScriptTrackingComputerScript[${InstructionTargetID}]}
-			; case GROUP_PROJECTILEWEAPON
-			; 	return ${This._pickOptimalAmmoForProjectileTurret[${InstructionTargetID}]}
-			; case GROUP_MISSILELAUNCHERRAPIDHEAVY
-			; case GROUP_MISSILELAUNCHER
-			; case GROUP_MISSILELAUNCHERASSAULT
-			; case GROUP_MISSILELAUNCHERBOMB
-			; case GROUP_MISSILELAUNCHERCITADEL
-			; case GROUP_MISSILELAUNCHERCRUISE
-			; case GROUP_MISSILELAUNCHERDEFENDER
-			; case GROUP_MISSILELAUNCHERHEAVY
-			; case GROUP_MISSILELAUNCHERHEAVYASSAULT
-			; case GROUP_MISSILELAUNCHERROCKET
-			; case GROUP_MISSILELAUNCHERTORPEDO
-			; case GROUP_MISSILELAUNCHERSTANDARD"]
-			; 	return ${This._pickOptimalAmmoForProjectileTurret[${InstructionTargetID}]}
+			case GROUP_MISSILEGUIDANCECOMPUTER
+				return ${This._pickOptimalScriptMissileGuidanceComputerScript[${InstructionTargetID}]}
+			case GROUP_MISSILELAUNCHERRAPIDHEAVY
+			case GROUP_MISSILELAUNCHER
+			case GROUP_MISSILELAUNCHERASSAULT
+			case GROUP_MISSILELAUNCHERBOMB
+			case GROUP_MISSILELAUNCHERCITADEL
+			case GROUP_MISSILELAUNCHERCRUISE
+			case GROUP_MISSILELAUNCHERDEFENDER
+			case GROUP_MISSILELAUNCHERHEAVY
+			case GROUP_MISSILELAUNCHERHEAVYASSAULT
+			case GROUP_MISSILELAUNCHERROCKET
+			case GROUP_MISSILELAUNCHERTORPEDO
+			case GROUP_MISSILELAUNCHERSTANDARD
+				return ${This._pickOptimalAmmoForMissileLauncher[${InstructionTargetID}]}
 		}
 
 		return ""
 	}
 
-	; Energy weapons can switch ammo immediately so it should always simply pick the optimal ammo for the current target.
-	member:string _pickOptimalAmmoForEnergyWeapon(int64 targetID)
+	member:string _pickOptimalAmmoForTurret(int64 targetID)
 	{
 		if ${targetID.Equal[TARGET_NA]} || !${This._isTargetValid[${targetID}]}
 		{
 			This:LogCritical["Picking turret ammo for invalid target."]
+			return ""
+		}
+
+        ; No time to switch ammo when PVP.
+	    ; But energy weapons can switch ammo immediately so it should always simply pick the optimal ammo for the current target.
+		if ${This.ToItem.GroupID.Equal[GROUP_PROJECTILEWEAPON]} && \
+		    ${This.Charge(exists)} && ${Entity[${targetID}].IsPC}
+		{
 			return ""
 		}
 
@@ -591,7 +618,6 @@ objectdef obj_Module inherits obj_StateQueue
 			}
 			else
 			{
-				; Keep as is.
 				return ${shortRangeAmmo}
 			}
 		}
@@ -617,7 +643,7 @@ objectdef obj_Module inherits obj_StateQueue
 		{
 			if ${Entity[${targetID}].Distance} <= ${This.Range}
 			{
-				if  ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0
+				if ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0
 				{
 					return ${shortRangeAmmo}
 				}
@@ -638,6 +664,103 @@ objectdef obj_Module inherits obj_StateQueue
 				}
 			}
 		}
+
+		This:LogCritical["No configured ammo in cargo!"]
+		return ""
+	}
+
+	member:string _pickOptimalAmmoForMissileLauncher(int64 targetID)
+	{
+		if ${targetID.Equal[TARGET_NA]} || !${This._isTargetValid[${targetID}]}
+		{
+			This:LogCritical["Picking turret ammo for invalid target."]
+			return ""
+		}
+
+		; No time to switch ammo when PVP.
+		if ${This.Charge(exists)} && ${Entity[${targetID}].IsPC}
+		{
+			return ""
+		}
+
+		variable string shortRangeAmmo
+		shortRangeAmmo:Set[${This._getShortRangeAmmo}]
+
+		variable string longRangeAmmo
+		longRangeAmmo:Set[${This._getLongRangeAmmo}]
+
+		; Giveup timing ammo change according to remaining ammo quantity.
+		; Because it won't work correctly unless enemy HP is taken into account, which is too much work.
+		; Example:
+		;     Only switch ammo when remaining ammo is less than 15, so it will keep the current charge when
+		;     quantity is 16, but as soon as it drops below 15, ammo switch will occur so we failed to any save time.
+		; Just switch ammo when you want to.
+		if ${This.Charge(exists)} && ${This.Charge.Type.Equal[${shortRangeAmmo}]}
+		{
+			; Memorize the short range ammo range.
+			_shortRangeAmmoRange:Set[${Utility.Max[${_shortRangeAmmoRange}, ${This.Range}]}]
+
+            ; Use cached threshold for the range may be boosted by computer.
+			; It takes seconds for missile launchers to switch ammo so the range update delay
+			; bug in energy weapons should not affect them.
+			if ${Entity[${targetID}].Distance} <= ${_shortRangeAmmoRange}
+			{
+				return ${shortRangeAmmo}
+			}
+			elseif ${MyShip.Cargo[${longRangeAmmo}].Quantity} > 0
+			{
+				return ${longRangeAmmo}
+			}
+			else
+			{
+				return ${shortRangeAmmo}
+			}
+		}
+		elseif ${This.Charge(exists)} && ${This.Charge.Type.Equal[${longRangeAmmo}]}
+		{
+			if ${Entity[${targetID}].Distance} <= ${Utility.Max[${Math.Calc[${This.Range} * 0.5]}, ${_shortRangeAmmoRange}]}
+			{
+				if  ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0
+				{
+					return ${shortRangeAmmo}
+				}
+				else
+				{
+					return ${longRangeAmmo}
+				}
+			}
+			else
+			{
+				return ${longRangeAmmo}
+			}
+		}
+		else /*no ammo exist or unknown ammo loaded*/
+		{
+			if ${Entity[${targetID}].Distance} <= ${_shortRangeAmmoRange}
+			{
+				if ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0
+				{
+				    return ${shortRangeAmmo}
+				}
+				elseif ${MyShip.Cargo[${longRangeAmmo}].Quantity} > 0
+			    {
+				    return ${longRangeAmmo}
+			    }
+			}
+			else
+			{
+			    ; This mean when range is not cached yet, it will pick long range ammo.
+				if ${MyShip.Cargo[${longRangeAmmo}].Quantity} > 0
+			    {
+				    return ${longRangeAmmo}
+			    }
+				elseif ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0
+				{
+				    return ${shortRangeAmmo}
+				}
+			}
+		}
+
 		This:LogCritical["No configured ammo in cargo!"]
 		return ""
 	}
@@ -681,6 +804,38 @@ objectdef obj_Module inherits obj_StateQueue
 				; 	return "unload"
 				; }
 			}
+		}
+
+		return ""
+	}
+
+	member:string _pickOptimalScriptMissileGuidanceComputerScript(int64 targetID)
+	{
+		if ${targetID.Equal[TARGET_NA]} || !${This._isTargetValid[${targetID}]} || !(${Ship.ModuleList_Turret.Count} > 0)
+		{
+			InstructionTargetID:Set[TARGET_NA]
+			return ""
+		}
+
+		if ${Ship.ModuleList_MissileLauncher.DamageEfficiency[${targetID}]} < 0.8 && \
+			${Entity[${targetID}].Distance} < ${Math.Calc[${Ship.ModuleList_MissileLauncher.Range} * 0.6]}
+		{
+			if !${This.Charge.Type(exists)} || ${This.Charge.Type.Equal["Missile Range Script"]}
+			{
+				if ${MyShip.Cargo["Missile Precision Script"].Quantity} > 0
+				{
+					return "Missile Precision Script"
+				}
+				; BUG of ISXEVE: UnloadToCargo method is not working
+				; elseif ${This.Charge.Type.Equal["Tracking Speed Script"]}
+				; {
+				; 	return "unload"
+				; }
+			}
+		}
+		elseif ${MyShip.Cargo["Missile Range Script"].Quantity} > 0
+		{
+			return "Missile Range Script"
 		}
 
 		return ""
@@ -737,6 +892,11 @@ objectdef obj_Module inherits obj_StateQueue
 			}
 		}
 		while ${availableAmmoIterator:Next(exists)}
+	}
+
+	method _reloadAmmo(string ammo)
+	{
+		This:_reloadAll
 	}
 
 	member:float64 _HPPercentage()
@@ -802,9 +962,29 @@ objectdef obj_Module inherits obj_StateQueue
 			}
 			return ${This.OptimalRange}
 		}
-		else
+		elseif ${This.ToItem.GroupID.Equal[GROUP_MISSILELAUNCHERRAPIDHEAVY]} || \
+			${This.ToItem.GroupID.Equal[GROUP_MISSILELAUNCHER]} || \
+			${This.ToItem.GroupID.Equal[GROUP_MISSILELAUNCHERASSAULT]} || \
+			${This.ToItem.GroupID.Equal[GROUP_MISSILELAUNCHERBOMB]} || \
+			${This.ToItem.GroupID.Equal[GROUP_MISSILELAUNCHERCITADEL]} || \
+			${This.ToItem.GroupID.Equal[GROUP_MISSILELAUNCHERCRUISE]} || \
+			${This.ToItem.GroupID.Equal[GROUP_MISSILELAUNCHERDEFENDER]} || \
+			${This.ToItem.GroupID.Equal[GROUP_MISSILELAUNCHERHEAVY]} || \
+			${This.ToItem.GroupID.Equal[GROUP_MISSILELAUNCHERHEAVYASSAULT]} || \
+			${This.ToItem.GroupID.Equal[GROUP_MISSILELAUNCHERROCKET]} || \
+			${This.ToItem.GroupID.Equal[GROUP_MISSILELAUNCHERTORPEDO]} || \
+			${This.ToItem.GroupID.Equal[GROUP_MISSILELAUNCHERSTANDARD]}
 		{
-			return ${Math.Calc[${This.Charge.MaxFlightTime} * ${This.Charge.MaxVelocity}]}
+			if ${This.Charge(exists)}
+			{
+				return ${Math.Calc[${This.Charge.MaxFlightTime} * ${This.Charge.MaxVelocity}]}
+			}
+			elseif ${This._shortRangeAmmoRange} > 1
+			{
+				return ${This._shortRangeAmmoRange}
+			}
+
+			return 500000
 		}
 	}
 
@@ -857,7 +1037,7 @@ objectdef obj_Module inherits obj_StateQueue
 			case GROUP_MISSILELAUNCHERHEAVYASSAULT
 			case GROUP_MISSILELAUNCHERROCKET
 			case GROUP_MISSILELAUNCHERTORPEDO
-			case GROUP_MISSILELAUNCHERSTANDARD"]
+			case GROUP_MISSILELAUNCHERSTANDARD
 				return ${This.MissileDamageEfficiency[${targetID}]}
 		}
 
@@ -981,8 +1161,73 @@ objectdef obj_Module inherits obj_StateQueue
 ;;;;;;;;;;missile launcher
 	member:float64 MissileDamageEfficiency(int64 targetID)
 	{
-		; TODO
-		return 1
+		if !${This.Charge(exists)}
+		{
+			return 1
+		}
+
+		variable float64 targetSignatureRadius
+		targetSignatureRadius:Set[${Entity[${targetID}].Radius}]
+
+		variable float64 targetVelocity
+		targetVelocity:Set[${Entity[${targetID}].Velocity}]
+
+		variable float64 missileExplosionRadius
+		missileExplosionRadius:Set[${This.Charge.ExplosionRadius}]
+
+		variable float64 missileExplosionVelocity
+		missileExplosionVelocity:Set[${This.Charge.ExplosionVelocity}]
+
+		variable float64 radiusFactor
+		radiusFactor:Set[${Math.Calc[${targetSignatureRadius} / ${missileExplosionRadius}]}]
+
+		variable float64 drf
+		drf:Set[${This._getDRF}]
+
+		variable float64 velocityFactor
+		velocityFactor:Set[${Math.Calc[(${radiusFactor} * ${missileExplosionVelocity} / ${targetVelocity}) ^^ ${drf}]}]
+
+		variable float64 efficiency
+		efficiency:Set[${Utility.Min[${radiusFactor}, ${velocityFactor}]}]
+		efficiency:Set[${Utility.Min[1, ${efficiency}]}]
+
+		return ${efficiency}
+	}
+
+	member:float64 _getDRF()
+	{
+		if ${This.Charge(exists)}
+		{
+			if ${This.Charge.Type.Find["Rage XL Torpedo"]}
+			{
+				return 0.967
+			}
+			elseif ${This.Charge.Type.Find["Javelin XL Torpedo"]}
+			{
+				return 1.0
+			}
+			elseif ${This.Charge.Type.Find["XL Torpedo"]}
+			{
+				return 1.0
+			}
+			elseif ${This.Charge.Type.Find["Rage Torpedo"]}
+			{
+				return 0.967
+			}
+			elseif ${This.Charge.Type.Find["Javelin Torpedo"]}
+			{
+				return 0.967
+			}
+			elseif ${This.Charge.Type.Find["Torpedo"]}
+			{
+				return 0.944
+			}
+			else
+			{
+				This:LogCritical["drf not implemented ${This.Charge.Type}."]
+				return 1.0
+			}
+		}
 	}
 
 }
