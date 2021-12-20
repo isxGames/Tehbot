@@ -341,15 +341,17 @@ objectdef obj_Module inherits obj_StateQueue
 			_lastDeactivationTimestamp:Set[0]
 
 			defaultAmmo:Set[${This._getShortRangeAmmo}]
-			This:LogInfo["Loading default ammo ${defaultAmmo}."]
+			; This:LogInfo["Loading default ammo ${defaultAmmo}."]
 			if (!${defaultAmmo.NotNULLOrEmpty} || !${defaultAmmo.Equal[${This.Charge.Type}]}) && (${MyShip.Cargo[${defaultAmmo}].Quantity} > 0)
 			{
 				This:_findAndChangeAmmo[${defaultAmmo}]
 				return
 			}
-			elseif ${defaultAmmo.Equal[${This.Charge.Type}]} && (${This.CurrentCharges} < ${This.MaxCharges}) && (${MyShip.Cargo[${defaultAmmo}].Quantity} > 0)
+			elseif ${defaultAmmo.Equal[${This.Charge.Type}]} && (${This.CurrentCharges} < ${This.MaxCharges}) && (${MyShip.Cargo[${defaultAmmo}].Quantity} > ${Math.Calc[${This.MaxCharges} * ${Ship.ModuleList_Weapon.Count}]})
 			{
-				This:_reloadAmmo
+				This:_findAndChangeAmmo[${defaultAmmo}]
+				; API not working.
+				; This:_reloadAmmo
 				return
 			}
 			else
@@ -529,21 +531,22 @@ objectdef obj_Module inherits obj_StateQueue
 		}
 	}
 
-	method _reloadAll()
-	{
-		if ${_lastChangeAmmoTimestamp} == 0
-		{
-			This:LogInfo["Reloading ammo."]
-			_lastChangeAmmoTimestamp:Set[${LavishScript.RunningTime}]
-			This:ReloadAll
-		}
-		elseif ${LavishScript.RunningTime} > ${Math.Calc[${_lastChangeAmmoTimestamp} + ${_changeAmmoRetryInterval}]}
-		{
-			This:LogInfo["Retrying reload ammo."]
-			_lastChangeAmmoTimestamp:Set[${LavishScript.RunningTime}]
-			This:ReloadAll
-		}
-	}
+	; API not working.
+	; method _reloadAll()
+	; {
+	; 	if ${_lastChangeAmmoTimestamp} == 0
+	; 	{
+	; 		This:LogInfo["Reloading ammo."]
+	; 		_lastChangeAmmoTimestamp:Set[${LavishScript.RunningTime}]
+	; 		This:ReloadAll
+	; 	}
+	; 	elseif ${LavishScript.RunningTime} > ${Math.Calc[${_lastChangeAmmoTimestamp} + ${_changeAmmoRetryInterval}]}
+	; 	{
+	; 		This:LogInfo["Retrying reload ammo."]
+	; 		_lastChangeAmmoTimestamp:Set[${LavishScript.RunningTime}]
+	; 		This:ReloadAll
+	; 	}
+	; }
 
 	member:string _pickOptimalAmmo(int64 targetID)
 	{
@@ -894,10 +897,10 @@ objectdef obj_Module inherits obj_StateQueue
 		while ${availableAmmoIterator:Next(exists)}
 	}
 
-	method _reloadAmmo(string ammo)
-	{
-		This:_reloadAll
-	}
+	; method _reloadAmmo(string ammo)
+	; {
+	; 	This:_reloadAll
+	; }
 
 	member:float64 _HPPercentage()
 	{
@@ -1166,32 +1169,39 @@ objectdef obj_Module inherits obj_StateQueue
 			return 1
 		}
 
-		variable float64 targetSignatureRadius
-		targetSignatureRadius:Set[${Entity[${targetID}].Radius}]
+		; Can't get ExplosionRadius and ExplosionVelocity attributes.
+		return 1
 
-		variable float64 targetVelocity
-		targetVelocity:Set[${Entity[${targetID}].Velocity}]
+; 		variable float64 targetSignatureRadius
+; 		targetSignatureRadius:Set[${Entity[${targetID}].Radius}]
 
-		variable float64 missileExplosionRadius
-		missileExplosionRadius:Set[${This.Charge.ExplosionRadius}]
+; 		variable float64 targetVelocity
+; 		targetVelocity:Set[${Entity[${targetID}].Velocity}]
 
-		variable float64 missileExplosionVelocity
-		missileExplosionVelocity:Set[${This.Charge.ExplosionVelocity}]
+; 		variable float64 missileExplosionRadius
+; 		missileExplosionRadius:Set[${This.Charge.ExplosionRadius}]
 
-		variable float64 radiusFactor
-		radiusFactor:Set[${Math.Calc[${targetSignatureRadius} / ${missileExplosionRadius}]}]
+; 		variable float64 missileExplosionVelocity
+; 		missileExplosionVelocity:Set[${This.Charge.ExplosionVelocity}]
 
-		variable float64 drf
-		drf:Set[${This._getDRF}]
+; This:LogInfo["torpedo ${This.Charge.Type} ${This.Charge.ExplosionRadius} ${This.Charge.ExplosionVelocity} ${This.Charge.MaxVelocity} ${This.Charge.MaxFlightTime}"]
+; 		variable float64 radiusFactor
 
-		variable float64 velocityFactor
-		velocityFactor:Set[${Math.Calc[(${radiusFactor} * ${missileExplosionVelocity} / ${targetVelocity}) ^^ ${drf}]}]
+; This:LogInfo["radiusFactor ${radiusFactor}"]
+; 		radiusFactor:Set[${Math.Calc[${targetSignatureRadius} / ${missileExplosionRadius}]}]
 
-		variable float64 efficiency
-		efficiency:Set[${Utility.Min[${radiusFactor}, ${velocityFactor}]}]
-		efficiency:Set[${Utility.Min[1, ${efficiency}]}]
+; 		variable float64 drf
+; 		drf:Set[${This._getDRF}]
+; This:LogInfo["drf ${drf}"]
+; 		variable float64 velocityFactor
+; 		velocityFactor:Set[${Math.Calc[(${radiusFactor} * ${missileExplosionVelocity} / ${targetVelocity}) ^^ ${drf}]}]
 
-		return ${efficiency}
+; This:LogInfo["velocityFactor ${velocityFactor}"]
+; 		variable float64 efficiency
+; 		efficiency:Set[${Utility.Min[${radiusFactor}, ${velocityFactor}]}]
+; 		efficiency:Set[${Utility.Min[1, ${efficiency}]}]
+
+; 		return ${efficiency}
 	}
 
 	member:float64 _getDRF()
