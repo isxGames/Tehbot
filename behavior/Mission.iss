@@ -2001,8 +2001,8 @@ objectdef obj_Mission inherits obj_StateQueue
 				   !${itemIterator.Value.Name.Equal[${Config.ThermalAmmoSecondary}]} && \
 				   !${itemIterator.Value.Name.Equal[${Config.EMAmmoSecondary}]} && \
 				   !${itemIterator.Value.Name.Equal[${Config.ExplosiveAmmoSecondary}]} && \
-				   !${itemIterator.Value.Name.Equal[${Ship.FallbackAmmo}]} && \
-				   !${itemIterator.Value.Name.Equal[${Ship.FallbackSecondaryAmmo}]} && \
+				   !${itemIterator.Value.Name.Equal[${Ship.ModuleList_Weapon.FallbackAmmo}]} && \
+				   !${itemIterator.Value.Name.Equal[${Ship.ModuleList_Weapon.FallbackSecondaryAmmo}]} && \
 				   ; Anomaly gate key
 				   !${itemIterator.Value.Name.Equal["Oura Madusaari"]} && \
 				   !${itemIterator.Value.Group.Equal["Acceleration Gate Keys"]} && \
