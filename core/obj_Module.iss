@@ -812,27 +812,24 @@ objectdef obj_Module inherits obj_StateQueue
 
 	member:string _pickOptimalScriptMissileGuidanceComputerScript(int64 targetID)
 	{
-		if ${targetID.Equal[TARGET_NA]} || !${This._isTargetValid[${targetID}]} || !(${Ship.ModuleList_Turret.Count} > 0)
+		if ${targetID.Equal[TARGET_NA]} || !${This._isTargetValid[${targetID}]} || !(${Ship.ModuleList_MissileLauncher.Count} > 0)
 		{
 			InstructionTargetID:Set[TARGET_NA]
 			return ""
 		}
 
-		if ${Ship.ModuleList_MissileLauncher.DamageEfficiency[${targetID}]} < 0.8 && \
-			${Entity[${targetID}].Distance} < ${Math.Calc[${Ship.ModuleList_MissileLauncher.Range} * 0.6]}
+		if (${Ship.ModuleList_MissileLauncher.DamageEfficiency[${targetID}]} < 0.8) && \
+			(${Entity[${targetID}].Distance} < ${Math.Calc[${Ship.ModuleList_MissileLauncher.Range} * 0.6]})
 		{
-			if !${This.Charge.Type(exists)} || ${This.Charge.Type.Equal["Missile Range Script"]}
+			if ${MyShip.Cargo["Missile Precision Script"].Quantity} > 0
 			{
-				if ${MyShip.Cargo["Missile Precision Script"].Quantity} > 0
-				{
-					return "Missile Precision Script"
-				}
-				; BUG of ISXEVE: UnloadToCargo method is not working
-				; elseif ${This.Charge.Type.Equal["Tracking Speed Script"]}
-				; {
-				; 	return "unload"
-				; }
+				return "Missile Precision Script"
 			}
+			; BUG of ISXEVE: UnloadToCargo method is not working
+			; elseif ${This.Charge.Type.Equal["Tracking Speed Script"]}
+			; {
+			; 	return "unload"
+			; }
 		}
 		elseif ${MyShip.Cargo["Missile Range Script"].Quantity} > 0
 		{
@@ -1167,7 +1164,23 @@ objectdef obj_Module inherits obj_StateQueue
 			return 1
 		}
 
-		; Can't get ExplosionRadius and ExplosionVelocity attributes.
+		; Temporary workaround for can't get ExplosionRadius and ExplosionVelocity attributes.
+		variable string targetClass
+		targetClass:Set[${NPCData.NPCType[${Entity[${targetID}].GroupID}]}]
+		; Avoid using drones against structures which may cause AOE damage when destructed.
+		if ${targetClass.Equal["Frigate"]}
+		{
+			return 0.05
+		}
+		elseif ${targetClass.Equal["Destroyer"]}
+		{
+			return 0.1
+		}
+		elseif ${targetClass.Equal["Cruiser"]}
+		{
+			return 0.4
+		}
+
 		return 1
 
 ; 		variable float64 targetSignatureRadius
