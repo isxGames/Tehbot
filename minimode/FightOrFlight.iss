@@ -246,6 +246,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		if ${IsOtherPilotsDetected}
 		{
 			This:UnlockNPCsAndLockPCs
+			Ship.ModuleList_Weapon:ReloadDefaultAmmo
 		}
 		else
 		{
