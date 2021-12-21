@@ -154,33 +154,42 @@ objectdef obj_AutoModule inherits obj_StateQueue
 			}
 		}
 
-		if ${Ship.ModuleList_Regen_Shield.InactiveCount} && ((${MyShip.ShieldPct.Int} < ${Config.ActiveShieldBoost} && ${MyShip.CapacitorPct.Int} > ${Config.ActiveShieldCap}) || ${Config.AlwaysShieldBoost})
+		if ${Ship.ModuleList_Regen_Shield.InactiveCount} && \
+			((${MyShip.ShieldPct.Int} < ${Config.ActiveShieldBoost} && ${MyShip.CapacitorPct.Int} > ${Config.ActiveShieldCap}) || \
+			(${MyShip.ShieldPct.Int} < 90 && ${MyShip.CapacitorPct.Int} > 15 && ${FightOrFlight.IsEngagingGankers}) || \
+			${Config.AlwaysShieldBoost})
 		{
 			if ${MyShip.ShieldPct.Int} < ${Config.ShieldBoostOverloadThreshold}
 			{
 				; 50 is module hp percent not the shield percent.
 				Ship.ModuleList_Regen_Shield:SetOverloadHPThreshold[50]
 			}
-			else
+			elseif !${FightOrFlight.IsEngagingGankers}
 			{
 				Ship.ModuleList_Regen_Shield:SetOverloadHPThreshold[100]
 			}
 			Ship.ModuleList_Regen_Shield:ActivateAll
 		}
-		if ${Ship.ModuleList_Regen_Shield.ActiveCount} && (${MyShip.ShieldPct.Int} > ${Config.ActiveShieldBoost} || ${MyShip.CapacitorPct.Int} < ${Config.ActiveShieldCap}) && !${Config.AlwaysShieldBoost}
+		if ${Ship.ModuleList_Regen_Shield.ActiveCount} && \
+			!${Config.AlwaysShieldBoost} && \
+			(((${MyShip.ShieldPct.Int} > ${Config.ActiveShieldBoost} || ${MyShip.CapacitorPct.Int} < ${Config.ActiveShieldCap}) && !${FightOrFlight.IsEngagingGankers}) || \
+			((${MyShip.ShieldPct.Int} >= 90 || ${MyShip.CapacitorPct.Int} <= 15) && ${FightOrFlight.IsEngagingGankers}))
 		{
 			Ship.ModuleList_Regen_Shield:SetOverloadHPThreshold[100]
 			Ship.ModuleList_Regen_Shield:DeactivateAll
 		}
 
-		if ${Ship.ModuleList_Repair_Armor.InactiveCount} && ((${MyShip.ArmorPct.Int} < ${Config.ActiveArmorRepair} && ${MyShip.CapacitorPct.Int} > ${Config.ActiveArmorCap}) || ${Config.AlwaysArmorRepair}) && ${LavishScript.RunningTime} > ${lastArmorRepActivate}
+		if ${Ship.ModuleList_Repair_Armor.InactiveCount} && \
+			((${MyShip.ArmorPct.Int} < ${Config.ActiveArmorRepair} && ${MyShip.CapacitorPct.Int} > ${Config.ActiveArmorCap}) || \
+			(${MyShip.ArmorPct.Int} < 85 && ${MyShip.CapacitorPct.Int} > 15 && ${FightOrFlight.IsEngagingGankers}) || \
+			${Config.AlwaysArmorRepair})
 		{
 			if ${MyShip.ArmorPct.Int} < ${Config.ArmorRepairOverloadThreshold}
 			{
 				; 50 is module hp percent not the armor percent.
 				Ship.ModuleList_Repair_Armor:SetOverloadHPThreshold[50]
 			}
-			else
+			elseif !${FightOrFlight.IsEngagingGankers}
 			{
 				Ship.ModuleList_Repair_Armor:SetOverloadHPThreshold[100]
 			}
@@ -189,7 +198,10 @@ objectdef obj_AutoModule inherits obj_StateQueue
 			; lastArmorRepActivate:Set[${Math.Calc[${LavishScript.RunningTime} + 3000]}]
 		}
 
-		if ${Ship.ModuleList_Repair_Armor.ActiveCount} && (${MyShip.ArmorPct.Int} > ${Config.ActiveArmorRepair} || ${MyShip.CapacitorPct.Int} < ${Config.ActiveArmorCap}) && !${Config.AlwaysArmorRepair}
+		if ${Ship.ModuleList_Repair_Armor.ActiveCount} && \
+			!${Config.AlwaysArmorRepair} && \
+			(((${MyShip.ArmorPct.Int} > ${Config.ActiveArmorRepair} || ${MyShip.CapacitorPct.Int} < ${Config.ActiveArmorCap}) && !${FightOrFlight.IsEngagingGankers}) || \
+			((${MyShip.ArmorPct.Int} >= 85 || ${MyShip.CapacitorPct.Int} <= 15) && ${FightOrFlight.IsEngagingGankers}))
 		{
 			Ship.ModuleList_Repair_Armor:SetOverloadHPThreshold[100]
 			Ship.ModuleList_Repair_Armor:DeactivateAll
