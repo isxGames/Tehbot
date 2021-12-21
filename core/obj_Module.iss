@@ -842,7 +842,7 @@ objectdef obj_Module inherits obj_StateQueue
 
 	member:string _getShortRangeAmmo()
 	{
-		if !${Ammo.NotNULLOrEmpty} || ${MyShip.Cargo[${Ammo}].Quantity} == 0
+		if !${Ammo.NotNULLOrEmpty} || (!${MyShip.Cargo[${Ammo}].Quantity} && !${This.Charge.Type.Equal[${Ammo}]})
 		{
 			return ${This.FallbackAmmo}
 		}
@@ -854,7 +854,7 @@ objectdef obj_Module inherits obj_StateQueue
 
 	member:string _getLongRangeAmmo()
 	{
-		if !${LongRangeAmmo.NotNULLOrEmpty} || ${MyShip.Cargo[${LongRangeAmmo}].Quantity} == 0
+		if !${LongRangeAmmo.NotNULLOrEmpty} || (!${MyShip.Cargo[${LongRangeAmmo}].Quantity} && !${This.Charge.Type.Equal[${LongRangeAmmo}]})
 		{
 			return ${This.FallbackSecondaryAmmo}
 		}
