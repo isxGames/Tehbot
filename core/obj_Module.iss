@@ -994,8 +994,8 @@ objectdef obj_Module inherits obj_StateQueue
 				return "Conflagration L"
 			case TYPE_TORPEDO_LAUNCHER
 				return "Scourge Rage Torpedo"
-			; case TYPE_800MM_AUTOCANNON
-			; 	return "Hail L"
+			case TYPE_800MM_REPEATING_CANNON
+				return "Hail L"
 		}
 
 		return ""
@@ -1009,8 +1009,8 @@ objectdef obj_Module inherits obj_StateQueue
 				return "Scorch L"
 			case TYPE_TORPEDO_LAUNCHER
 				return "Scourge Javelin Torpedo"
-			; case TYPE_800MM_AUTOCANNON
-			; 	return "Barrage L"
+			case TYPE_800MM_REPEATING_CANNON
+				return "Barrage L"
 		}
 
 		return ""

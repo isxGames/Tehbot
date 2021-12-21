@@ -10,7 +10,7 @@
 ; Module type id
 #define TYPE_MEGA_PULSE_LASER                                                                                   3057
 #define TYPE_TORPEDO_LAUNCHER                                                                                   2420
-; #define TYPE_800MM_AUTOCANNON
+#define TYPE_800MM_REPEATING_CANNON                                                                             2929
 
 ; Module group id
 #define GROUPID_CONTROL_TOWER                                                                                   365
