@@ -8,6 +8,7 @@ objectdef obj_Move inherits obj_StateQueue
 	method Initialize()
 	{
 		This[parent]:Initialize
+		This.NonGameTiedPulse:Set[TRUE]
 	}
 
 	method Warp(int64 ID, int Dist=0, bool FleetWarp=FALSE)
