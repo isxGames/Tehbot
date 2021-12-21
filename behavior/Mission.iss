@@ -644,6 +644,8 @@ objectdef obj_Mission inherits obj_StateQueue
 							{
 								Move:AgentBookmark[${bookmarkIterator.Value.ID}]
 								This:BuildNpcQueries
+								ActiveNPCs.AutoLock:Set[FALSE]
+								NPCs.AutoLock:Set[FALSE]
 								This:InsertState["PerformMission"]
 								This:InsertState["Traveling", 5000]
 								This:InsertState["Cleanup"]
@@ -2533,13 +2535,10 @@ objectdef obj_Mission inherits obj_StateQueue
 
 	member:bool Traveling()
 	{
-		if ${Move.Traveling} && ${Me.ToEntity.Mode} == MOVE_WARPING
+		if ${Move.Traveling} || ${Me.ToEntity.Mode} == MOVE_WARPING
 		{
-			if ${Me.InSpace}
+			if ${Me.InSpace} && ${Me.ToEntity.Mode} == MOVE_WARPING
 			{
-				ActiveNPCs.AutoLock:Set[FALSE]
-				NPCs.AutoLock:Set[FALSE]
-
 				if ${Ship.ModuleList_Siege.ActiveCount}
 				{
 					Ship.ModuleList_Siege:DeactivateAll
