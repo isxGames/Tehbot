@@ -704,7 +704,7 @@ objectdef obj_Module inherits obj_StateQueue
             ; Use cached threshold for the range may be boosted by computer.
 			; It takes seconds for missile launchers to switch ammo so the range update delay
 			; bug in energy weapons should not affect them.
-			if ${Entity[${targetID}].Distance} <= ${_shortRangeAmmoRange}
+			if ${Entity[${targetID}].Distance} <= ${_shortRangeAmmoRange} && (${This.MissileDamageEfficiency[${TargetID}]} > 0.1)
 			{
 				return ${shortRangeAmmo}
 			}
@@ -719,7 +719,8 @@ objectdef obj_Module inherits obj_StateQueue
 		}
 		elseif ${This.Charge(exists)} && ${This.Charge.Type.Equal[${longRangeAmmo}]}
 		{
-			if ${Entity[${targetID}].Distance} <= ${Utility.Max[${Math.Calc[${This.Range} * 0.5]}, ${_shortRangeAmmoRange}]}
+			if (${Entity[${targetID}].Distance} <= ${Utility.Max[${Math.Calc[${This.Range} * 0.5]}, ${_shortRangeAmmoRange}]}) && \
+				(${This.MissileDamageEfficiency[${TargetID}]} > 0.2)
 			{
 				if  ${MyShip.Cargo[${shortRangeAmmo}].Quantity} > 0
 				{
