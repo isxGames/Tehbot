@@ -20,7 +20,7 @@ objectdef obj_CargoAction
 		Quantity:Set[${arg_Quantity}]
 		Source:Set[${arg_Source}]
 	}
-	
+
 	method Set(string arg_Bookmark, string arg_Action, string arg_LocationType, string arg_LocationSubtype, string arg_Container, string arg_QueryString, int arg_Quantity, string arg_Source)
 	{
 		Bookmark:Set["${arg_Bookmark.Escape}"]
@@ -32,7 +32,7 @@ objectdef obj_CargoAction
 		Quantity:Set[${arg_Quantity}]
 		Source:Set[${arg_Source}]
 	}
-	
+
 	method Clear()
 	{
 		Bookmark:Set[""]
@@ -46,13 +46,13 @@ objectdef obj_CargoAction
 	}
 }
 
-objectdef obj_Cargo inherits obj_State
+objectdef obj_Cargo inherits obj_StateQueue
 {
 	variable bool Processing=FALSE
 	variable queue:obj_CargoAction CargoQueue
 	variable obj_CargoAction BuildAction
 	variable index:item CargoList
-	
+
 	variable bool Active=FALSE
 
 	method Initialize()
@@ -63,7 +63,7 @@ objectdef obj_Cargo inherits obj_State
 
 	method ActivateSource(string location, int64 ID=-1)
 	{
-		switch ${location} 
+		switch ${location}
 		{
 			case Ship
 				if ${EVEWindow[Inventory].ChildWindow[${MyShip.ID}, ShipCargo](exists)}
@@ -98,10 +98,10 @@ objectdef obj_Cargo inherits obj_State
 				break
 		}
 	}
-	
+
 	method PopulateCargoList(string location, int64 ID=-1, string Folder="")
 	{
-		switch ${location} 
+		switch ${location}
 		{
 			case Ship
 				MyShip:GetCargo[CargoList]
@@ -150,9 +150,9 @@ objectdef obj_Cargo inherits obj_State
 				This:Filter["SlotID = 121"]
 				break
 		}
-		
+
 	}
-	
+
 	method Filter(string Filter)
 	{
 		if ${CargoList.Used}
@@ -161,7 +161,7 @@ objectdef obj_Cargo inherits obj_State
 			CargoList:Collapse
 		}
 	}
-	
+
 	method DontPopCan()
 	{
 		variable iterator Cargo
@@ -198,7 +198,7 @@ objectdef obj_Cargo inherits obj_State
 			Cargo:Last
 			if !${EarlyBreak}
 			{
-				if ${Cargo.Value.Quantity} > 1 
+				if ${Cargo.Value.Quantity} > 1
 				{
 					Cargo.Value:MoveTo[MyShip, CargoHold, ${Math.Calc[${Cargo.Value.Quantity} - 1]}]
 				}
@@ -209,7 +209,7 @@ objectdef obj_Cargo inherits obj_State
 			}
 		}
 	}
-	
+
 	method MoveCargoList(string location, string folder="", int64 ID=-1, int Quantity=0)
 	{
 		variable string TransferFolder
@@ -219,7 +219,7 @@ objectdef obj_Cargo inherits obj_State
 		{
 			This:Filter[CategoryID==CATEGORYID_ORE]
 		}
-		
+
 		if ${CargoList.Used} == 1
 		{
 			variable item CargoItem=${CargoList[1].ID}
@@ -227,7 +227,7 @@ objectdef obj_Cargo inherits obj_State
 			{
 				return
 			}
-			
+
 			if ${Quantity} > 0
 			{
 				Volume:Set[${CargoItem.Volume} * ${Quantity}]
@@ -242,8 +242,8 @@ objectdef obj_Cargo inherits obj_State
 			{
 				TransferFolder:Set[\, ${folder.Escape}]
 			}
-			
-			switch ${location} 
+
+			switch ${location}
 			{
 				case SHIP
 					if ${Volume} < ${EVEWindow[Inventory].ChildWindow[${MyShip.ID}, ShipCargo].Capacity} - ${EVEWindow[Inventory].ChildWindow[${MyShip.ID}, ShipCargo].UsedCapacity}
@@ -338,8 +338,8 @@ objectdef obj_Cargo inherits obj_State
 			{
 				TransferFolder:Set[\, ${folder.Escape}]
 			}
-			
-			switch ${location} 
+
+			switch ${location}
 			{
 				case SHIP
 					TransferIndex:Clear
@@ -488,8 +488,8 @@ objectdef obj_Cargo inherits obj_State
 			}
 		}
 	}
-	
-	
+
+
 	method At(string arg_Bookmark, string arg_LocationType = "Personal Hangar", string arg_LocationSubtype = "", string arg_Container = "")
 	{
 		This.BuildAction:Clear
@@ -498,16 +498,16 @@ objectdef obj_Cargo inherits obj_State
 		This.BuildAction.LocationSubtype:Set[${arg_LocationSubtype}]
 		This.BuildAction.Container:Set[${arg_Container}]
 	}
-	
+
 	method Load(string arg_Query = "", int arg_Quantity = 0, string arg_Source = "Ship")
 	{
-		if 	${This.BuildAction.Bookmark.Length} == 0 || \
+		if ${This.BuildAction.Bookmark.Length} == 0 || \
 			${This.BuildAction.LocationType.Length} == 0
 		{
-			UI:Update["obj_Cargo", "Attempted to queue an incomplete Load cargo action", "r"]
+			Logger:Log["obj_Cargo", "Attempted to queue an incomplete Load cargo action", "r"]
 			return
 		}
-		
+
 		This.CargoQueue:Queue[${This.BuildAction.Bookmark}, Load, ${This.BuildAction.LocationType}, ${This.BuildAction.LocationSubtype}, ${This.BuildAction.Container}, ${arg_Query}, ${arg_Quantity}, ${arg_Source}]
 		This.Processing:Set[TRUE]
 		if ${This.IsIdle}
@@ -517,13 +517,13 @@ objectdef obj_Cargo inherits obj_State
 	}
 	method Unload(string arg_Query, int arg_Quantity = 0, string arg_Source = "Ship")
 	{
-		if 	${This.BuildAction.Bookmark.Length} == 0 || \
+		if ${This.BuildAction.Bookmark.Length} == 0 || \
 			${This.BuildAction.LocationType.Length} == 0
 		{
-			UI:Update["obj_Cargo", "Attempted to queue an incomplete Unload cargo action", "r"]
+			Logger:Log["obj_Cargo", "Attempted to queue an incomplete Unload cargo action", "r"]
 			return
 		}
-		
+
 		This.CargoQueue:Queue[${This.BuildAction.Bookmark}, Unload, ${This.BuildAction.LocationType}, ${This.BuildAction.LocationSubtype}, ${This.BuildAction.Container}, ${arg_Query}, ${arg_Quantity}, ${arg_Source}]
 		This.Processing:Set[TRUE]
 		if ${This.IsIdle}
@@ -533,12 +533,12 @@ objectdef obj_Cargo inherits obj_State
 	}
 	method Move()
 	{
-		if 	${This.BuildAction.Bookmark.Length} == 0
+		if ${This.BuildAction.Bookmark.Length} == 0
 		{
-			UI:Update["obj_Cargo", "Attempted to queue an incomplete Move cargo action", "r"]
+			Logger:Log["obj_Cargo", "Attempted to queue an incomplete Move cargo action", "r"]
 			return
 		}
-		
+
 		This.CargoQueue:Queue[${This.BuildAction.Bookmark}, Move, "", "", "", "", 0]
 		This.Processing:Set[TRUE]
 		if ${This.IsIdle}
@@ -547,9 +547,9 @@ objectdef obj_Cargo inherits obj_State
 		}
 	}
 
-	
-	
-	
+
+
+
 	member:bool Process()
 	{
 		if ${This.CargoQueue.Used} == 0
@@ -557,7 +557,7 @@ objectdef obj_Cargo inherits obj_State
 			This.Processing:Set[FALSE]
 			return TRUE
 		}
-		
+
 		DroneControl:Recall
 		if ${Busy.IsBusy}
 		{
@@ -573,27 +573,27 @@ objectdef obj_Cargo inherits obj_State
 
 		if ${EVE.Bookmark[${This.CargoQueue.Peek.Bookmark}](exists)}
 		{
-			UI:Update["Cargo", "Processing \ao${This.CargoQueue.Peek.Action}", "g"]
-			UI:Update["Cargo", " Location: \ag${This.CargoQueue.Peek.Bookmark}", "-g"]
+			Logger:Log["Cargo", "Processing \ao${This.CargoQueue.Peek.Action}", "g"]
+			Logger:Log["Cargo", " Location: \ag${This.CargoQueue.Peek.Bookmark}", "-g"]
 		}
 		if ${EVE.Station[${This.CargoQueue.Peek.Bookmark}](exists)}
 		{
-			UI:Update["Cargo", "Processing \ao${This.CargoQueue.Peek.Action}\ag", "g"]
-			UI:Update["Cargo", " Location: \ag${EVE.Station[${This.CargoQueue.Peek.Bookmark}].Name}", "-g"]
+			Logger:Log["Cargo", "Processing \ao${This.CargoQueue.Peek.Action}\ag", "g"]
+			Logger:Log["Cargo", " Location: \ag${EVE.Station[${This.CargoQueue.Peek.Bookmark}].Name}", "-g"]
 		}
-		
+
 		switch ${This.CargoQueue.Peek.Action}
 		{
 			case Unload
-				UI:Update["Cargo", " Source: \ag${This.CargoQueue.Peek.Source}", "-g"]
-				UI:Update["Cargo", " Destination: \ag${This.CargoQueue.Peek.LocationType}\a-g - \ao${This.CargoQueue.Peek.LocationSubType}\a-g - \ao${This.CargoQueue.Peek.Container}", "-g"]
+				Logger:Log["Cargo", " Source: \ag${This.CargoQueue.Peek.Source}", "-g"]
+				Logger:Log["Cargo", " Destination: \ag${This.CargoQueue.Peek.LocationType}\a-g - \ao${This.CargoQueue.Peek.LocationSubType}\a-g - \ao${This.CargoQueue.Peek.Container}", "-g"]
 				break
 			case Load
-				UI:Update["Cargo", " Source: \ag${This.CargoQueue.Peek.LocationType}\a-g - \ao${This.CargoQueue.Peek.LocationSubType}\a-g - \ao${This.CargoQueue.Peek.Container}", "-g"]
-				UI:Update["Cargo", " Destination: \agShip", "-g"]
+				Logger:Log["Cargo", " Source: \ag${This.CargoQueue.Peek.LocationType}\a-g - \ao${This.CargoQueue.Peek.LocationSubType}\a-g - \ao${This.CargoQueue.Peek.Container}", "-g"]
+				Logger:Log["Cargo", " Destination: \agShip", "-g"]
 				break
 		}
-		
+
 		if !${Local[${This.CargoQueue.Peek.Container}](exists)}
 		{
 			if ${EVE.Bookmark[${This.CargoQueue.Peek.Bookmark}].TypeID} == 5 && ${EVE.Bookmark[${This.CargoQueue.Peek.Bookmark}].ItemID} != -1
@@ -615,16 +615,16 @@ objectdef obj_Cargo inherits obj_State
 		This:QueueState["Process"]
 		return TRUE
 	}
-	
+
 	member:bool Traveling()
 	{
-		if ${Move.Traveling} || ${Me.ToEntity.Mode} == 3
+		if ${Move.Traveling} || ${Me.ToEntity.Mode} == MOVE_WARPING
 		{
 			return FALSE
 		}
 		return TRUE
 	}
-	
+
 	member:bool WarpFleetMember()
 	{
 		if ${Local[${This.CargoQueue.Peek.Container}](exists)}
@@ -633,7 +633,7 @@ objectdef obj_Cargo inherits obj_State
 		}
 		return TRUE
 	}
-	
+
 	member:bool Dequeue()
 	{
 		This.CargoQueue:Dequeue
@@ -651,8 +651,8 @@ objectdef obj_Cargo inherits obj_State
 		Cargo:ActivateSource[${This.CargoQueue.Peek.Source}]
 		return TRUE
 	}
-	
-	
+
+
 
 	member:bool Stack()
 	{
@@ -677,14 +677,14 @@ objectdef obj_Cargo inherits obj_State
 				{
 					if !${EVEWindow[Inventory].ChildWindow[${Container}](exists)}
 					{
-						UI:Update["obj_Cargo", "Opening ${This.CargoQueue.Peek.Container}", "g"]
+						Logger:Log["obj_Cargo", "Opening ${This.CargoQueue.Peek.Container}", "g"]
 						Entity[${Container}]:Open
 						return FALSE
 					}
-					if 	${EVEWindow[Inventory].ChildWindow[${Container}].UsedCapacity} == -1 || \
+					if ${EVEWindow[Inventory].ChildWindow[${Container}].UsedCapacity} == -1 || \
 						${EVEWindow[Inventory].ChildWindow[${Container}].Capacity} <= 0
 					{
-						UI:Update["obj_Cargo", "Container information invalid, activating", "g"]
+						Logger:Log["obj_Cargo", "Container information invalid, activating", "g"]
 						EVEWindow[Inventory].ChildWindow[${Container}]:MakeActive
 						return FALSE
 					}
@@ -701,26 +701,26 @@ objectdef obj_Cargo inherits obj_State
 			}
 			else
 			{
-				UI:Update["obj_Cargo", "Cargo action Stack failed - Container not found", "r"]
+				Logger:Log["obj_Cargo", "Cargo action Stack failed - Container not found", "r"]
 				return TRUE
 			}
-		
+
 		}
-		
+
 		if !${EVEWindow[Inventory].ChildWindow[StationCorpHangar](exists)}
 		{
 			EVEWindow[Inventory].ChildWindow[StationCorpHangars]:MakeActive
 			return FALSE
 		}
-		
+
 		variable index:item cargo
 		if !${EVEWindow[Inventory].ChildWindow["StationCorpHangar", "Folder7"]:GetItems[cargo](exists)}
 		{
-		
+
 			EVEWindow[Inventory].ChildWindow["StationCorpHangar", "Folder7"]:MakeActive
 			return FALSE
-		}		
-			
+		}
+
 		switch ${This.CargoQueue.Peek.LocationType}
 		{
 			case Personal Hangar
@@ -730,10 +730,10 @@ objectdef obj_Cargo inherits obj_State
 				EVEWindow[Inventory].ChildWindow["StationCorpHangar", "Folder7"]:StackAll
 				break
 		}
-		
+
 		return TRUE
 	}
-	
+
 	member:bool Unload(bool OpenedCorpHangar=FALSE)
 	{
 		variable int64 Container
@@ -742,7 +742,7 @@ objectdef obj_Cargo inherits obj_State
 		{
 			return FALSE
 		}
-		
+
 		if ${Me.InSpace}
 		{
 			if ${Entity[Name = "${This.CargoQueue.Peek.Container}"](exists)}
@@ -757,14 +757,14 @@ objectdef obj_Cargo inherits obj_State
 				{
 					if !${EVEWindow[Inventory].ChildWindow[${Container}](exists)}
 					{
-						UI:Update["obj_Cargo", "Opening ${This.CargoQueue.Peek.Container}", "g"]
+						Logger:Log["obj_Cargo", "Opening ${This.CargoQueue.Peek.Container}", "g"]
 						Entity[${Container}]:Open
 						return FALSE
 					}
-					if 	${EVEWindow[Inventory].ChildWindow[${Container}].UsedCapacity} == -1 || \
+					if ${EVEWindow[Inventory].ChildWindow[${Container}].UsedCapacity} == -1 || \
 						${EVEWindow[Inventory].ChildWindow[${Container}].Capacity} <= 0
 					{
-						UI:Update["obj_Cargo", "Container information invalid, activating", "g"]
+						Logger:Log["obj_Cargo", "Container information invalid, activating", "g"]
 						EVEWindow[Inventory].ChildWindow[${Container}]:MakeActive
 						return FALSE
 					}
@@ -776,24 +776,24 @@ objectdef obj_Cargo inherits obj_State
 			}
 			else
 			{
-				UI:Update["obj_Cargo", "Cargo action Unload failed - Container not found", "r"]
+				Logger:Log["obj_Cargo", "Cargo action Unload failed - Container not found", "r"]
 				return TRUE
 			}
 		}
-		
+
 		if !${EVEWindow[Inventory].ChildWindow[StationCorpHangar](exists)} && !${OpenedCorpHangar}
 		{
 			EVEWindow[Inventory].ChildWindow[StationCorpHangars]:MakeActive
 			This:InsertState["Unload", 2000, TRUE]
 			return TRUE
 		}
-		
+
 		Cargo:PopulateCargoList[${This.CargoQueue.Peek.Source}]
 		Cargo:Filter[${This.CargoQueue.Peek.QueryString}]
 		Cargo:MoveCargoList[${This.CargoQueue.Peek.LocationType}, ${This.CargoQueue.Peek.LocationSubtype}, ${Container}, ${This.CargoQueue.Peek.Quantity}]
 		return TRUE
 	}
-	
+
 	member:bool Load(bool OpenedCorpHangar=FALSE)
 	{
 		variable int64 Container
@@ -802,7 +802,7 @@ objectdef obj_Cargo inherits obj_State
 		{
 			return FALSE
 		}
-		
+
 		if ${Me.InSpace}
 		{
 			if ${Entity[Name = "${This.CargoQueue.Peek.Container}"](exists)}
@@ -817,14 +817,14 @@ objectdef obj_Cargo inherits obj_State
 				{
 					if !${EVEWindow[Inventory].ChildWindow[${Container}](exists)}
 					{
-						UI:Update["obj_Cargo", "Opening ${This.CargoQueue.Peek.Container}", "g"]
+						Logger:Log["obj_Cargo", "Opening ${This.CargoQueue.Peek.Container}", "g"]
 						Entity[${Container}]:Open
 						return FALSE
 					}
-					if 	${EVEWindow[Inventory].ChildWindow[${Container}].UsedCapacity} == -1 || \
+					if ${EVEWindow[Inventory].ChildWindow[${Container}].UsedCapacity} == -1 || \
 						${EVEWindow[Inventory].ChildWindow[${Container}].Capacity} <= 0
 					{
-						UI:Update["obj_Cargo", "Container information invalid, activating", "g"]
+						Logger:Log["obj_Cargo", "Container information invalid, activating", "g"]
 						EVEWindow[Inventory].ChildWindow[${Container}]:MakeActive
 						return FALSE
 					}
@@ -836,7 +836,7 @@ objectdef obj_Cargo inherits obj_State
 			}
 			else
 			{
-				UI:Update["obj_Cargo", "Cargo action Load failed - Container not found", "r"]
+				Logger:Log["obj_Cargo", "Cargo action Load failed - Container not found", "r"]
 				return TRUE
 			}
 		}
@@ -847,7 +847,7 @@ objectdef obj_Cargo inherits obj_State
 			This:InsertState["Load", 2000, TRUE]
 			return TRUE
 		}
-		
+
 		Cargo:PopulateCargoList[${This.CargoQueue.Peek.LocationType}, 0, ${This.CargoQueue.Peek.LocationSubtype}]
 		Cargo:Filter[${This.CargoQueue.Peek.QueryString}]
 		Cargo:MoveCargoList[SHIP, "", -1, ${This.CargoQueue.Peek.Quantity}]
@@ -857,5 +857,5 @@ objectdef obj_Cargo inherits obj_State
 	{
 		return TRUE
 	}
-	
+
 }

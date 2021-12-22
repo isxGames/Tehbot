@@ -6,7 +6,7 @@ objectdef obj_Configuration_UndockWarp
 	{
 		if !${BaseConfig.BaseRef.FindSet[${This.SetName}](exists)}
 		{
-			UI:Update["Configuration", " ${This.SetName} settings missing - initializing", "o"]
+			Logger:Log["Configuration", " ${This.SetName} settings missing - initializing", "o"]
 			This:Set_Default_Values[]
 		}
 	}
@@ -24,33 +24,33 @@ objectdef obj_Configuration_UndockWarp
 	}
 
 	Setting(string, substring, Setsubstring)
-	
+
 }
 
-objectdef obj_UndockWarp inherits obj_State
+objectdef obj_UndockWarp inherits obj_StateQueue
 {
 	variable obj_Configuration_UndockWarp Config
-	
+
 	method Initialize()
 	{
 		This[parent]:Initialize
 		This.NonGameTiedPulse:Set[TRUE]
 		DynamicAddMiniMode("UndockWarp", "UndockWarp")
 	}
-	
+
 	method Start()
 	{
 		This:QueueState["UndockWarp"]
 	}
-	
+
 	method Stop()
 	{
 		This:Clear
 	}
-	
+
 	member:bool UndockWarp()
 	{
-		if ${Client.Undock}
+		if ${Client.TryWarpToBookmark}
 		{
 			return FALSE
 		}
@@ -58,8 +58,8 @@ objectdef obj_UndockWarp inherits obj_State
 		{
 			if ${EVE.ProgressWindowTitle.Equal[Prepare to undock]}
 			{
-				UI:Update["UndockWarp", "Triggering warp to undock bookmark, if available", "y"]
-				Client.Undock:Set[TRUE]
+				Logger:Log["UndockWarp", "Triggering warp to undock bookmark, if available", "y"]
+				Client.TryWarpToBookmark:Set[TRUE]
 			}
 		}
 		return FALSE

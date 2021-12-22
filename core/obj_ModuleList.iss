@@ -1,279 +1,289 @@
 objectdef obj_ModuleList
 {
-	variable index:obj_Module Modules
-	
+	variable index:int64 ModuleID
+
 	method Insert(int64 ID)
 	{
-		Modules:Insert[${ID}]
+		ModuleID:Insert[${ID}]
 	}
-	
-	member:int GetInactive()
+
+	method ActivateOne(int64 targetID = TARGET_NA)
 	{
-		variable iterator ModuleIterator
-		Modules:GetIterator[ModuleIterator]
-		if ${ModuleIterator:First(exists)}
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
 		{
 			do
 			{
-				if !${ModuleIterator.Value.IsActive} && !${ModuleIterator.Value.IsReloading}
+				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsInstructionMatch[INSTRUCTION_NONE]}
 				{
-					return ${ModuleIterator.Key}
+					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:GiveInstruction[INSTRUCTION_ACTIVATE_ON, ${targetID}]
+					return
 				}
 			}
-			while ${ModuleIterator:Next(exists)}
+			while ${moduleIDIterator:Next(exists)}
 		}
-		return -1
 	}
-	
-	method Activate(int64 target=-1, bool DoDeactivate=TRUE, int DeactivatePercent=100)
+
+	method ActivateAll(int64 targetID = TARGET_NA)
 	{
-		This:ActivateCount[1, ${target}, ${DoDeactivate}, ${DeactivatePercent}]
-	}
-	
-	method ActivateCount(int count, int64 target=-1, bool DoDeactivate=TRUE, int DeactivatePercent=100)
-	{
-		variable int activatedCount = 0
-		variable iterator ModuleIterator
-		Modules:GetIterator[ModuleIterator]
-		if ${ModuleIterator:First(exists)}
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
 		{
 			do
 			{
-				if !${ModuleIterator.Value.IsActive}
+				Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:GiveInstruction[INSTRUCTION_ACTIVATE_ON, ${targetID}]
+			}
+			while ${moduleIDIterator:Next(exists)}
+		}
+	}
+
+	method ConfigureAmmo(string shortRangeAmmo, string longRangeAmmo)
+	{
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
+		{
+			do
+			{
+				Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:ConfigureAmmo[${shortRangeAmmo}, ${longRangeAmmo}]
+			}
+			while ${moduleIDIterator:Next(exists)}
+		}
+	}
+
+	method ActivateFor(int64 targetID = TARGET_NA)
+	{
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
+		{
+			do
+			{
+				Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:GiveInstruction[INSTRUCTION_ACTIVATE_FOR, ${targetID}]
+			}
+			while ${moduleIDIterator:Next(exists)}
+		}
+	}
+
+	method ReloadDefaultAmmo()
+	{
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
+		{
+			do
+			{
+				Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:GiveInstruction[INSTRUCTION_RELOAD_AMMO, TARGET_NA]
+			}
+			while ${moduleIDIterator:Next(exists)}
+		}
+	}
+
+	method DeactivateAll()
+	{
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
+		{
+			do
+			{
+				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsActive}
 				{
-					ModuleIterator.Value:Activate[${target}, ${DoDeactivate}, ${DeactivatePercent}]
-					activatedCount:Inc
+					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:GiveInstruction[INSTRUCTION_DEACTIVATE]
 				}
-				if ${activatedCount} >= ${count}
+			}
+			while ${moduleIDIterator:Next(exists)}
+		}
+	}
+
+	method DeactivateOneNotOn(int64 targetID)
+	{
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+
+		; Already deactivating one?
+		if ${moduleIDIterator:First(exists)}
+		{
+			do
+			{
+				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsInstructionMatch[INSTRUCTION_DEACTIVATE]}
 				{
 					return
 				}
 			}
-			while ${ModuleIterator:Next(exists)}
+			while ${moduleIDIterator:Next(exists)}
 		}
-	}
 
-	method ActivateAll(int64 target=-1, bool DoDeactivate=TRUE, int DeactivatePercent=100)
-	{
-		variable iterator ModuleIterator
-		Modules:GetIterator[ModuleIterator]
-		if ${ModuleIterator:First(exists)}
+		; Deactivate if not.
+		if ${moduleIDIterator:First(exists)}
 		{
 			do
 			{
-				if !${ModuleIterator.Value.IsActive}
+				if !${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsModuleActiveOn[${targetID}]} && ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsActive}
 				{
-					ModuleIterator.Value:Activate[${target}, ${DoDeactivate}, ${DeactivatePercent}]
-					activatedCount:Inc
-				}
-			}
-			while ${ModuleIterator:Next(exists)}
-		}
-	}
-
-	
-	method Deactivate(int64 target=-1)
-	{
-		This:DeactivateCount[1, ${target}]
-	}
-	
-	method DeactivateCount(int count, int64 target=-1)
-	{
-		variable int deactivatedCount = 0
-		variable iterator ModuleIterator
-		Modules:GetIterator[ModuleIterator]
-		if ${ModuleIterator:First(exists)}
-		{
-			do
-			{
-				if ${ModuleIterator.Value.IsActiveOn[${target}]} || ${target} == -1
-				{
-					ModuleIterator.Value:Deactivate
-					deactivatedCount:Inc
-				}
-				if ${deactivatedCount} >= ${count}
-				{
+					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:GiveInstruction[INSTRUCTION_DEACTIVATE]
 					return
 				}
 			}
-			while ${ModuleIterator:Next(exists)}
+			while ${moduleIDIterator:Next(exists)}
 		}
 	}
 
-	method DeactivateAll(int64 target=-1)
+	method DeactivateOn(int64 targetID)
 	{
-		variable iterator ModuleIterator
-		Modules:GetIterator[ModuleIterator]
-		if ${ModuleIterator:First(exists)}
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
 		{
 			do
 			{
-				if ${ModuleIterator.Value.IsActiveOn[${target}]} || ${target} == -1
+				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsModuleActiveOn[${targetID}]}
 				{
-					ModuleIterator.Value:Deactivate
+					Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:GiveInstruction[INSTRUCTION_DEACTIVATE]
 				}
 			}
-			while ${ModuleIterator:Next(exists)}
+			while ${moduleIDIterator:Next(exists)}
 		}
-	}	
-	
-	method DeactivateNotOn(int64 target=-1)
-	{
-		This:DeactivateNotOnCount[1, ${target}]
 	}
-	
-	method DeactivateNotOnCount(int count, int64 target=-1)
+
+	method SetOverloadHPThreshold(int threshold)
 	{
-		variable int deactivatedCount = 0
-		variable iterator ModuleIterator
-		Modules:GetIterator[ModuleIterator]
-		if ${ModuleIterator:First(exists)}
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
 		{
 			do
 			{
-				if !${ModuleIterator.Value.IsActiveOn[${target}]} && ${ModuleIterator.Value.IsActive}
-				{
-					ModuleIterator.Value:Deactivate
-					deactivatedCount:Inc
-				}
-				if ${deactivatedCount} >= ${count}
-				{
-					return
-				}
+				Ship.RegisteredModule.Element[${moduleIDIterator.Value}].OverloadIfHPAbovePercent:Set[${threshold}]
 			}
-			while ${ModuleIterator:Next(exists)}
+			while ${moduleIDIterator:Next(exists)}
 		}
-	}	
-	
-	method Reactivate(int ModuleID, int64 target=-1)
-	{
-		Modules[${ModuleID}]:Activate[${target}]
 	}
-	
-	member:bool IsActiveOn(int64 checkTarget)
+
+	member:bool IsActiveOn(int64 targetID)
 	{
-		variable iterator ModuleIterator
-		Modules:GetIterator[ModuleIterator]
-		if ${ModuleIterator:First(exists)}
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
 		{
 			do
 			{
-				if ${ModuleIterator.Value.IsActiveOn[${checkTarget}]}
+				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsInstructionMatch[INSTRUCTION_ACTIVATE_ON, ${targetID}]}
 				{
 					return TRUE
 				}
 			}
-			while ${ModuleIterator:Next(exists)}
+			while ${moduleIDIterator:Next(exists)}
 		}
 		return FALSE
 	}
-	
+
+	member:int Count()
+	{
+		return ${ModuleID.Used}
+	}
+
 	member:int ActiveCount()
 	{
 		variable int countActive=0
-		variable iterator ModuleIterator
-		Modules:GetIterator[ModuleIterator]
-		if ${ModuleIterator:First(exists)}
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
 		{
 			do
 			{
-				if ${ModuleIterator.Value.IsActive}
+				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsActive}
 				{
 					countActive:Inc
 				}
 			}
-			while ${ModuleIterator:Next(exists)}
+			while ${moduleIDIterator:Next(exists)}
 		}
 		return ${countActive}
 	}
-	
-	member:int ActiveCountOn(int64 checkTarget)
+
+	member:int ActiveCountOn(int64 targetID)
 	{
 		variable int countActive=0
-		variable iterator ModuleIterator
-		Modules:GetIterator[ModuleIterator]
-		if ${ModuleIterator:First(exists)}
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
 		{
 			do
 			{
-				if ${ModuleIterator.Value.IsActiveOn[${checkTarget}]}
+				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsModuleActiveOn[${targetID}]}
 				{
 					countActive:Inc
 				}
 			}
-			while ${ModuleIterator:Next(exists)}
+			while ${moduleIDIterator:Next(exists)}
 		}
 		return ${countActive}
 	}
-	
-	member:int Count()
-	{
-		return ${Modules.Used}
-	}
-	
-	member:int GetActiveOn(int64 target)
-	{
-		variable iterator ModuleIterator
-		Modules:GetIterator[ModuleIterator]
-		if ${ModuleIterator:First(exists)}
-		{
-			do
-			{
-				if ${ModuleIterator.Value.IsActiveOn[${target}]}
-				{
-					return ${ModuleIterator.Key}
-				}
-			}
-			while ${ModuleIterator:Next(exists)}
-		}
-		return -1
-	}
-	
-	member:int GetActiveNotOn(int64 target)
-	{
-		variable iterator ModuleIterator
-		Modules:GetIterator[ModuleIterator]
-		if ${ModuleIterator:First(exists)}
-		{
-			do
-			{
-				if !${ModuleIterator.Value.IsActiveOn[${target}]} && ${ModuleIterator.Value.IsActive}
-				{
-					return ${ModuleIterator.Key}
-				}
-			}
-			while ${ModuleIterator:Next(exists)}
-		}
-		return -1
-	}
-	
-	
+
 	member:int InactiveCount()
 	{
-		variable iterator ModuleIterator
+		variable iterator moduleIDIterator
 		variable int countInactive = 0
-		Modules:GetIterator[ModuleIterator]
-		if ${ModuleIterator:First(exists)}
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
 		{
 			do
 			{
-				if !${ModuleIterator.Value.IsActive} && !${ModuleIterator.Value.IsReloading}
+				if ${Ship.RegisteredModule.Element[${moduleIDIterator.Value}].IsInstructionMatch[INSTRUCTION_NONE]}
 				{
 					countInactive:Inc
 				}
 			}
-			while ${ModuleIterator:Next(exists)}
+			while ${moduleIDIterator:Next(exists)}
 		}
 		return ${countInactive}
 	}
-	
+
 	member:float Range()
 	{
-		return ${Modules.Get[1].Range}
+		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].Range}
 	}
-	
+
+	member:float OptimalRange()
+	{
+		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].OptimalRange}
+	}
+
+	member:float TrackingSpeed()
+	{
+		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].TrackingSpeed}
+	}
+
+	member:float AccuracyFalloff()
+	{
+		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].AccuracyFalloff}
+	}
+
+	member:float DamageEfficiency(int64 targetID)
+	{
+		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].DamageEfficiency[${targetID}]}
+	}
+
+	member:float TurretTrackingDecayFactor(int64 targetID)
+	{
+		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}]._turretTrackingDecayFactor[${targetID}]}
+	}
+
+	member:string FallbackAmmo()
+	{
+		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].FallbackAmmo}
+	}
+
+	member:string FallbackSecondaryAmmo()
+	{
+		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].FallbackSecondaryAmmo}
+	}
+
 	member:string GetFallthroughObject()
 	{
-		return "Ship.${This.ObjectName}.Modules"
+		return "Ship.${This.ObjectName}.ModuleID"
 	}
 }

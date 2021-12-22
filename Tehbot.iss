@@ -6,10 +6,12 @@
 ; Keep and updated
 #include core/obj_Configuration.iss
 ; Updated, possibly still need to remove independent pulse if it's not used
-#include core/obj_State.iss
+#include core/obj_StateQueue.iss
 ; Keep and updated
 #include core/obj_TehbotUI.iss
-; Need to implement menu/config item for accepting fleet invites from corp members  
+#include core/obj_Logger.iss
+#include core/obj_MissionParser.iss
+; Need to implement menu/config item for accepting fleet invites from corp members
 ; Update undock warp bookmark search to use aligned once it's moved to production out of dev version
 ; Probably need to restore undock minimode check, think undocks always happen right now
 ; Probably get rid of the Inventory member
@@ -17,8 +19,6 @@
 ; Probably can be further cleaned up.  Remove unneeded move types, remove fleet warps, remove ignore gate stuff
 ; Probably need to rethink Approach and Orbit behaviors.  Make both separate modules, or let behaviors manage them on their own?
 #include core/obj_Move.iss
-; clear
-#include core/obj_ModuleBase.iss
 ; clear
 #include core/obj_Module.iss
 ; clear
@@ -40,7 +40,9 @@
 
 ; clear
 #include core/obj_NPCData.iss
-#include core/obj_PriorityTargets.iss
+#include core/obj_FactionData.iss
+#include core/obj_PrioritizedTargets.iss
+#include core/obj_Utility.iss
 
 #include behavior/MiniMode.iss
 #include behavior/Salvager.iss
@@ -51,6 +53,7 @@
 #include minimode/AutoThrust.iss
 #include minimode/DroneControl.iss
 #include minimode/InstaWarp.iss
+#include minimode/FightOrFlight.iss
 #include minimode/Salvage.iss
 #include minimode/UndockWarp.iss
 
@@ -67,26 +70,30 @@ function main(string Character="")
 
 	echo "${Time} Tehbot: Starting"
 
-	declarevariable UI obj_TehbotUI script
-	declarevariable Tehbot obj_Tehbot script
 	declarevariable BaseConfig obj_Configuration_BaseConfig script
 	declarevariable Config obj_Configuration script
+	declarevariable UI obj_TehbotUI script
+	declarevariable Logger obj_Logger script
+	declarevariable Tehbot obj_Tehbot script
 	UI:Reload
-	
 
 	declarevariable NPCData obj_NPCData script
-	declarevariable PriorityTargets obj_PriorityTargets script
+	declarevariable FactionData obj_FactionData script
+	declarevariable PrioritizedTargets obj_PrioritizedTargets script
+	declarevariable Utility obj_Utility script
 	declarevariable TehbotLogin obj_Login script
 	declarevariable Dynamic obj_Dynamic script
-	
+
 	declarevariable MiniMode obj_MiniMode script
 	declarevariable Salvager obj_Salvager script
+	declarevariable MissionParser obj_MissionParser script
 	declarevariable Mission obj_Mission script
-	
+
 	declarevariable Automate obj_Automate script
 	declarevariable AutoModule obj_AutoModule script
 	declarevariable AutoThrust obj_AutoThrust script
 	declarevariable InstaWarp obj_InstaWarp script
+	declarevariable FightOrFlight obj_FightOrFlight script
 	declarevariable UndockWarp obj_UndockWarp script
 	declarevariable Salvage obj_Salvage script
 	declarevariable DroneControl obj_DroneControl script
@@ -103,26 +110,26 @@ function main(string Character="")
 		wait 10
 	}
 	Config.Common:SetCharID[${Me.CharID}]
-	
+
 	declarevariable Client obj_Client script
 	declarevariable Move obj_Move script
 	declarevariable Ship obj_Ship script
 	declarevariable Cargo obj_Cargo script
 	declarevariable RefineData obj_Configuration_RefineData script
 	declarevariable Drones obj_Drones script
-	
-	
-	UI:Update["Tehbot", "Module initialization complete", "y"]
-	
+
+
+	Logger:Log["Tehbot", "Module initialization complete", "y"]
+
 	if ${Config.Common.AutoStart}
 	{
 		Tehbot:Resume
 	}
 	else
 	{
-		UI:Update["Tehbot", "Paused", "r"]
+		Logger:Log["Tehbot", "Paused", "r"]
 	}
-	
+
 
 	while TRUE
 	{

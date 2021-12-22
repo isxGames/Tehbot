@@ -6,17 +6,17 @@ objectdef obj_Configuration_Salvager
 	{
 		if !${BaseConfig.BaseRef.FindSet[${This.SetName}](exists)}
 		{
-			UI:Update["Configuration", " ${This.SetName} settings missing - initializing", "o"]
+			Logger:Log["Configuration", " ${This.SetName} settings missing - initializing", "o"]
 			This:Set_Default_Values[]
 		}
-		UI:Update["Configuration", " ${This.SetName}: Initialized", "-g"]
+		Logger:Log["Configuration", " ${This.SetName}: Initialized", "-g"]
 	}
 
 	member:settingsetref CommonRef()
 	{
 		return ${BaseConfig.BaseRef.FindSet[${This.SetName}]}
 	}
-	
+
 	member:settingsetref SafeBookmarksRef()
 	{
 		if !${BaseConfig.BaseRef.FindSet[${This.SetName}].FindSet[SafeBookmarks](exists)}
@@ -24,29 +24,29 @@ objectdef obj_Configuration_Salvager
 			This.CommonRef:AddSet[SafeBookmarks]
 		}
 		return ${BaseConfig.BaseRef.FindSet[${This.SetName}].FindSet[SafeBookmarks]}
-	}	
+	}
 
 	method Set_Default_Values()
 	{
 		BaseConfig.BaseRef:AddSet[${This.SetName}]
-		This.CommonRef:AddSet[SafeBookmarks]		
+		This.CommonRef:AddSet[SafeBookmarks]
 
-		This.CommonRef:AddSetting[Dropoff_Type,Personal Hangar]
+		This.CommonRef:AddSetting[MunitionStorage, Personal Hangar]
 		This.CommonRef:AddSetting[Prefix,Salvage:]
 		This.CommonRef:AddSetting[Dropoff,""]
 	}
 
 	Setting(string, Prefix, SetPrefix)
 	Setting(string, Dropoff, SetDropoff)
-	Setting(string, DropoffType, SetDropoffType)
-	Setting(string, DropoffSubType, SetDropoffSubType)
+	Setting(string, MunitionStorage, SetMunitionStorage)
+	Setting(string, MunitionStorageFolder, SetMunitionStorageFolder)
 }
 
-objectdef obj_Salvager inherits obj_State
+objectdef obj_Salvager inherits obj_StateQueue
 {
 	variable obj_Configuration_Salvager Config
 	variable obj_SalvageUI LocalUI
-	
+
 	variable bool ForceBookmarkCycle=FALSE
 	variable index:int64 HoldOffPlayer
 	variable index:int HoldOffTimer
@@ -55,11 +55,11 @@ objectdef obj_Salvager inherits obj_State
 	variable bool Salvaging = FALSE
 	variable queue:entity BeltPatrol
 	variable set UsedBookmarks
-	
+
 	variable collection:int64 ReservedBookmarks
-	
+
 	variable obj_TargetList NPCs
-	
+
 	method Initialize()
 	{
 		This[parent]:Initialize
@@ -73,13 +73,13 @@ objectdef obj_Salvager inherits obj_State
 
 	method Start()
 	{
-		UI:Update["obj_Salvage", "Started", "g"]
+		Logger:Log["obj_Salvage", "Starting", "g"]
 		if ${This.IsIdle}
 		{
 			This:QueueState["CheckCargoHold", 500]
 		}
 	}
-	
+
 	method Stop()
 	{
 		This:DeactivateStateQueueDisplay
@@ -97,7 +97,7 @@ objectdef obj_Salvager inherits obj_State
 		EVE:RefreshBookmarks
 		TimedCommand 50 Script[Tehbot].VariableScope.Salvager:AddBookmarksFromPilot[${ID}]
 	}
-	
+
 	method AddBookmarksFromPilot(int64 ID)
 	{
 		variable index:bookmark Bookmarks
@@ -113,10 +113,10 @@ objectdef obj_Salvager inherits obj_State
 					Config.SafeBookmarksRef:AddSetting[${b.Value.ID},${b.Value.Created.AsInt64}]
 				}
 			}
-			while ${b:Next(exists)}		
+			while ${b:Next(exists)}
 		Config:Save
 	}
-	
+
 
 	member:bool CheckBookmarks()
 	{
@@ -132,10 +132,10 @@ objectdef obj_Salvager inherits obj_State
 		variable int RemoveDecAmount=0
 		variable bool InHoldOff
 		BookmarkFound:Set[FALSE]
-		
+
 		EVE:GetBookmarks[Bookmarks]
 		Bookmarks:GetIterator[BookmarkIterator]
-		
+
 		HoldOffTimer:GetIterator[HoldOffIterator]
 		if ${HoldOffIterator:First(exists)}
 		do
@@ -146,7 +146,7 @@ objectdef obj_Salvager inherits obj_State
 			}
 		}
 		while ${HoldOffIterator:Next(exists)}
-		
+
 		RemoveHoldOff:GetIterator[HoldOffIterator]
 		if ${HoldOffIterator:First(exists)}
 		do
@@ -156,15 +156,15 @@ objectdef obj_Salvager inherits obj_State
 			RemoveDecAmount:Inc
 		}
 		while ${HoldOffIterator:Next(exists)}
-		
+
 		HoldOffPlayer:GetIterator[HoldOffIterator]
-		
+
 		variable bool br=false
 		variable iterator reservedbookmark
 
 		if ${BookmarkIterator:First(exists)}
 		do
-		{	
+		{
 			br:Set[FALSE]
 			ReservedBookmarks:GetIterator[reservedbookmark]
 			if ${reservedbookmark:First(exists)}
@@ -192,7 +192,7 @@ objectdef obj_Salvager inherits obj_State
 				{
 					if ${BookmarkIterator.Value.Created.AsInt64} + 72000000000 < ${EVETime.AsInt64} && !${UsedBookmarks.Contains[${BookmarkIterator.Value.ID}]}
 					{
-						UI:Update["Salvager", "Removing expired bookmark - ${BookmarkIterator.Value.Label}", "o", TRUE]
+						Logger:Log["Salvager", "Removing expired bookmark - ${BookmarkIterator.Value.Label}", "o", TRUE]
 						BookmarkIterator.Value:Remove
 						UsedBookmarks:Add[${BookmarkIterator.Value.ID}]
 						This:InsertState["CheckBookmarks"]
@@ -214,7 +214,7 @@ objectdef obj_Salvager inherits obj_State
 
 		if ${BookmarkIterator:First(exists)} && !${BookmarkFound}
 		do
-		{	
+		{
 			br:Set[FALSE]
 			ReservedBookmarks:GetIterator[reservedbookmark]
 			if ${reservedbookmark:First(exists)}
@@ -242,7 +242,7 @@ objectdef obj_Salvager inherits obj_State
 				{
 					if ${BookmarkIterator.Value.Created.AsInt64} + 72000000000 < ${EVETime.AsInt64} && !${UsedBookmarks.Contains[${BookmarkIterator.Value.ID}]}
 					{
-						UI:Update["Salvager", "Removing expired bookmark - ${BookmarkIterator.Value.Label}", "o", TRUE]
+						Logger:Log["Salvager", "Removing expired bookmark - ${BookmarkIterator.Value.Label}", "o", TRUE]
 						BookmarkIterator.Value:Remove
 						UsedBookmarks:Add[${BookmarkIterator.Value.ID}]
 						This:InsertState["CheckBookmarks"]
@@ -261,11 +261,11 @@ objectdef obj_Salvager inherits obj_State
 			}
 		}
 		while ${BookmarkIterator:Next(exists)}
-		
+
 		if ${BookmarkFound}
 		{
 			relay "all other" -event Tehbot_ReserveBookmark ${Me.ID},${TargetID}
-			UI:Update["obj_Salvage", "Setting course for ${Target}", "g"]
+			Logger:Log["obj_Salvage", "Setting course for ${Target}", "g"]
 			Move:Bookmark[${Target}, TRUE]
 			This:QueueState["Traveling"]
 			This:QueueState["Log", 1000, "Salvaging at ${Target}"]
@@ -281,7 +281,7 @@ objectdef obj_Salvager inherits obj_State
 			return TRUE
 		}
 
-		UI:Update["obj_Salvage", "No salvage bookmark found - returning to station", "g"]
+		Logger:Log["obj_Salvage", "No salvage bookmark found - returning to station", "g"]
 		This:QueueState["Offload"]
 		This:QueueState["Traveling"]
 		This:QueueState["Log", 10, "Idling for 30 seconds"]
@@ -300,10 +300,10 @@ objectdef obj_Salvager inherits obj_State
 		variable int totalBookmarks=0
 		variable string BookmarkLabel
 		EVE:GetBookmarks[Bookmarks]
-		Bookmarks:GetIterator[BookmarkIterator]		
+		Bookmarks:GetIterator[BookmarkIterator]
 		if ${BookmarkIterator:First(exists)}
 			do
-			{	
+			{
 				br:Set[FALSE]
 				ReservedBookmarks:GetIterator[reservedbookmark]
 				if ${reservedbookmark:First(exists)}
@@ -339,46 +339,46 @@ objectdef obj_Salvager inherits obj_State
 					}
 				}
 			}
-			while ${BookmarkIterator:Next(exists)}		
-			
+			while ${BookmarkIterator:Next(exists)}
+
 		if ${BookmarkTime} > 0
 		{
 			variable int expire
 			expire:Set[${Math.Calc[(${BookmarkTime} + 72000000000 - ${EVETime.AsInt64}) / 600000000].Int}]
-			UI:Update["Salvager", "Total Valid Salvage Bookmarks: \ar${totalBookmarks}", "o"]
-			UI:Update["Salvager", "Oldest Salvage bookmark expires in \ar${expire} \aominutes", "o"]
-			UI:Update["Salvager", " Named: \ar${BookmarkLabel}", "o"]
-			
+			Logger:Log["Salvager", "Total Valid Salvage Bookmarks: \ar${totalBookmarks}", "o"]
+			Logger:Log["Salvager", "Oldest Salvage bookmark expires in \ar${expire} \aominutes", "o"]
+			Logger:Log["Salvager", " Named: \ar${BookmarkLabel}", "o"]
+
 		}
 	}
-	
+
 	member:bool Traveling()
 	{
-		if ${Cargo.Processing} || ${Move.Traveling} || ${Me.ToEntity.Mode} == 3
+		if ${Cargo.Processing} || ${Move.Traveling} || ${Me.ToEntity.Mode} == MOVE_WARPING
 		{
 			return FALSE
 		}
 		return TRUE
 	}
-	
+
 	member:bool Log(string text)
 	{
-		UI:Update["obj_Salvage", "${text}", "g"]
+		Logger:Log["obj_Salvage", "${text}", "g"]
 		return TRUE
 	}
-	
-	
+
+
 	member:bool DoneSalvaging()
 	{
 		Salvaging:Set[FALSE]
 	}
-	
+
 	member:bool InitialUpdate()
 	{
 		NPCs:RequestUpdate
 		return TRUE
 	}
-	
+
 	member:bool Updated()
 	{
 		return ${NPCs.Updated}
@@ -389,17 +389,17 @@ objectdef obj_Salvager inherits obj_State
 		AutoModule.DropCloak:Set[${arg}]
 		return TRUE
 	}
-	
+
 	member:bool SalvageWrecks(int64 BookmarkCreator)
 	{
 		variable float FullHold = 0.95
 		variable bool NPCRun = TRUE
 
 		NPCs:RequestUpdate
-		
+
 		if ${NPCs.TargetList.Used} && ${NPCRun}
 		{
-			UI:Update["obj_Salvage", "Pocket has NPCs - Jumping Clear", "g"]
+			Logger:Log["obj_Salvage", "Pocket has NPCs - Jumping Clear", "g"]
 
 			HoldOffPlayer:Insert[${BookmarkCreator}]
 			HoldOffTimer:Insert[${Math.Calc[${LavishScript.RunningTime} + 600000]}]
@@ -408,7 +408,7 @@ objectdef obj_Salvager inherits obj_State
 			This:QueueState["Traveling"]
 			This:QueueState["RefreshBookmarks", 3000]
 			This:QueueState["CheckBookmarks", 3000]
-			
+
 			return TRUE
 		}
 
@@ -419,7 +419,7 @@ objectdef obj_Salvager inherits obj_State
 
 		if ${EVEWindow[Inventory].ChildWindow[${MyShip.ID}, ShipCargo].UsedCapacity} / ${EVEWindow[Inventory].ChildWindow[${MyShip.ID}, ShipCargo].Capacity} > ${FullHold}
 		{
-			UI:Update["Salvage", "Unload trip required", "g"]
+			Logger:Log["Salvage", "Unload trip required", "g"]
 			This:Clear
 			This:QueueState["Offload"]
 			This:QueueState["Traveling"]
@@ -465,19 +465,19 @@ objectdef obj_Salvager inherits obj_State
 		}
 		return FALSE
 	}
-	
+
 	member:bool ClearAlreadySalvaged()
 	{
 		AlreadySalvaged:Clear
 		return TRUE
 	}
-	
+
 	member:bool GateCheck(int64 BookmarkCreator)
 	{
 		variable index:bookmark Bookmarks
 		variable iterator BookmarkIterator
 		variable bool UseJumpGate=FALSE
-		if ${Entity[GroupID == GROUP_WARPGATE](exists)}
+		if ${Entity["GroupID = GROUP_WARPGATE"](exists)}
 		{
 			HoldOffPlayer:Insert[${BookmarkCreator}]
 			HoldOffTimer:Insert[${Math.Calc[${LavishScript.RunningTime} + 600000]}]
@@ -489,14 +489,14 @@ objectdef obj_Salvager inherits obj_State
 		This:QueueState["CheckCargoHold", 500]
 		return TRUE
 	}
-	
+
 	member:bool JumpToCelestial()
 	{
-		UI:Update["Salvager", "Warping to ${Entity[GroupID = GROUP_SUN].Name}", "g"]
+		Logger:Log["Salvager", "Warping to ${Entity[GroupID = GROUP_SUN].Name}", "g"]
 		Move:Warp[${Entity["GroupID = GROUP_SUN"].ID}]
 		return TRUE
 	}
-	
+
 	member:bool DeleteBookmark(int64 BookmarkCreator, int Removed=-1)
 	{
 		echo deletebookmark
@@ -511,11 +511,11 @@ objectdef obj_Salvager inherits obj_State
 			{
 				if ${BookmarkIterator.Value.JumpsTo} == 0
 				{
-					if ${BookmarkIterator.Value.Distance} < 150000 
+					if ${BookmarkIterator.Value.Distance} < 150000
 					{
 						if ${Removed} != ${BookmarkIterator.Value.ID}
 						{
-							UI:Update["obj_Salvage", "Finished Salvaging ${BookmarkIterator.Value.Label} - Deleting", "g"]
+							Logger:Log["obj_Salvage", "Finished Salvaging ${BookmarkIterator.Value.Label} - Deleting", "g"]
 							This:InsertState["DeleteBookmark", 1000, "${BookmarkCreator},${BookmarkIterator.Value.ID}"]
 							Config.SafeBookmarksRef.FindSetting[${BookmarkIterator.Value.ID}]:Remove
 							BookmarkIterator.Value:Remove
@@ -523,7 +523,7 @@ objectdef obj_Salvager inherits obj_State
 						}
 						else
 						{
-							
+
 							UsedBookmarks:Add[${BookmarkIterator.Value.ID}]
 							return TRUE
 						}
@@ -534,8 +534,7 @@ objectdef obj_Salvager inherits obj_State
 		while ${BookmarkIterator:Next(exists)}
 		return TRUE
 	}
-	
-	
+
 	member:bool CheckCargoHold()
 	{
 		if !${Client.Inventory}
@@ -544,45 +543,42 @@ objectdef obj_Salvager inherits obj_State
 		}
 		if ${EVEWindow[Inventory].ChildWindow[${MyShip.ID}, ShipCargo].UsedCapacity} / ${EVEWindow[Inventory].ChildWindow[${MyShip.ID}, ShipCargo].Capacity} > 0.75
 		{
-			UI:Update["obj_Salvage", "Unload trip required", "g"]
+			Logger:Log["obj_Salvage", "Unload trip required", "g"]
 			This:QueueState["Offload"]
 			This:QueueState["Traveling"]
 		}
 		else
 		{
-			UI:Update["obj_Salvage", "Unload trip not required", "g"]
+			Logger:Log["obj_Salvage", "Unload trip not required", "g"]
 		}
 		This:QueueState["RefreshBookmarks", 3000]
 		This:QueueState["CheckBookmarks", 3000]
 		return TRUE
 	}
 
-	
-	
-
 	member:bool RefreshBookmarks(bool refreshdone=FALSE)
 	{
 		if !${refreshdone}
 		{
-			UI:Update["obj_Salvage", "Refreshing bookmarks", "g"]
+			Logger:Log["obj_Salvage", "Refreshing bookmarks", "g"]
 			EVE:RefreshBookmarks
 			This:InsertState["RefreshBookmarks", 2000, "TRUE"]
 			return TRUE
 		}
-		
+
 		This:ReportOldestBookmark
 		return TRUE
 	}
-	
+
 	member:bool Offload()
 	{
-		switch ${Config.DropoffType}
+		switch ${Config.MunitionStorage}
 		{
 			case Personal Hangar
 				Cargo:At[${Config.Dropoff}]:Unload
 				break
 			default
-				Cargo:At[${Config.Dropoff},${Config.DropoffType},${Config.DropoffSubType},${Config.DropoffContainer}]:Unload
+				Cargo:At[${Config.Dropoff},${Config.MunitionStorage},${Config.MunitionStorageFolder},${Config.DropoffContainer}]:Unload
 				break
 		}
 		return TRUE
@@ -590,10 +586,7 @@ objectdef obj_Salvager inherits obj_State
 
 }
 
-
-
-
-objectdef obj_SalvageUI inherits obj_State
+objectdef obj_SalvageUI inherits obj_StateQueue
 {
 
 
@@ -602,12 +595,12 @@ objectdef obj_SalvageUI inherits obj_State
 		This[parent]:Initialize
 		This.NonGameTiedPulse:Set[TRUE]
 	}
-	
+
 	method Start()
 	{
 		This:QueueState["UpdateBookmarkLists", 5]
 	}
-	
+
 	method Stop()
 	{
 		This:Clear
@@ -624,7 +617,7 @@ objectdef obj_SalvageUI inherits obj_State
 		UIElement[DropoffList@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager]:ClearItems
 		if ${BookmarkIterator:First(exists)}
 			do
-			{	
+			{
 				if ${UIElement[Dropoff@DropoffFrame@Tehbot_DedicatedSalvager_Frame@Tehbot_DedicatedSalvager].Text.Length}
 				{
 					if ${BookmarkIterator.Value.Label.Left[${Salvager.Config.Dropoff.Length}].Equal[${Salvager.Config.Dropoff}]}
@@ -637,7 +630,7 @@ objectdef obj_SalvageUI inherits obj_State
 			}
 			while ${BookmarkIterator:Next(exists)}
 
-			
+
 		return FALSE
 	}
 

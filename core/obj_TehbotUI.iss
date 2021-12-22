@@ -31,7 +31,6 @@ objectdef obj_TehbotUI
 	{
 	    if ${LavishScript.RunningTime} >= ${This.NextPulse}
 		{
-
     		This.NextPulse:Set[${Math.Calc[${LavishScript.RunningTime} + ${PulseIntervalInMilliseconds} + ${Math.Rand[500]}]}]
 		}
 
@@ -76,10 +75,8 @@ objectdef obj_TehbotUI
 			UIElement[TehbotTab@Tehbot]:Show
 			This:SetText[Hide]
 		}
-		
 	}
-	
-	
+
 	method Update(string CallingModule, string StatusMessage, string Color="w")
 	{
 		variable string MSG
@@ -94,14 +91,14 @@ objectdef obj_TehbotUI
 			MSG:Concat[${CallingModule}]
 		}
 		MSG:Concat["]"]
-		
+
 		while ${MSG.Length} < 20
 		{
 			MSG:Concat[" "]
-		}	
+		}
 
 		MSG:Concat["\a${Color}${StatusMessage.Escape}"]
-		
+
 		if ${MSG.Length} > 85
 		{
 			MSGRemainder:Set[${MSG.Right[-85].Escape}]
@@ -120,5 +117,5 @@ objectdef obj_TehbotUI
 			}
 		}
 	}
-	
+
 }

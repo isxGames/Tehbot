@@ -6,7 +6,7 @@ objectdef obj_Configuration_Automate
 	{
 		if !${BaseConfig.BaseRef.FindSet[${This.SetName}](exists)}
 		{
-			UI:Update["Automate", " ${This.SetName} settings missing - initializing", "o"]
+			Logger:Log["Automate", " ${This.SetName} settings missing - initializing", "o"]
 			This:Set_Default_Values[]
 		}
 	}
@@ -43,12 +43,12 @@ objectdef obj_Configuration_Automate
 }
 
 
-objectdef obj_Automate inherits obj_State
+objectdef obj_Automate inherits obj_StateQueue
 {
 	variable obj_Configuration_Automate Config
 	variable obj_AutomateUI LocalUI
 	variable bool StartComplete=FALSE
-	
+
 	method Initialize()
 	{
 		This[parent]:Initialize
@@ -58,25 +58,25 @@ objectdef obj_Automate inherits obj_State
 		Event[QuestorIdle]:AttachAtom[This:QuestorIdle]
 		DynamicAddMiniMode("Automate", "Automate")
 	}
-	
+
 	method Start()
 	{
-		UI:Update["Automate", "Starting Automate", "g"]
+		Logger:Log["Automate", "Starting Automate", "g"]
 		StartComplete:Set[FALSE]
 		if !${Me(exists)} && !${MyShip(exists)} && !(${Me.InSpace} || ${Me.InStation})
 		{
 			if ${Config.DelayLogin}
 			{
-				UI:Update["Automate", "Login will proceed at \ag${Config.StartHour}:${Config.StartMinute}\ay plus ~\ag${Config.StartDelta}\ay minutes", "y"]
+				Logger:Log["Automate", "Login will proceed at \ag${Config.StartHour}:${Config.StartMinute}\ay plus ~\ag${Config.StartDelta}\ay minutes", "y"]
 				TehbotLogin.Wait:Set[TRUE]
 			}
 			if ${Config.DelayLoginDelta}
 			{
-				UI:Update["Automate", "Login will proceed in ~\ag${Config.StartDelta}\ay minutes", "y"]
+				Logger:Log["Automate", "Login will proceed in ~\ag${Config.StartDelta}\ay minutes", "y"]
 				TehbotLogin.Wait:Set[TRUE]
 				variable int Delta=${Math.Rand[${Config.StartDelta} + 1]}
 				StartComplete:Set[TRUE]
-				UI:Update["Automate", "Starting in \ao${Delta}\ag minutes", "g"]
+				Logger:Log["Automate", "Starting in \ao${Delta}\ag minutes", "g"]
 				This:QueueState["AllowLogin", ${Math.Calc[${Delta} * 60000]}.Int]
 				This:QueueState["WaitForLogin"]
 				This:QueueState["Launch"]
@@ -94,7 +94,7 @@ objectdef obj_Automate inherits obj_State
 		if ${Config.TimedLogout}
 		{
 			variable int Logout=${Math.Calc[${Config.Hour} * 60 + ${Config.Minute} + ${Math.Rand[${Config.LogoutDelta} + 1]}]}
-			UI:Update["Automate", "Logout in \ag${Config.Hour}\ay hours \ag${Config.Minute}\ay minutes plus ~\ag${Config.LogoutDelta}\ay minutes", "y"]
+			Logger:Log["Automate", "Logout in \ag${Config.Hour}\ay hours \ag${Config.Minute}\ay minutes plus ~\ag${Config.LogoutDelta}\ay minutes", "y"]
 			echo  This:QueueState["Idle", ${Math.Calc[${Logout} * 60000].Int}]
 			This:QueueState["Idle", ${Math.Calc[${Logout} * 60000].Int}]
 			if ${Config.Questor}
@@ -110,20 +110,20 @@ objectdef obj_Automate inherits obj_State
 		}
 		This:QueueState["Automate"]
 	}
-	
+
 	method Stop()
 	{
 		This:Clear
-		UI:Update["Automate", "Stopping Automate", "g"]
+		Logger:Log["Automate", "Stopping Automate", "g"]
 	}
-	
+
 	member:bool Automate()
 	{
 		if ${Time.Hour} == ${Config.Hour} && ${Time.Minute} == ${Config.Minute}
 		{
 			variable int Logout=${Math.Rand[${Config.LogoutDelta} + 1]}
-			UI:Update["Automate", "Logout will proceed in \ao${Logout}\ag minutes", "g"]
-			This:QueueState["Idle", ${Math.Calc[${Logout} * 60000].Int}
+			Logger:Log["Automate", "Logout will proceed in \ao${Logout}\ag minutes", "g"]
+			This:QueueState["Idle", ${Math.Calc[${Logout} * 60000].Int}]
 			if ${Config.Questor}
 			{
 				This:QueueState["LogoutQuestor"]
@@ -140,7 +140,7 @@ objectdef obj_Automate inherits obj_State
 		{
 			variable int Delta=${Math.Rand[${Config.StartDelta} + 1]}
 			StartComplete:Set[TRUE]
-			UI:Update["Automate", "Starting in \ao${Delta}\ag minutes", "g"]
+			Logger:Log["Automate", "Starting in \ao${Delta}\ag minutes", "g"]
 			This:QueueState["AllowLogin", ${Math.Calc[${Delta} * 60000]}]
 			This:QueueState["WaitForLogin"]
 			This:QueueState["AutoStart"]
@@ -150,18 +150,18 @@ objectdef obj_Automate inherits obj_State
 		}
 		return FALSE
 	}
-	
+
 	method QuestorIdle()
 	{
 		echo Automate found Questor is Idle!
 	}
-	
+
 	member:bool AllowLogin()
 	{
 		TehbotLogin.Wait:Set[FALSE]
 		return TRUE
 	}
-	
+
 	member:bool WaitForLogin()
 	{
 		if ${Me(exists)} && ${MyShip(exists)} && (${Me.InSpace} || ${Me.InStation})
@@ -171,13 +171,13 @@ objectdef obj_Automate inherits obj_State
 		}
 		return FALSE
 	}
-	
+
 	member:bool AutoStart()
 	{
 		Tehbot:Resume
 		return TRUE
 	}
-	
+
 	member:bool Launch()
 	{
 		echo Launching ${Config.LaunchCommand}
@@ -187,11 +187,11 @@ objectdef obj_Automate inherits obj_State
 		}
 		return TRUE
 	}
-	
+
 	method DeltaLogoutNow()
 	{
 		variable int Logout=${Math.Rand[${Config.LogoutDelta} + 1]}
-		UI:Update["Automate", "Logout will proceed in \ao${Logout}\ag minutes", "g"]
+		Logger:Log["Automate", "Logout will proceed in \ao${Logout}\ag minutes", "g"]
 		This:Clear
 		This:QueueState["Idle", ${Math.Calc[${Logout} * 60000].Int}
 		This:QueueState["MoveToLogout"]
@@ -201,17 +201,17 @@ objectdef obj_Automate inherits obj_State
 
 	method LogoutNow()
 	{
-		UI:Update["Automate", "Logout time!", "r"]
+		Logger:Log["Automate", "Logout time!", "r"]
 		This:Clear
 		This:QueueState["MoveToLogout"]
 		This:QueueState["Traveling"]
 		This:QueueState["Logout"]
 	}
-	
-	
+
+
 	method GotoLogoutNow()
 	{
-		UI:Update["Automate", "Going Home!", "r"]
+		Logger:Log["Automate", "Going Home!", "r"]
 		This:Clear
 		This:QueueState["MoveToLogout"]
 		This:QueueState["Traveling"]
@@ -222,12 +222,12 @@ objectdef obj_Automate inherits obj_State
 		This:Clear
 		This:QueueState["Logout"]
 	}
-	
+
 	member:bool MoveToLogout()
 	{
 		if ${Busy.IsBusy}
 		{
-			UI:Update["Automate", "Waiting for drones", "y"]
+			Logger:Log["Automate", "Waiting for drones", "y"]
 			return FALSE
 		}
 		variable iterator Behaviors
@@ -247,16 +247,16 @@ objectdef obj_Automate inherits obj_State
 		Move:Bookmark[${Config.Bookmark}]
 		return TRUE
 	}
-	
+
 	member:bool Traveling()
 	{
-		if ${Move.Traveling} || ${Me.ToEntity.Mode} == 3
+		if ${Move.Traveling} || ${Me.ToEntity.Mode} == MOVE_WARPING
 		{
 			return FALSE
 		}
 		return TRUE
 	}
-	
+
 	member:bool Logout()
 	{
 		EVE:Execute[CmdQuitGame]
@@ -270,7 +270,7 @@ objectdef obj_Automate inherits obj_State
 }
 
 
-objectdef obj_AutomateUI inherits obj_State
+objectdef obj_AutomateUI inherits obj_StateQueue
 {
 
 
@@ -279,12 +279,12 @@ objectdef obj_AutomateUI inherits obj_State
 		This[parent]:Initialize
 		This.NonGameTiedPulse:Set[TRUE]
 	}
-	
+
 	method Start()
 	{
 		This:QueueState["UpdateBookmarkLists", 5]
 	}
-	
+
 	method Stop()
 	{
 		This:Clear
@@ -297,12 +297,12 @@ objectdef obj_AutomateUI inherits obj_State
 
 		EVE:GetBookmarks[Bookmarks]
 		Bookmarks:GetIterator[BookmarkIterator]
-		
+
 
 		UIElement[BookmarkList@AutoLogoutFrame@Tehbot_Automate_Frame@Tehbot_Automate]:ClearItems
 		if ${BookmarkIterator:First(exists)}
 			do
-			{	
+			{
 				if ${UIElement[Bookmark@AutoLogoutFrame@Tehbot_Automate_Frame@Tehbot_Automate].Text.Length}
 				{
 					if ${BookmarkIterator.Value.Label.Left[${Automate.Config.Bookmark.Length}].Equal[${Automate.Config.Bookmark}]}
@@ -314,8 +314,8 @@ objectdef obj_AutomateUI inherits obj_State
 				}
 			}
 			while ${BookmarkIterator:Next(exists)}
-			
-			
+
+
 		return FALSE
 	}
 

@@ -195,8 +195,8 @@
       <Setting Name="761" Desc="Asteroid Rogue Drone Swarm" />
       <Setting Name="806" Desc="Deadspace Rogue Drone Swarm" />
     </Set>
-	<Set Name="Sentry">
-	  <Setting Name="383" Desc="Destructible Sentry Gun" />
-	</Set>
+    <Set Name="Sentry">
+      <Setting Name="383" Desc="Destructible Sentry Gun" />
+    </Set>
   </Set>
 </InnerSpaceSettings>

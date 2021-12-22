@@ -1,4 +1,4 @@
-objectdef obj_PriorityTargets
+objectdef obj_PrioritizedTargets
 {
 	variable index:string Scramble
 	variable index:string Neut
@@ -9,7 +9,7 @@ objectdef obj_PriorityTargets
 	{
 		; Web
 		This.Scramble:Insert["Stasis Tower"]
-	
+
 		This.Scramble:Insert["Angel Frigate Vessel"]
 		This.Scramble:Insert["Arch Angel Hijacker"]
 		This.Scramble:Insert["Arch Angel Outlaw"]
@@ -64,7 +64,7 @@ objectdef obj_PriorityTargets
 		This.Scramble:Insert["Strain Infester Drone"]
 		This.Scramble:Insert["Strain Render Drone"]
 		This.Scramble:Insert["Strain Splinter Drone"]
-		
+
 		; Neut
 		This.Neut:Insert["Elder Corpum Sage"]
 		This.Neut:Insert["Elder Corpum Revenant"]
@@ -91,7 +91,7 @@ objectdef obj_PriorityTargets
 		This.Neut:Insert["Dark Corpus Harbinger"]
 		This.Neut:Insert["Blood Archbishop"]
 		This.Neut:Insert["Blood Harbinger"]
-		
+
 		; ECM
 		This.ECM:Insert["Dread Guristas Saboteur"]
 		This.ECM:Insert["Dread Guristas Despoiler"]
@@ -143,7 +143,7 @@ objectdef obj_PriorityTargets
 		This.ECM:Insert["Pith Exterminator"]
 		This.ECM:Insert["Guristas Eliminator"]
 		This.ECM:Insert["Guristas Exterminator"]
-		
+
 		; Other
 		This.Other:Insert["True Sansha's Slavehunter"]
 		This.Other:Insert["True Sansha's Savage"]

@@ -35,18 +35,22 @@ namespace TehbotUpdater
 					"core/obj_Dynamic.iss",
 					"core/obj_Login.iss",
 					"core/obj_Module.iss",
-					"core/obj_ModuleBase.iss",
 					"core/obj_ModuleList.iss",
 					"core/obj_Move.iss",
 					"core/obj_NPCData.iss",
-					"core/obj_PriorityTargets.iss",
+					"core/obj_FactionData.iss",
+					"core/obj_PrioritizedTargets.iss",
+					"core/obj_Utility.iss",
 					"core/obj_Ship.iss",
-					"core/obj_State.iss",
+					"core/obj_StateQueue.iss",
 					"core/obj_TargetList.iss",
 					"core/obj_Tehbot.iss",
 					"core/obj_TehbotUI.iss",
+					"core/obj_Logger.iss",
+					"core/obj_MissionParser.iss",
 					"data/DroneData.xml",
 					"data/NPCData.xml",
+					"data/FactionData.xml",
 					"data/MissionDataExample.iss",
 					"minimode/Automate.iss",
 					"minimode/Automate.xml",
@@ -58,6 +62,8 @@ namespace TehbotUpdater
 					"minimode/DroneControl.xml",
 					"minimode/InstaWarp.iss",
 					"minimode/InstaWarp.xml",
+					"minimode/FightOrFlight.iss",
+					"minimode/FightOrFlight.xml",
 					"minimode/Salvage.iss",
 					"minimode/Salvage.xml",
 					"minimode/UndockWarp.iss",
@@ -79,8 +85,8 @@ namespace TehbotUpdater
 						InnerSpace.Echo("Downloading: " + file);
 						wc.DownloadFile("https://raw.githubusercontent.com/isxGames/Tehbot/main/" + file, InstallPath + file);
 					}
-				}		
-				
+				}
+
 				return;
 			}
 			if (args.Length == 1)
@@ -95,11 +101,11 @@ namespace TehbotUpdater
 						string json = wc.DownloadString("https://api.github.com/repos/isxGames/Tehbot/git/trees/main");
 						json = json.Split(':')[1];
 						InnerSpace.Echo(json.Split('"')[1]);
-					}		
+					}
 				}
 			}
 		}
 	}
-	
+
 }
 

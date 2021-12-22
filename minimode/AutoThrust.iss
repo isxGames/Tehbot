@@ -6,7 +6,7 @@ objectdef obj_Configuration_AutoThrust
 	{
 		if !${BaseConfig.BaseRef.FindSet[${This.SetName}](exists)}
 		{
-			UI:Update["obj_AutoThrust", " ${This.SetName} settings missing - initializing", "o"]
+			Logger:Log["obj_AutoThrust", " ${This.SetName} settings missing - initializing", "o"]
 			This:Set_Default_Values[]
 		}
 	}
@@ -36,99 +36,104 @@ objectdef obj_Configuration_AutoThrust
 	Setting(bool, Velocity, SetVelocity)
 	Setting(int, Velocity_Trigger, SetVelocity_Trigger)
 	Setting(int, Velocity_Threshold, SetVelocity_Threshold)
-
-	
 }
 
-objectdef obj_AutoThrust inherits obj_State
+objectdef obj_AutoThrust inherits obj_StateQueue
 {
 	variable obj_Configuration_AutoThrust Config
-	
+
 	method Initialize()
 	{
 		This[parent]:Initialize
-		PulseFrequency:Set[100]
+		PulseFrequency:Set[200]
 		This.NonGameTiedPulse:Set[TRUE]
 		DynamicAddMiniMode("AutoThrust", "AutoThrust")
 	}
-	
+
 	method Start()
 	{
 		This:QueueState["AutoThrust"]
 	}
-	
+
 	method Stop()
 	{
 		This:Clear
 	}
-	
+
 	variable bool Override = FALSE
 	member:bool AutoThrust()
 	{
 		variable bool TurnOff=TRUE
-	
-		if !${Client.InSpace}
+
+		if !${Client.InSpace} || ${Me.ToEntity.IsCloaked}
 		{
 			return FALSE
 		}
-		if ${Me.ToEntity.IsCloaked}
+
+		if ${Me.ToEntity.Mode} == MOVE_WARPING
 		{
+			Ship.ModuleList_AB_MWD:DeactivateAll
 			return FALSE
 		}
-		
+
 		if !${Config.NeverDeactivate} && !${Override}
 		{
-			if 	${Config.Approach}
+			if ${Me.ToEntity.MaxVelocity} == 0
 			{
-				if 	${Ship.ModuleList_AB_MWD.ActiveCount} &&\
-					${MyShip.CapacitorPct} <= ${Config.Approach_Threshold}
+				Ship.ModuleList_AB_MWD:DeactivateAll
+				return FALSE
+			}
+			if ${Config.Approach}
+			{
+				if ${Ship.ModuleList_AB_MWD.ActiveCount} && \
+					${MyShip.CapacitorPct.Int} <= ${Config.Approach_Threshold}
 				{
-					Ship.ModuleList_AB_MWD:Deactivate
+					Ship.ModuleList_AB_MWD:DeactivateAll
 					return FALSE
 				}
-				if 	${Me.ToEntity.Mode} == 1 &&\
+				if ${Me.ToEntity.Mode} == MOVE_APPROACHING && \
 					${Me.ToEntity.FollowRange} == 50
 				{
 					TurnOff:Set[FALSE]
 				}
 			}
-			if 	${Config.Orbit}
+			if ${Config.Orbit}
 			{
-				if 	${Ship.ModuleList_AB_MWD.ActiveCount} &&\
-					${MyShip.CapacitorPct} <= ${Config.Orbit_Threshold}
+				if ${Ship.ModuleList_AB_MWD.ActiveCount} && \
+					${MyShip.CapacitorPct.Int} <= ${Config.Orbit_Threshold}
 				{
-					Ship.ModuleList_AB_MWD:Deactivate
+					Ship.ModuleList_AB_MWD:DeactivateAll
 					return FALSE
 				}
-				if 	${Me.ToEntity.Mode} == 4
+				if ${Me.ToEntity.Mode} == MOVE_ORBITING
 				{
 					TurnOff:Set[FALSE]
 				}
 			}
-			if 	${Config.KeepAtRange}
+			if ${Config.KeepAtRange}
 			{
-				if 	${Ship.ModuleList_AB_MWD.ActiveCount} &&\
-					${MyShip.CapacitorPct} <= ${Config.KeepAtRange_Threshold}
+				if ${Ship.ModuleList_AB_MWD.ActiveCount} && \
+					${MyShip.CapacitorPct.Int} <= ${Config.KeepAtRange_Threshold}
 				{
-					Ship.ModuleList_AB_MWD:Deactivate
+					Ship.ModuleList_AB_MWD:DeactivateAll
 					return FALSE
 				}
-				if 	${Me.ToEntity.Mode} == 1 &&\
+				if ${Me.ToEntity.Mode} == MOVE_APPROACHING && \
 					${Me.ToEntity.FollowRange} > 50
 				{
 					TurnOff:Set[FALSE]
 				}
 			}
-			if 	${Config.Velocity}
+			if ${Config.Velocity}
 			{
-				if 	${Ship.ModuleList_AB_MWD.ActiveCount} &&\
-					${MyShip.CapacitorPct} <= ${Config.Velocity_Threshold}
+				if ${Ship.ModuleList_AB_MWD.ActiveCount} && \
+					${MyShip.CapacitorPct.Int} <= ${Config.Velocity_Threshold}
 				{
-					Ship.ModuleList_AB_MWD:Deactivate
+					Ship.ModuleList_AB_MWD:DeactivateAll
 					return FALSE
 				}
-				
-				if	${Me.ToEntity.Mode} != 2
+
+				if	${Me.ToEntity.Mode} == MOVE_STOPPED
 				{
 					TurnOff:Set[FALSE]
 				}
@@ -138,57 +143,49 @@ objectdef obj_AutoThrust inherits obj_State
 			{
 				if ${Ship.ModuleList_AB_MWD.ActiveCount}
 				{
-					Ship.ModuleList_AB_MWD:Deactivate
+					Ship.ModuleList_AB_MWD:DeactivateAll
 				}
 				return FALSE
 			}
 		}
-		
-		
-		
-		
-		
-		if 	${Config.Approach} &&\
-			!${Ship.ModuleList_AB_MWD.ActiveCount} &&\
-			${MyShip.CapacitorPct} > ${Config.Approach_Threshold} &&\
-			${Me.ToEntity.Mode} == 1 &&\
+
+		if ${Config.Approach} && \
+			!${Ship.ModuleList_AB_MWD.ActiveCount} && \
+			${MyShip.CapacitorPct.Int} > ${Config.Approach_Threshold} && \
+			${Me.ToEntity.Mode} == MOVE_APPROACHING && \
 			${Me.ToEntity.FollowRange} == 50
 		{
-				Ship.ModuleList_AB_MWD:Activate
-				return FALSE
+			Ship.ModuleList_AB_MWD:ActivateOne
+			return FALSE
 		}
-		if 	${Config.Orbit} &&\
-			!${Ship.ModuleList_AB_MWD.ActiveCount} &&\
-			${MyShip.CapacitorPct} > ${Config.Orbit_Threshold} &&\
-			${Me.ToEntity.Mode} == 4
+		if ${Config.Orbit} && \
+			!${Ship.ModuleList_AB_MWD.ActiveCount} && \
+			${MyShip.CapacitorPct.Int} > ${Config.Orbit_Threshold} && \
+			${Me.ToEntity.Mode} == MOVE_ORBITING
 		{
-				Ship.ModuleList_AB_MWD:Activate
-				return FALSE
+			Ship.ModuleList_AB_MWD:ActivateOne
+			return FALSE
 		}
-		if 	${Config.KeepAtRange} &&\
-			!${Ship.ModuleList_AB_MWD.ActiveCount} &&\
-			${MyShip.CapacitorPct} > ${Config.KeepAtRange_Threshold} &&\
-			${Me.ToEntity.Mode} == 1 &&\
+		if ${Config.KeepAtRange} && \
+			!${Ship.ModuleList_AB_MWD.ActiveCount} && \
+			${MyShip.CapacitorPct.Int} > ${Config.KeepAtRange_Threshold} && \
+			${Me.ToEntity.Mode} == MOVE_APPROACHING && \
 			${Me.ToEntity.FollowRange} > 50
 		{
-				Ship.ModuleList_AB_MWD:Activate
-				return FALSE
+			Ship.ModuleList_AB_MWD:ActivateOne
+			return FALSE
 		}
-		
-		if 	${Config.Velocity} &&\
-			!${Ship.ModuleList_AB_MWD.ActiveCount} &&\
-			${MyShip.CapacitorPct} > ${Config.Velocity_Threshold} &&\
+
+		if ${Config.Velocity} && \
+			!${Ship.ModuleList_AB_MWD.ActiveCount} && \
+			${MyShip.CapacitorPct.Int} > ${Config.Velocity_Threshold} && \
+			${Me.ToEntity.MaxVelocity} > 0 && \
 			${Math.Calc[${Me.ToEntity.Velocity} / ${Me.ToEntity.MaxVelocity}]} >= ${Math.Calc[${Config.Velocity_Trigger} * .01]}
 		{
-				Ship.ModuleList_AB_MWD:Activate
-				return FALSE
+			Ship.ModuleList_AB_MWD:ActivateOne
+			return FALSE
 		}
-		
-		
-		return FALSE
-	}
 
-	method Flee()
-	{
+		return FALSE
 	}
 }

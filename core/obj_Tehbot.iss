@@ -44,8 +44,6 @@ objectdef obj_Tehbot
 		${Config.Common.Tehbot_Mode}:Start
 	}
 
-
-
 	member:string MetersToKM_Str(float64 Meters)
 	{
 		if ${Meters(exists)} && ${Meters} > 0

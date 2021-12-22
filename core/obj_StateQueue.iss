@@ -1,4 +1,4 @@
-objectdef obj_StateQueue
+objectdef obj_State
 {
 	variable string Name
 	variable int Frequency
@@ -10,30 +10,29 @@ objectdef obj_StateQueue
 		Frequency:Set[${arg_Frequency}]
 		Args:Set["${arg_Args.Escape}"]
 	}
-	
+
 	method Set(string arg_Name, int arg_Frequency, string arg_Args)
 	{
 		Name:Set[${arg_Name}]
 		Frequency:Set[${arg_Frequency}]
 		Args:Set["${arg_Args.Escape}"]
 	}
-	
+
 	method SetArgs(string arg_Args)
 	{
 		Args:Set["${arg_Args.Escape}"]
 	}
 }
 
-objectdef obj_State
+objectdef obj_StateQueue inherits obj_Logger
 {
-	variable queue:obj_StateQueue States
-	variable obj_StateQueue CurState
-	
+	variable queue:obj_State States
+	variable obj_State CurState
+
 	variable int NextPulse
 	variable int PulseFrequency = 2000
 	variable bool NonGameTiedPulse = FALSE
 	variable bool IsIdle
-	variable bool IndependentPulse = FALSE
 	variable int RandomDelta = 500
 
 	method Initialize()
@@ -42,65 +41,36 @@ objectdef obj_State
 		IsIdle:Set[TRUE]
 		Event[ISXEVE_onFrame]:AttachAtom[This:Pulse]
 	}
-	
-	method IndependentPulse()
-	{
-		IndependentPulse:Set[TRUE]
-		Event[ISXEVE_onFrame]:DetachAtom[This:Pulse]
-	}
 
 	method Shutdown()
 	{
 		Event[ISXEVE_onFrame]:DetachAtom[This:Pulse]
 	}
-	
 
 	method Pulse()
 	{
 		variable bool ReportIdle=TRUE
-		if !${IndependentPulse}
+		if ${LavishScript.RunningTime} >= ${This.NextPulse}
 		{
-			if ${LavishScript.RunningTime} >= ${This.NextPulse}
+			if (!${Tehbot.Paused} && ${Client.Ready}) || ${This.NonGameTiedPulse}
 			{
-				if (!${ComBot.Paused} && ${Client.Ready}) || ${This.NonGameTiedPulse}
+				if ${This.${CurState.Name}[${CurState.Args}]}
 				{
-					if ${This.${CurState.Name}[${CurState.Args}]}
+					if ${States.Used} == 0
 					{
-						if ${States.Used} == 0
-						{
-							This:QueueState["Idle", 100];
-							IsIdle:Set[TRUE]
-							ReportIdle:Set[FALSE]
-						}
-						CurState:Set[${States.Peek.Name}, ${States.Peek.Frequency}, "${States.Peek.Args.Escape}"]
-						if ${ReportIdle}
-						{
-							UI:Log["${This(type)} State Change: ${States.Peek.Name}", TRUE]
-						}
-						States:Dequeue
+						This:QueueState["Idle", 100];
+						IsIdle:Set[TRUE]
+						ReportIdle:Set[FALSE]
 					}
+					CurState:Set[${States.Peek.Name}, ${States.Peek.Frequency}, "${States.Peek.Args.Escape}"]
+					if ${ReportIdle}
+					{
+						UI:Log["${This(type)} State Change: ${States.Peek.Name}", TRUE]
+					}
+					States:Dequeue
 				}
-				This.NextPulse:Set[${Math.Calc[${LavishScript.RunningTime} + ${CurState.Frequency} + ${Math.Rand[${RandomDelta}]}]}]
 			}
-		}
-		else
-		{
-			if ${States.Used} == 0
-			{
-				This:QueueState["Idle", 100];
-				IsIdle:Set[TRUE]
-				ReportIdle:Set[FALSE]
-			}
-			
-			if ${This.${CurState.Name}[${CurState.Args}]}
-			{
-				CurState:Set[${States.Peek.Name}, ${States.Peek.Frequency}, "${States.Peek.Args.Escape}"]
-				if ${ReportIdle}
-				{
-					UI:Log["${This(type)} State Change: ${States.Peek.Name}", TRUE]
-				}
-				States:Dequeue
-			}
+			This.NextPulse:Set[${Math.Calc[${LavishScript.RunningTime} + ${CurState.Frequency} + ${Math.Rand[${RandomDelta}]}]}]
 		}
 	}
 
@@ -118,10 +88,10 @@ objectdef obj_State
 		States:Queue[${arg_Name},${var_Frequency},"${arg_Args.Escape}"]
 		This.IsIdle:Set[FALSE]
 	}
-	
+
 	method InsertState(string arg_Name, int arg_Frequency=-1, string arg_Args="")
 	{
-		variable queue:obj_StateQueue tempStates
+		variable queue:obj_State tempStates
 		tempStates:Clear
 		variable iterator StateIterator
 		States:GetIterator[StateIterator]
@@ -134,8 +104,7 @@ objectdef obj_State
 			while ${StateIterator:Next(exists)}
 		}
 		States:Clear
-		
-		
+
 		variable int var_Frequency
 		if ${arg_Frequency} == -1
 		{
@@ -146,7 +115,7 @@ objectdef obj_State
 			var_Frequency:Set[${arg_Frequency}]
 		}
 		States:Queue[${arg_Name},${var_Frequency},"${arg_Args.Escape}"]
-		
+
 		tempStates:GetIterator[StateIterator]
 		if ${StateIterator:First(exists)}
 		{
@@ -156,10 +125,10 @@ objectdef obj_State
 			}
 			while ${StateIterator:Next(exists)}
 		}
-		
+
 		This.IsIdle:Set[FALSE]
 	}
-	
+
 	method SetStateArgs(string arg_Args="")
 	{
 		CurState:SetArgs["${arg_Args.Escape}"]
@@ -176,6 +145,5 @@ objectdef obj_State
 	{
 		return TRUE
 	}
-	
-	
+
 }
