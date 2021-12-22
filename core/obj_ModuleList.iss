@@ -272,12 +272,12 @@ objectdef obj_ModuleList
 		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}]._turretTrackingDecayFactor[${targetID}]}
 	}
 
-	member:float FallbackAmmo()
+	member:string FallbackAmmo()
 	{
 		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].FallbackAmmo}
 	}
 
-	member:float FallbackSecondaryAmmo()
+	member:string FallbackSecondaryAmmo()
 	{
 		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].FallbackSecondaryAmmo}
 	}
