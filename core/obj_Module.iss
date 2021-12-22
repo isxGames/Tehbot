@@ -341,14 +341,17 @@ objectdef obj_Module inherits obj_StateQueue
 			_lastDeactivationTimestamp:Set[0]
 
 			defaultAmmo:Set[${This._getShortRangeAmmo}]
-			; This:LogInfo["Loading default ammo ${defaultAmmo}."]
-			if (!${defaultAmmo.NotNULLOrEmpty} || !${defaultAmmo.Equal[${This.Charge.Type}]}) && (${MyShip.Cargo[${defaultAmmo}].Quantity} > ${Ship.ModuleList_Weapon.Count})
+
+			; ${MyShip.Cargo[${defaultAmmo}]} will return the first unstacked item instance of item, for crystals, the quantity is likely to be 1.
+			; so we set the Quantity threshold to 0 instead of ModuleList_Weapon.Count until a (TODO) improved quantity method is implemented.
+			if (!${defaultAmmo.NotNULLOrEmpty} || !${defaultAmmo.Equal[${This.Charge.Type}]}) && (${MyShip.Cargo[${defaultAmmo}].Quantity} > 0)
 			{
 				This:_findAndChangeAmmo[${defaultAmmo}]
 				return
 			}
-			elseif ${defaultAmmo.Equal[${This.Charge.Type}]} && \
-				((${This.CurrentCharges} < ${This.MaxCharges}) && !${This.toItem.GroupID.Equal[GROUP_ENERGYWEAPON]}) && \    /*${This.CurrentCharges} is 0 for energy weapons it seems*/
+			elseif !${This.ToItem.GroupID.Equal[GROUP_ENERGYWEAPON]} && \
+				${defaultAmmo.Equal[${This.Charge.Type}]} && \
+				(${This.CurrentCharges} < ${This.MaxCharges}) && \    /*${This.CurrentCharges} is 0 for energy weapons it seems*/
 				(${MyShip.Cargo[${defaultAmmo}].Quantity} > ${Ship.ModuleList_Weapon.Count})
 			{
 				; This:_findAndChangeAmmo[${defaultAmmo}]
