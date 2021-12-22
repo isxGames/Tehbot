@@ -342,12 +342,14 @@ objectdef obj_Module inherits obj_StateQueue
 
 			defaultAmmo:Set[${This._getShortRangeAmmo}]
 			; This:LogInfo["Loading default ammo ${defaultAmmo}."]
-			if (!${defaultAmmo.NotNULLOrEmpty} || !${defaultAmmo.Equal[${This.Charge.Type}]}) && (${MyShip.Cargo[${defaultAmmo}].Quantity} > 0)
+			if (!${defaultAmmo.NotNULLOrEmpty} || !${defaultAmmo.Equal[${This.Charge.Type}]}) && (${MyShip.Cargo[${defaultAmmo}].Quantity} > ${Ship.ModuleList_Weapon.Count})
 			{
 				This:_findAndChangeAmmo[${defaultAmmo}]
 				return
 			}
-			elseif ${defaultAmmo.Equal[${This.Charge.Type}]} && (${This.CurrentCharges} < ${This.MaxCharges}) && (${MyShip.Cargo[${defaultAmmo}].Quantity} > ${Ship.ModuleList_Weapon.Count})
+			elseif ${defaultAmmo.Equal[${This.Charge.Type}]} && \
+				((${This.CurrentCharges} < ${This.MaxCharges}) && !${This.toItem.GroupID.Equal[GROUP_ENERGYWEAPON]}) && \    /*${This.CurrentCharges} is 0 for energy weapons it seems*/
+				(${MyShip.Cargo[${defaultAmmo}].Quantity} > ${Ship.ModuleList_Weapon.Count})
 			{
 				; This:_findAndChangeAmmo[${defaultAmmo}]
 				This:_reloadAmmo
