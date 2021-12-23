@@ -542,7 +542,7 @@ objectdef obj_Mission inherits obj_StateQueue
 								else
 								{
 									This:LogCritical["Don't know where to deliver, halting."]
-									This:Clear
+									This:Stop
 									return TRUE
 								}
 							}
@@ -1066,7 +1066,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 							This:LogCritical["Can't find the delivery in cargo"]
 							; Don't halt here to help surviving
-							; This:Clear
+							; This:Stop
 							; return TRUE
 						}
 						else
@@ -2181,7 +2181,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		}
 
 		This:LogCritical["Can't find the delivery ${deliverItem}, halting."]
-		This:Clear
+		This:Stop
 		return TRUE
 	}
 
@@ -2476,19 +2476,19 @@ objectdef obj_Mission inherits obj_StateQueue
 		if ${defaultAmmoAmountToLoad} > 0
 		{
 			This:LogCritical["You're out of ${ammo}, halting."]
-			This:Clear
+			This:Stop
 			return TRUE
 		}
 		elseif ${Config.UseSecondaryAmmo} && ${secondaryAmmoAmountToLoad} > 0
 		{
 			This:LogCritical["You're out of ${secondaryAmmo}, halting."]
-			This:Clear
+			This:Stop
 			return TRUE
 		}
 		elseif ${Config.UseDrones} && ${droneAmountToLoad} > 0
 		{
 			This:LogCritical["You're out of drones, halting."]
-			This:Clear
+			This:Stop
 			return TRUE
 		}
 		else
