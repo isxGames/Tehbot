@@ -66,10 +66,10 @@
 						<Border>1</Border>
 						<Range>3</Range>
 						<OnLoad>
-							This:SetValue[${Script[Tehbot].VariableScope.Salvage.Config.LogLevelBar:Dec}]
+							This:SetValue[${Script[Tehbot].VariableScope.Salvage.SalvageConfig.LogLevelBar:Dec}]
 						</OnLoad>
 						<OnChange>
-							Script[Tehbot].VariableScope.Salvage.Config:SetLogLevelBar[${This.Value:Inc}]
+							Script[Tehbot].VariableScope.Salvage.SalvageConfig:SetLogLevelBar[${This.Value:Inc}]
 						</OnChange>
 					</Slider>
 
@@ -78,7 +78,7 @@
 						<Y>65%</Y>
 						<Width>30%</Width>
 						<Height>3%</Height>
-						<Text>Use ${Script[Tehbot].VariableScope.Salvage.Config.LockCount} Locks</Text>
+						<Text>Use ${Script[Tehbot].VariableScope.Salvage.SalvageConfig.LockCount} Locks</Text>
 					</Text>
 					<Slider name='LockCount'>
 						<X>70%</X>
@@ -88,10 +88,10 @@
 						<Border>1</Border>
 						<Range>10</Range>
 						<OnLoad>
-							This:SetValue[${Script[Tehbot].VariableScope.Salvage.Config.LockCount}]
+							This:SetValue[${Script[Tehbot].VariableScope.Salvage.SalvageConfig.LockCount}]
 						</OnLoad>
 						<OnChange>
-							Script[Tehbot].VariableScope.Salvage.Config:SetLockCount[${This.Value}]
+							Script[Tehbot].VariableScope.Salvage.SalvageConfig:SetLockCount[${This.Value}]
 						</OnChange>
 					</Slider>
 				</Children>
