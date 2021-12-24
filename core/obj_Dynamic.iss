@@ -1,58 +1,46 @@
-objectdef obj_Configuration_Dynamic
+objectdef obj_Configuration_Dynamic inherits obj_Base_Configuration
 {
-	variable string SetName = "Dynamic"
-
 	method Initialize()
 	{
-		if !${BaseConfig.BaseRef.FindSet[${This.SetName}](exists)}
-		{
-			Logger:Log["Configuration", " ${This.SetName} settings missing - initializing", "o"]
-			This:Set_Default_Values[]
-		}
-		Logger:Log["Configuration", " ${This.SetName}: Initialized", "-g"]
-	}
-
-	member:settingsetref CommonRef()
-	{
-		return ${BaseConfig.BaseRef.FindSet[${This.SetName}]}
+		This[parent]:Initialize["Dynamic"]
 	}
 
 	method Set_Default_Values()
 	{
 		BaseConfig.BaseRef:AddSet[${This.SetName}]
-		This.CommonRef:AddSet[Enabled MiniModes]
+		This.ConfigRef:AddSet[Enabled MiniModes]
 	}
 
 	method AddMiniMode(string name)
 	{
-		if !${This.CommonRef.FindSet[Enabled MiniModes](exists)}
+		if !${This.ConfigRef.FindSet[Enabled MiniModes](exists)}
 		{
-			This.CommonRef:AddSet[Enabled MiniModes]
+			This.ConfigRef:AddSet[Enabled MiniModes]
 		}
-		This.CommonRef.FindSet[Enabled MiniModes]:AddSetting[${name.Escape}, 1]
+		This.ConfigRef.FindSet[Enabled MiniModes]:AddSetting[${name.Escape}, 1]
 		BaseConfig:Save
 	}
 
 	method RemMiniMode(string name)
 	{
-		if !${This.CommonRef.FindSet[Enabled MiniModes](exists)}
+		if !${This.ConfigRef.FindSet[Enabled MiniModes](exists)}
 		{
-			This.CommonRef:AddSet[Enabled MiniModes]
+			This.ConfigRef:AddSet[Enabled MiniModes]
 		}
-		if ${This.CommonRef.FindSet[Enabled MiniModes].FindSetting[${name.Escape}](exists)}
+		if ${This.ConfigRef.FindSet[Enabled MiniModes].FindSetting[${name.Escape}](exists)}
 		{
-			This.CommonRef.FindSet[Enabled MiniModes].FindSetting[${name.Escape}]:Remove
+			This.ConfigRef.FindSet[Enabled MiniModes].FindSetting[${name.Escape}]:Remove
 		}
 		BaseConfig:Save
 	}
 
 	member:settingsetref EnabledMiniModes()
 	{
-		if !${This.CommonRef.FindSet[Enabled MiniModes](exists)}
+		if !${This.ConfigRef.FindSet[Enabled MiniModes](exists)}
 		{
-			This.CommonRef:AddSet[Enabled MiniModes]
+			This.ConfigRef:AddSet[Enabled MiniModes]
 		}
-		return ${This.CommonRef.FindSet[Enabled MiniModes]}
+		return ${This.ConfigRef.FindSet[Enabled MiniModes]}
 	}
 }
 

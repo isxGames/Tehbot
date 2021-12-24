@@ -7,9 +7,9 @@ objectdef obj_Configuration_Salvage inherits obj_Base_Configuration
 
 	method Set_Default_Values()
 	{
-		This.CommonRef:AddSetting[LockCount, 2]
-		This.CommonRef:AddSetting[Size, "Small"]
-		This.CommonRef:AddSetting[LogLevelBar, LOG_INFO]
+		This.ConfigRef:AddSetting[LockCount, 2]
+		This.ConfigRef:AddSetting[Size, "Small"]
+		This.ConfigRef:AddSetting[LogLevelBar, LOG_INFO]
 	}
 
 	Setting(int, LockCount, SetLockCount)

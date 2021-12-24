@@ -7,12 +7,12 @@ objectdef obj_Configuration_FightOrFlight inherits obj_Base_Configuration
 
 	method Set_Default_Values()
 	{
-		This.CommonRef:AddSetting[FleeShieldThreshold, 0]
-		This.CommonRef:AddSetting[FleeArmorThreshold, 50]
-		This.CommonRef:AddSetting[FleeHullThreshold, 100]
-		This.CommonRef:AddSetting[FleeCapacitorThreshold, 10]
-		This.CommonRef:AddSetting[FleeLocalRedThreshold, 7]
-		This.CommonRef:AddSetting[LogLevelBar, LOG_INFO]
+		This.ConfigRef:AddSetting[FleeShieldThreshold, 0]
+		This.ConfigRef:AddSetting[FleeArmorThreshold, 50]
+		This.ConfigRef:AddSetting[FleeHullThreshold, 100]
+		This.ConfigRef:AddSetting[FleeCapacitorThreshold, 10]
+		This.ConfigRef:AddSetting[FleeLocalRedThreshold, 7]
+		This.ConfigRef:AddSetting[LogLevelBar, LOG_INFO]
 	}
 
 	Setting(int, FleeShieldThreshold, SetFleeShieldThreshold)

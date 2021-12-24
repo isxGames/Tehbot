@@ -1,26 +1,15 @@
-objectdef obj_Configuration_UndockWarp
+objectdef obj_Configuration_UndockWarp inherits obj_Base_Configuration
 {
-	variable string SetName = "UndockWarp"
-
 	method Initialize()
 	{
-		if !${BaseConfig.BaseRef.FindSet[${This.SetName}](exists)}
-		{
-			Logger:Log["Configuration", " ${This.SetName} settings missing - initializing", "o"]
-			This:Set_Default_Values[]
-		}
-	}
-
-	member:settingsetref CommonRef()
-	{
-		return ${BaseConfig.BaseRef.FindSet[${This.SetName}]}
+		This[parent]:Initialize["UndockWarp"]
 	}
 
 	method Set_Default_Values()
 	{
 		BaseConfig.BaseRef:AddSet[${This.SetName}]
 
-		This.CommonRef:AddSetting[substring, "Undock"]
+		This.ConfigRef:AddSetting[substring, "Undock"]
 	}
 
 	Setting(string, substring, Setsubstring)

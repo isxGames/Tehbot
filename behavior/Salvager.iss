@@ -1,27 +1,15 @@
-objectdef obj_Configuration_Salvager
+objectdef obj_Configuration_Salvager inherits obj_Base_Configuration
 {
-	variable string SetName = "Salvager"
-
 	method Initialize()
 	{
-		if !${BaseConfig.BaseRef.FindSet[${This.SetName}](exists)}
-		{
-			Logger:Log["Configuration", " ${This.SetName} settings missing - initializing", "o"]
-			This:Set_Default_Values[]
-		}
-		Logger:Log["Configuration", " ${This.SetName}: Initialized", "-g"]
-	}
-
-	member:settingsetref CommonRef()
-	{
-		return ${BaseConfig.BaseRef.FindSet[${This.SetName}]}
+		This[parent]:Initialize["Salvager"]
 	}
 
 	member:settingsetref SafeBookmarksRef()
 	{
 		if !${BaseConfig.BaseRef.FindSet[${This.SetName}].FindSet[SafeBookmarks](exists)}
 		{
-			This.CommonRef:AddSet[SafeBookmarks]
+			This.ConfigRef:AddSet[SafeBookmarks]
 		}
 		return ${BaseConfig.BaseRef.FindSet[${This.SetName}].FindSet[SafeBookmarks]}
 	}
@@ -29,11 +17,11 @@ objectdef obj_Configuration_Salvager
 	method Set_Default_Values()
 	{
 		BaseConfig.BaseRef:AddSet[${This.SetName}]
-		This.CommonRef:AddSet[SafeBookmarks]
+		This.ConfigRef:AddSet[SafeBookmarks]
 
-		This.CommonRef:AddSetting[MunitionStorage, Personal Hangar]
-		This.CommonRef:AddSetting[Prefix,Salvage:]
-		This.CommonRef:AddSetting[Dropoff,""]
+		This.ConfigRef:AddSetting[MunitionStorage, Personal Hangar]
+		This.ConfigRef:AddSetting[Prefix,Salvage:]
+		This.ConfigRef:AddSetting[Dropoff,""]
 	}
 
 	Setting(string, Prefix, SetPrefix)

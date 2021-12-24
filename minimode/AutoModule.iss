@@ -19,42 +19,30 @@ along with Tehbot.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-objectdef obj_Configuration_AutoModule
+objectdef obj_Configuration_AutoModule inherits obj_Base_Configuration
 {
-	variable string SetName = "AutoModule"
-
 	method Initialize()
 	{
-		if !${BaseConfig.BaseRef.FindSet[${This.SetName}](exists)}
-		{
-			Logger:Log["obj_Configuration", " ${This.SetName} settings missing - initializing", "o"]
-			This:Set_Default_Values[]
-		}
-		Logger:Log["obj_Configuration", " ${This.SetName}: Initialized", "-g"]
-	}
-
-	member:settingsetref CommonRef()
-	{
-		return ${BaseConfig.BaseRef.FindSet[${This.SetName}]}
+		This[parent]:Initialize["AutoModule"]
 	}
 
 	method Set_Default_Values()
 	{
 		BaseConfig.BaseRef:AddSet[${This.SetName}]
-		This.CommonRef:AddSetting[ActiveHardeners, TRUE]
-		This.CommonRef:AddSetting[ActiveShieldBoost, 95]
-		This.CommonRef:AddSetting[ActiveArmorRepair, 95]
-		This.CommonRef:AddSetting[ActiveShieldCap, 35]
-		This.CommonRef:AddSetting[ActiveArmorCap, 35]
-		This.CommonRef:AddSetting[Cloak, TRUE]
-		This.CommonRef:AddSetting[GangLink, TRUE]
-		This.CommonRef:AddSetting[SensorBoosters, TRUE]
-		This.CommonRef:AddSetting[AutoTarget, TRUE]
-		This.CommonRef:AddSetting[TrackingComputers, TRUE]
-		This.CommonRef:AddSetting[ECCM, TRUE]
-		This.CommonRef:AddSetting[DroneControlUnit, TRUE]
-		This.CommonRef:AddSetting[ShieldBoostOverloadThreshold, 50]
-		This.CommonRef:AddSetting[ArmorRepairOverloadThreshold, 50]
+		This.ConfigRef:AddSetting[ActiveHardeners, TRUE]
+		This.ConfigRef:AddSetting[ActiveShieldBoost, 95]
+		This.ConfigRef:AddSetting[ActiveArmorRepair, 95]
+		This.ConfigRef:AddSetting[ActiveShieldCap, 35]
+		This.ConfigRef:AddSetting[ActiveArmorCap, 35]
+		This.ConfigRef:AddSetting[Cloak, TRUE]
+		This.ConfigRef:AddSetting[GangLink, TRUE]
+		This.ConfigRef:AddSetting[SensorBoosters, TRUE]
+		This.ConfigRef:AddSetting[AutoTarget, TRUE]
+		This.ConfigRef:AddSetting[TrackingComputers, TRUE]
+		This.ConfigRef:AddSetting[ECCM, TRUE]
+		This.ConfigRef:AddSetting[DroneControlUnit, TRUE]
+		This.ConfigRef:AddSetting[ShieldBoostOverloadThreshold, 50]
+		This.ConfigRef:AddSetting[ArmorRepairOverloadThreshold, 50]
 	}
 
 	Setting(bool, ActiveHardeners, SetActiveHardeners)

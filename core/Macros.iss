@@ -1,12 +1,12 @@
 #macro Setting(type, name, setname)
 	member:type name()
 	{
-		return ${This.CommonRef.FindSetting[name]}
+		return ${This.ConfigRef.FindSetting[name]}
 	}
 
 	method setname(type value)
 	{
-		This.CommonRef:AddSetting[name,${value}]
+		This.ConfigRef:AddSetting[name,${value}]
 		BaseConfig:Save
 	}
 #endmac

@@ -14,7 +14,7 @@ objectdef obj_Base_Configuration
 		Logger:Log["Configuration", " ${This.SetName}: Initialized", "-g"]
 	}
 
-	member:settingsetref CommonRef()
+	member:settingsetref ConfigRef()
 	{
 		return ${BaseConfig.BaseRef.FindSet[${This.SetName}]}
 	}
@@ -101,9 +101,9 @@ objectdef obj_Configuration_Common inherits obj_Base_Configuration
 	{
 		BaseConfig.BaseRef:AddSet[${This.SetName}]
 
-		This.CommonRef:AddSetting[Tehbot_Mode, "MiniMode"]
-		This.CommonRef:AddSetting[ActiveTab, Status]
-		This.CommonRef:AddSetting[LogLevelBar, LOG_INFO]
+		This.ConfigRef:AddSetting[Tehbot_Mode, "MiniMode"]
+		This.ConfigRef:AddSetting[ActiveTab, Status]
+		This.ConfigRef:AddSetting[LogLevelBar, LOG_INFO]
 	}
 
 	Setting(string, Tehbot_Mode, SetTehbot_Mode)

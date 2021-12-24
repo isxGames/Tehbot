@@ -7,9 +7,9 @@ objectdef obj_Configuration_DroneControl inherits obj_Base_Configuration
 
 	method Set_Default_Values()
 	{
-		This.CommonRef:AddSetting[Sentries, FALSE]
-		This.CommonRef:AddSetting[SentryRange, 30]
-		This.CommonRef:AddSetting[MaxDroneCount, 5]
+		This.ConfigRef:AddSetting[Sentries, FALSE]
+		This.ConfigRef:AddSetting[SentryRange, 30]
+		This.ConfigRef:AddSetting[MaxDroneCount, 5]
 	}
 
 	Setting(bool, Sentries, SetSentries)
