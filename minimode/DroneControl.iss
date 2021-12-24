@@ -347,7 +347,7 @@ objectdef obj_DroneControl inherits obj_StateQueue
 					}
 					else
 					{
-						Logger:Log["Mission", "unknown EW ${jamsIterator.Value}", "r"]
+						This:LogInfo["Mission", "unknown EW ${jamsIterator.Value}", "r"]
 					}
 				}
 				while ${jamsIterator:Next(exists)}

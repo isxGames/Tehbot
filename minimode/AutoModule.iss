@@ -227,7 +227,7 @@ objectdef obj_AutoModule inherits obj_StateQueue
 
 		if ${Ship.ModuleList_DroneControlUnit.ActiveCount} < ${Ship.ModuleList_DroneControlUnit.Count} && ${Config.DroneControlUnit}
 		{
-			Logger:Log["AutoModule", "Activating DroneControlUnit", "g"]
+			This:LogInfo["Activating DroneControlUnit"]
 			Ship.ModuleList_DroneControlUnit:ActivateAll
 		}
 

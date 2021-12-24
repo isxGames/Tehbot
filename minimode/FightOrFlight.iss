@@ -582,7 +582,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 	{
 		if ${Me.InStation}
 		{
-			Logger:Log["Dock called, but we're already instation!"]
+			This:LogInfo["Dock called, but we're already instation!"]
 			return TRUE
 		}
 
@@ -614,7 +614,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		}
 		else
 		{
-			Logger:Log["No stations in this system!", LOG_CRITICAL]
+			This:LogCritical["No stations in this system!"]
 			return TRUE
 		}
 	}
