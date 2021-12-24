@@ -1,4 +1,4 @@
-objectdef obj_Configuration_Salvager inherits obj_Base_Configuration
+objectdef obj_Configuration_Salvager inherits obj_Configuration_Base
 {
 	method Initialize()
 	{
@@ -7,16 +7,16 @@ objectdef obj_Configuration_Salvager inherits obj_Base_Configuration
 
 	member:settingsetref SafeBookmarksRef()
 	{
-		if !${BaseConfig.BaseRef.FindSet[${This.SetName}].FindSet[SafeBookmarks](exists)}
+		if !${ConfigManager.ConfigRoot.FindSet[${This.SetName}].FindSet[SafeBookmarks](exists)}
 		{
 			This.ConfigRef:AddSet[SafeBookmarks]
 		}
-		return ${BaseConfig.BaseRef.FindSet[${This.SetName}].FindSet[SafeBookmarks]}
+		return ${ConfigManager.ConfigRoot.FindSet[${This.SetName}].FindSet[SafeBookmarks]}
 	}
 
 	method Set_Default_Values()
 	{
-		BaseConfig.BaseRef:AddSet[${This.SetName}]
+		ConfigManager.ConfigRoot:AddSet[${This.SetName}]
 		This.ConfigRef:AddSet[SafeBookmarks]
 
 		This.ConfigRef:AddSetting[MunitionStorage, Personal Hangar]
@@ -102,7 +102,7 @@ objectdef obj_Salvager inherits obj_StateQueue
 				}
 			}
 			while ${b:Next(exists)}
-		BaseConfig:Save
+		ConfigManager:Save
 	}
 
 

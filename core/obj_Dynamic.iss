@@ -1,4 +1,4 @@
-objectdef obj_Configuration_Dynamic inherits obj_Base_Configuration
+objectdef obj_Configuration_Dynamic inherits obj_Configuration_Base
 {
 	method Initialize()
 	{
@@ -7,7 +7,7 @@ objectdef obj_Configuration_Dynamic inherits obj_Base_Configuration
 
 	method Set_Default_Values()
 	{
-		BaseConfig.BaseRef:AddSet[${This.SetName}]
+		ConfigManager.ConfigRoot:AddSet[${This.SetName}]
 		This.ConfigRef:AddSet[Enabled MiniModes]
 	}
 
@@ -18,7 +18,7 @@ objectdef obj_Configuration_Dynamic inherits obj_Base_Configuration
 			This.ConfigRef:AddSet[Enabled MiniModes]
 		}
 		This.ConfigRef.FindSet[Enabled MiniModes]:AddSetting[${name.Escape}, 1]
-		BaseConfig:Save
+		ConfigManager:Save
 	}
 
 	method RemMiniMode(string name)
@@ -31,7 +31,7 @@ objectdef obj_Configuration_Dynamic inherits obj_Base_Configuration
 		{
 			This.ConfigRef.FindSet[Enabled MiniModes].FindSetting[${name.Escape}]:Remove
 		}
-		BaseConfig:Save
+		ConfigManager:Save
 	}
 
 	member:settingsetref EnabledMiniModes()

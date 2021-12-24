@@ -1,14 +1,14 @@
-objectdef obj_Base_Configuration
+objectdef obj_Configuration_Base
 {
 	variable string SetName = ""
 
 	method Initialize(string name)
 	{
 		SetName:Set[${name}]
-		if !${BaseConfig.BaseRef.FindSet[${This.SetName}](exists)}
+		if !${ConfigManager.ConfigRoot.FindSet[${This.SetName}](exists)}
 		{
 			Logger:Log["Configuration", " ${This.SetName} settings missing - initializing", "o"]
-			BaseConfig.BaseRef:AddSet[${This.SetName}]
+			ConfigManager.ConfigRoot:AddSet[${This.SetName}]
 			This:Set_Default_Values[]
 		}
 		Logger:Log["Configuration", " ${This.SetName}: Initialized", "-g"]
@@ -16,7 +16,7 @@ objectdef obj_Base_Configuration
 
 	member:settingsetref ConfigRef()
 	{
-		return ${BaseConfig.BaseRef.FindSet[${This.SetName}]}
+		return ${ConfigManager.ConfigRoot.FindSet[${This.SetName}]}
 	}
 
 	method Set_Default_Values()
@@ -26,11 +26,11 @@ objectdef obj_Base_Configuration
 }
 
 
-objectdef obj_Configuration_BaseConfig
+objectdef obj_Configuration_Manager
 {
 	variable string CONFIG_FILE = "${Me.Name} Config.xml"
 	variable filepath CONFIG_PATH = "${Script.CurrentDirectory}/config"
-	variable settingsetref BaseRef
+	variable settingsetref ConfigRoot
 
 	method Initialize()
 	{
@@ -58,11 +58,11 @@ objectdef obj_Configuration_BaseConfig
 
 		if ${EVEExtension.Character.Length}
 		{
-			BaseRef:Set[${LavishSettings[TehbotSettings].FindSet[${EVEExtension.Character}]}]
+			ConfigRoot:Set[${LavishSettings[TehbotSettings].FindSet[${EVEExtension.Character}]}]
 		}
 		else
 		{
-			BaseRef:Set[${LavishSettings[TehbotSettings].FindSet[${Me.Name}]}]
+			ConfigRoot:Set[${LavishSettings[TehbotSettings].FindSet[${Me.Name}]}]
 		}
 
 	}
@@ -85,12 +85,12 @@ objectdef obj_Configuration
 	variable obj_Configuration_Common Common
 	method Save()
 	{
-		BaseConfig:Save
+		ConfigManager:Save
 	}
 }
 
 
-objectdef obj_Configuration_Common inherits obj_Base_Configuration
+objectdef obj_Configuration_Common inherits obj_Configuration_Base
 {
 	method Initialize()
 	{
@@ -99,8 +99,7 @@ objectdef obj_Configuration_Common inherits obj_Base_Configuration
 
 	method Set_Default_Values()
 	{
-		BaseConfig.BaseRef:AddSet[${This.SetName}]
-
+		ConfigManager.ConfigRoot:AddSet[${This.SetName}]
 		This.ConfigRef:AddSetting[Tehbot_Mode, "MiniMode"]
 		This.ConfigRef:AddSetting[ActiveTab, Status]
 		This.ConfigRef:AddSetting[LogLevelBar, LOG_INFO]

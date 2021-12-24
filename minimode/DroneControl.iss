@@ -1,4 +1,4 @@
-objectdef obj_Configuration_DroneControl inherits obj_Base_Configuration
+objectdef obj_Configuration_DroneControl inherits obj_Configuration_Base
 {
 	method Initialize()
 	{

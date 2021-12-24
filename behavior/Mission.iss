@@ -1,4 +1,4 @@
-objectdef obj_Configuration_Agents inherits obj_Base_Configuration
+objectdef obj_Configuration_Agents inherits obj_Configuration_Base
 {
 	method Initialize()
 	{
@@ -12,7 +12,7 @@ objectdef obj_Configuration_Agents inherits obj_Base_Configuration
 
 	method Set_Default_Values()
 	{
-		BaseConfig.BaseRef:AddSet[${This.SetName}]
+		ConfigManager.ConfigRoot:AddSet[${This.SetName}]
 		This.ConfigRef:AddSet["Fykalia Adaferid"]
 		This.AgentRef["Fykalia Adaferid"]:AddSetting[AgentIndex, 9591]
 		This.AgentRef["Fykalia Adaferid"]:AddSetting[AgentID, 3018920]
@@ -91,7 +91,7 @@ objectdef obj_Configuration_Agents inherits obj_Base_Configuration
 	}
 }
 
-objectdef obj_Configuration_Mission inherits obj_Base_Configuration
+objectdef obj_Configuration_Mission inherits obj_Configuration_Base
 {
 	method Initialize()
 	{
@@ -100,7 +100,7 @@ objectdef obj_Configuration_Mission inherits obj_Base_Configuration
 
 	method Set_Default_Values()
 	{
-		BaseConfig.BaseRef:AddSet[${This.SetName}]
+		ConfigManager.ConfigRoot:AddSet[${This.SetName}]
 		This.ConfigRef:AddSetting[AmmoAmountToLoad, 100]
 		This.ConfigRef:AddSetting[DeclineLowSec, TRUE]
 		This.ConfigRef:AddSetting[AggressiveMode, FALSE]

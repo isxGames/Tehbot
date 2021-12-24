@@ -1,4 +1,4 @@
-objectdef obj_Configuration_Automate inherits obj_Base_Configuration
+objectdef obj_Configuration_Automate inherits obj_Configuration_Base
 {
 	method Initialize()
 	{
@@ -7,7 +7,7 @@ objectdef obj_Configuration_Automate inherits obj_Base_Configuration
 
 	method Set_Default_Values()
 	{
-		BaseConfig.BaseRef:AddSet[${This.SetName}]
+		ConfigManager.ConfigRoot:AddSet[${This.SetName}]
 		This.ConfigRef:AddSetting[Hour, 20]
 		This.ConfigRef:AddSetting[Minute, 0]
 		This.ConfigRef:AddSetting[Bookmark, ""]

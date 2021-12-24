@@ -19,7 +19,7 @@ along with Tehbot.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-objectdef obj_Configuration_AutoModule inherits obj_Base_Configuration
+objectdef obj_Configuration_AutoModule inherits obj_Configuration_Base
 {
 	method Initialize()
 	{
@@ -28,7 +28,7 @@ objectdef obj_Configuration_AutoModule inherits obj_Base_Configuration
 
 	method Set_Default_Values()
 	{
-		BaseConfig.BaseRef:AddSet[${This.SetName}]
+		ConfigManager.ConfigRoot:AddSet[${This.SetName}]
 		This.ConfigRef:AddSetting[ActiveHardeners, TRUE]
 		This.ConfigRef:AddSetting[ActiveShieldBoost, 95]
 		This.ConfigRef:AddSetting[ActiveArmorRepair, 95]

@@ -1,4 +1,4 @@
-objectdef obj_Configuration_AutoThrust inherits obj_Base_Configuration
+objectdef obj_Configuration_AutoThrust inherits obj_Configuration_Base
 {
 	method Initialize()
 	{
@@ -7,7 +7,7 @@ objectdef obj_Configuration_AutoThrust inherits obj_Base_Configuration
 
 	method Set_Default_Values()
 	{
-		BaseConfig.BaseRef:AddSet[${This.SetName}]
+		ConfigManager.ConfigRoot:AddSet[${This.SetName}]
 		This.ConfigRef:AddSetting[Approach_Threshold, 50]
 		This.ConfigRef:AddSetting[KeepAtRange_Threshold, 50]
 		This.ConfigRef:AddSetting[Orbit_Threshold, 50]

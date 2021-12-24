@@ -70,7 +70,7 @@ function main(string Character="")
 
 	echo "${Time} Tehbot: Starting"
 
-	declarevariable BaseConfig obj_Configuration_BaseConfig script
+	declarevariable ConfigManager obj_Configuration_Manager script
 	declarevariable Config obj_Configuration script
 	declarevariable UI obj_TehbotUI script
 	declarevariable Logger obj_Logger script
