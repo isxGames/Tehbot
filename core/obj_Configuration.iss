@@ -80,16 +80,6 @@ objectdef obj_Configuration_Manager
 }
 
 
-objectdef obj_Configuration
-{
-	variable obj_Configuration_Common Common
-	method Save()
-	{
-		ConfigManager:Save
-	}
-}
-
-
 objectdef obj_Configuration_Common inherits obj_Configuration_Base
 {
 	method Initialize()
@@ -101,7 +91,7 @@ objectdef obj_Configuration_Common inherits obj_Configuration_Base
 	{
 		ConfigManager.ConfigRoot:AddSet[${This.SetName}]
 		This.ConfigRef:AddSetting[Tehbot_Mode, "MiniMode"]
-		This.ConfigRef:AddSetting[ActiveTab, Status]
+		This.ConfigRef:AddSetting[ActiveTab, "Status"]
 		This.ConfigRef:AddSetting[LogLevelBar, LOG_INFO]
 	}
 

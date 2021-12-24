@@ -102,12 +102,12 @@ objectdef obj_Login inherits obj_StateQueue
 			EVEWindow[ByName,modal]:ClickButtonNo
 			return FALSE
 		}
-		if !${CharSelect.CharExists[${Config.Common.CharID}]}
+		if !${CharSelect.CharExists[${CommonConfig.CharID}]}
 		{
 			return FALSE
 		}
 
-		CharSelect:ClickCharacter[${Config.Common.CharID}]
+		CharSelect:ClickCharacter[${CommonConfig.CharID}]
 		Logger:Log["obj_Login", "Character select command sent", "g"]
 		This:Clear
 		This:QueueState["Idle", 20000]

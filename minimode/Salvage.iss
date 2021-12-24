@@ -21,7 +21,7 @@ objectdef obj_Configuration_Salvage inherits obj_Configuration_Base
 
 objectdef obj_Salvage inherits obj_StateQueue
 {
-	variable obj_Configuration_Salvage SalvageConfig
+	variable obj_Configuration_Salvage Config
 	variable obj_LootCans LootCans
 
 	; Wreck list to apply tractor beams/salvagers on them
@@ -38,7 +38,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 		This.NonGameTiedPulse:Set[TRUE]
 		PulseFrequency:Set[500]
 
-		This.LogLevelBar:Set[${SalvageConfig.LogLevelBar}]
+		This.LogLevelBar:Set[${Config.LogLevelBar}]
 	}
 
 	method Start()
@@ -63,12 +63,12 @@ objectdef obj_Salvage inherits obj_StateQueue
 	method UpdateWreckToLockQuery()
 	{
 		variable string Size
-		if ${SalvageConfig.Size.Equal[Small]}
+		if ${Config.Size.Equal[Small]}
 		{
 			; BUG of ISXEVE: Type is just 'Wreck' for all wrecks. Should contain more info.
 			Size:Set["&& (Type =- \"Small\" || Type =- \"Medium\" || Type =- \"Large\" || Type =- \"Cargo Container\")"]
 		}
-		elseif ${SalvageConfig.Size.Equal[Medium]}
+		elseif ${Config.Size.Equal[Medium]}
 		{
 			Size:Set["&& (Type =- \"Medium\" || Type =- \"Large\" || Type =- \"Cargo Container\")"]
 		}
@@ -106,7 +106,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 		}
 
 		variable string lootYellow = "&& HaveLootRights"
-		if ${SalvageConfig.SalvageYellow}
+		if ${Config.SalvageYellow}
 		{
 			lootYellow:Set[""]
 		}
@@ -120,9 +120,9 @@ objectdef obj_Salvage inherits obj_StateQueue
 			maxLockTarget:Set[${Me.MaxLockedTargets}]
 		}
 
-		if ${SalvageConfig.LockCount} < ${maxLockTarget}
+		if ${Config.LockCount} < ${maxLockTarget}
 		{
-			maxLockTarget:Set[${SalvageConfig.LockCount}]
+			maxLockTarget:Set[${Config.LockCount}]
 		}
 
 		variable float maxLockRange = ${Ship.ModuleList_TractorBeams.Range}
@@ -141,12 +141,12 @@ objectdef obj_Salvage inherits obj_StateQueue
 	method UpdateWreckNoLockQuery()
 	{
 		variable string Size
-		if ${SalvageConfig.Size.Equal[Small]}
+		if ${Config.Size.Equal[Small]}
 		{
 			; BUG of ISXEVE: Type is just 'Wreck' for all wrecks. Should contain more info.
 			Size:Set["&& (Type =- \"Small\" || Type =- \"Medium\" || Type =- \"Large\" || Type =- \"Cargo Container\")"]
 		}
-		elseif ${SalvageConfig.Size.Equal[Medium]}
+		elseif ${Config.Size.Equal[Medium]}
 		{
 			Size:Set["&& (Type =- \"Medium\" || Type =- \"Large\" || Type =- \"Cargo Container\")"]
 		}
@@ -161,7 +161,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 		variable string group = "(Group = \"Wreck\" || (Group = \"Cargo Container\"))"
 		variable string canLoot = "&& !IsWreckEmpty && !IsWreckViewed"
 		variable string lootYellow = "&& HaveLootRights"
-		if ${SalvageConfig.SalvageYellow}
+		if ${Config.SalvageYellow}
 		{
 			lootYellow:Set[""]
 		}
@@ -181,7 +181,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 	member:bool Salvage()
 	{
 		; This minimode should always work in 'minimode only' mode, but stop with Mission and Salvage mode.
-		if !${Config.Common.Tehbot_Mode.Equal["MiniMode"]} && ${${Config.Common.Tehbot_Mode}.IsIdle}
+		if !${CommonConfig.Tehbot_Mode.Equal["MiniMode"]} && ${${CommonConfig.Tehbot_Mode}.IsIdle}
 		{
 			return FALSE
 		}
@@ -203,7 +203,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 				if ${wreckIterator.Value.ID(exists)} && !${wreckIterator.Value.IsMoribund} && ${wreckIterator.Value.IsLockedTarget}
 				{
 					; Abandon targets of no value
-					if (!${SalvageConfig.SalvageYellow} && !${wreckIterator.Value.HaveLootRights}) || \
+					if (!${Config.SalvageYellow} && !${wreckIterator.Value.HaveLootRights}) || \
 						((${wreckIterator.Value.IsWreckEmpty} || ${wreckIterator.Value.IsWreckViewed}) && ${Ship.ModuleList_Salvagers.Count} == 0)
 					{
 						wreckIterator.Value:UnlockTarget

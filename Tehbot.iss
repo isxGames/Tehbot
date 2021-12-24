@@ -71,7 +71,7 @@ function main(string Character="")
 	echo "${Time} Tehbot: Starting"
 
 	declarevariable ConfigManager obj_Configuration_Manager script
-	declarevariable Config obj_Configuration script
+	declarevariable CommonConfig obj_Configuration_Common script
 	declarevariable UI obj_TehbotUI script
 	declarevariable Logger obj_Logger script
 	declarevariable Tehbot obj_Tehbot script
@@ -109,7 +109,7 @@ function main(string Character="")
 		}
 		wait 10
 	}
-	Config.Common:SetCharID[${Me.CharID}]
+	CommonConfig:SetCharID[${Me.CharID}]
 
 	declarevariable Client obj_Client script
 	declarevariable Move obj_Move script
@@ -121,7 +121,7 @@ function main(string Character="")
 
 	Logger:Log["Tehbot", "Module initialization complete", "y"]
 
-	if ${Config.Common.AutoStart}
+	if ${CommonConfig.AutoStart}
 	{
 		Tehbot:Resume
 	}

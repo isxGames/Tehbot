@@ -34,14 +34,14 @@ objectdef obj_Tehbot
 	{
 		UIElement[Run@TitleBar@Tehbot]:SetText[Run]
 		This.Paused:Set[TRUE]
-		${Config.Common.Tehbot_Mode}:Stop
+		${CommonConfig.Tehbot_Mode}:Stop
 	}
 
 	method Resume()
 	{
 		UIElement[Run@TitleBar@Tehbot]:SetText[Stop]
 		This.Paused:Set[FALSE]
-		${Config.Common.Tehbot_Mode}:Start
+		${CommonConfig.Tehbot_Mode}:Start
 	}
 
 	member:string MetersToKM_Str(float64 Meters)

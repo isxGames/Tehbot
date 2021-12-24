@@ -117,7 +117,7 @@ objectdef obj_Dynamic
 			while ${BehaviorIterator:Next(exists)}
 		}
 
-		UIElement[Tehbot_Mode@Status@TehbotTab@Tehbot].ItemByValue[${Script[Tehbot].VariableScope.Config.Common.Tehbot_Mode}]:Select
+		UIElement[Tehbot_Mode@Status@TehbotTab@Tehbot].ItemByValue[${Script[Tehbot].VariableScope.CommonConfig.Tehbot_Mode}]:Select
 
 	}
 

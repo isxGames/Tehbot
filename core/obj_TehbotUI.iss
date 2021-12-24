@@ -11,7 +11,7 @@ objectdef obj_TehbotUI
 	method Initialize()
 	{
 		ui -load Tehbot.xml
-		This:Update["Tehbot", "Tehbot  Copyright © 2021  Tehtsuo", "o"]
+		This:Update["Tehbot", "Tehbot  Copyright ï¿½ 2021  Tehtsuo", "o"]
 		This:Update["Tehbot", "This program comes with ABSOLUTELY NO WARRANTY", "o"]
 		This:Update["Tehbot", "This is free software and you are welcome to redistribute it", "o"]
 		This:Update["Tehbot", "under certain conditions.  See LICENSE file for details", "o"]
@@ -50,7 +50,7 @@ objectdef obj_TehbotUI
 				}
 			}
 			EVE:CloseAllMessageBoxes
-			if ${Config.Common.CloseChatInvites}
+			if ${CommonConfig.CloseChatInvites}
 			{
 				EVE:CloseAllChatInvites
 			}
@@ -64,8 +64,8 @@ objectdef obj_TehbotUI
 	{
 		ui -reload Tehbot.xml
 		This.Reloaded:Set[TRUE]
-		UIElement[TehbotTab@Tehbot].Tab[${Config.Common.ActiveTab}]:Select
-		if ${Config.Common.Hidden}
+		UIElement[TehbotTab@Tehbot].Tab[${CommonConfig.ActiveTab}]:Select
+		if ${CommonConfig.Hidden}
 		{
 			UIElement[TehbotTab@Tehbot]:Hide
 			This:SetText[Show]

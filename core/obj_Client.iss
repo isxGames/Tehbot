@@ -117,27 +117,27 @@ objectdef obj_Client
 
 	method ManageGraphics()
 	{
-		if ${Config.Common.Disable3D} && ${EVE.Is3DDisplayOn}
+		if ${CommonConfig.Disable3D} && ${EVE.Is3DDisplayOn}
 		{
 			EVE:Toggle3DDisplay
 		}
-		elseif !${Config.Common.Disable3D} && !${EVE.Is3DDisplayOn}
+		elseif !${CommonConfig.Disable3D} && !${EVE.Is3DDisplayOn}
 		{
 			EVE:Toggle3DDisplay
 		}
-		if ${Config.Common.DisableUI} && ${EVE.IsUIDisplayOn}
+		if ${CommonConfig.DisableUI} && ${EVE.IsUIDisplayOn}
 		{
 			EVE:ToggleUIDisplay
 		}
-		elseif !${Config.Common.DisableUI} && !${EVE.IsUIDisplayOn}
+		elseif !${CommonConfig.DisableUI} && !${EVE.IsUIDisplayOn}
 		{
 			EVE:ToggleUIDisplay
 		}
-		if ${Config.Common.DisableTexture} && ${EVE.IsTextureLoadingOn}
+		if ${CommonConfig.DisableTexture} && ${EVE.IsTextureLoadingOn}
 		{
 			EVE:ToggleTextureLoading
 		}
-		elseif !${Config.Common.DisableTexture} && !${EVE.IsTextureLoadingOn}
+		elseif !${CommonConfig.DisableTexture} && !${EVE.IsTextureLoadingOn}
 		{
 			EVE:ToggleTextureLoading
 		}
