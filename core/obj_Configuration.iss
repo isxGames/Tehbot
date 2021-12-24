@@ -69,7 +69,7 @@ objectdef obj_Configuration_BaseConfig
 
 	method Shutdown()
 	{
-		This:Save[]
+		This:Save
 		LavishSettings[TehbotSettings]:Clear
 	}
 
@@ -80,43 +80,29 @@ objectdef obj_Configuration_BaseConfig
 }
 
 
-
-
 objectdef obj_Configuration
 {
 	variable obj_Configuration_Common Common
 	method Save()
 	{
-		BaseConfig:Save[]
+		BaseConfig:Save
 	}
 }
 
 
-objectdef obj_Configuration_Common
+objectdef obj_Configuration_Common inherits obj_Base_Configuration
 {
-	variable string SetName = "Common"
-
 	method Initialize()
 	{
-		if !${BaseConfig.BaseRef.FindSet[${This.SetName}](exists)}
-		{
-			Logger:Log["Configuration", " ${This.SetName} settings missing - initializing", "o"]
-			This:Set_Default_Values[]
-		}
-		Logger:Log["Configuration", " ${This.SetName}: Initialized", "-g"]
-	}
-
-	member:settingsetref CommonRef()
-	{
-		return ${BaseConfig.BaseRef.FindSet[${This.SetName}]}
+		This[parent]:Initialize["Common"]
 	}
 
 	method Set_Default_Values()
 	{
 		BaseConfig.BaseRef:AddSet[${This.SetName}]
 
-		This.CommonRef:AddSetting[Tehbot_Mode,"MiniMode"]
-		This.CommonRef:AddSetting[ActiveTab,Status]
+		This.CommonRef:AddSetting[Tehbot_Mode, "MiniMode"]
+		This.CommonRef:AddSetting[ActiveTab, Status]
 		This.CommonRef:AddSetting[LogLevelBar, LOG_INFO]
 	}
 

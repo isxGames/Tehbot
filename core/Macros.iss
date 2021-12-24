@@ -7,7 +7,7 @@
 	method setname(type value)
 	{
 		This.CommonRef:AddSetting[name,${value}]
-		Config:Save
+		BaseConfig:Save
 	}
 #endmac
 

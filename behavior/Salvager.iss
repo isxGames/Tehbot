@@ -114,7 +114,7 @@ objectdef obj_Salvager inherits obj_StateQueue
 				}
 			}
 			while ${b:Next(exists)}
-		Config:Save
+		BaseConfig:Save
 	}
 
 

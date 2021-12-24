@@ -30,7 +30,7 @@ objectdef obj_Configuration_Dynamic
 			This.CommonRef:AddSet[Enabled MiniModes]
 		}
 		This.CommonRef.FindSet[Enabled MiniModes]:AddSetting[${name.Escape}, 1]
-		Config:Save
+		BaseConfig:Save
 	}
 
 	method RemMiniMode(string name)
@@ -43,7 +43,7 @@ objectdef obj_Configuration_Dynamic
 		{
 			This.CommonRef.FindSet[Enabled MiniModes].FindSetting[${name.Escape}]:Remove
 		}
-		Config:Save
+		BaseConfig:Save
 	}
 
 	member:settingsetref EnabledMiniModes()
