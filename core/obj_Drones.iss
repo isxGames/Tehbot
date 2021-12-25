@@ -180,7 +180,7 @@ objectdef obj_Drones inherits obj_StateQueue
 
 	method RecallAll()
 	{
-		Logger:Log["obj_Drone", "Recalling Drones", "g"]
+		This:LogInfo["Recalling Drones"]
 		EVE:Execute[CmdDronesReturnToBay]
 		DronesOut:Set[FALSE]
 	}

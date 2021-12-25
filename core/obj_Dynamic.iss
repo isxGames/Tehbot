@@ -1,58 +1,46 @@
-objectdef obj_Configuration_Dynamic
+objectdef obj_Configuration_Dynamic inherits obj_Configuration_Base
 {
-	variable string SetName = "Dynamic"
-
 	method Initialize()
 	{
-		if !${BaseConfig.BaseRef.FindSet[${This.SetName}](exists)}
-		{
-			Logger:Log["Configuration", " ${This.SetName} settings missing - initializing", "o"]
-			This:Set_Default_Values[]
-		}
-		Logger:Log["Configuration", " ${This.SetName}: Initialized", "-g"]
-	}
-
-	member:settingsetref CommonRef()
-	{
-		return ${BaseConfig.BaseRef.FindSet[${This.SetName}]}
+		This[parent]:Initialize["Dynamic"]
 	}
 
 	method Set_Default_Values()
 	{
-		BaseConfig.BaseRef:AddSet[${This.SetName}]
-		This.CommonRef:AddSet[Enabled MiniModes]
+		ConfigManager.ConfigRoot:AddSet[${This.SetName}]
+		This.ConfigRef:AddSet[Enabled MiniModes]
 	}
 
 	method AddMiniMode(string name)
 	{
-		if !${This.CommonRef.FindSet[Enabled MiniModes](exists)}
+		if !${This.ConfigRef.FindSet[Enabled MiniModes](exists)}
 		{
-			This.CommonRef:AddSet[Enabled MiniModes]
+			This.ConfigRef:AddSet[Enabled MiniModes]
 		}
-		This.CommonRef.FindSet[Enabled MiniModes]:AddSetting[${name.Escape}, 1]
-		Config:Save
+		This.ConfigRef.FindSet[Enabled MiniModes]:AddSetting[${name.Escape}, 1]
+		ConfigManager:Save
 	}
 
 	method RemMiniMode(string name)
 	{
-		if !${This.CommonRef.FindSet[Enabled MiniModes](exists)}
+		if !${This.ConfigRef.FindSet[Enabled MiniModes](exists)}
 		{
-			This.CommonRef:AddSet[Enabled MiniModes]
+			This.ConfigRef:AddSet[Enabled MiniModes]
 		}
-		if ${This.CommonRef.FindSet[Enabled MiniModes].FindSetting[${name.Escape}](exists)}
+		if ${This.ConfigRef.FindSet[Enabled MiniModes].FindSetting[${name.Escape}](exists)}
 		{
-			This.CommonRef.FindSet[Enabled MiniModes].FindSetting[${name.Escape}]:Remove
+			This.ConfigRef.FindSet[Enabled MiniModes].FindSetting[${name.Escape}]:Remove
 		}
-		Config:Save
+		ConfigManager:Save
 	}
 
 	member:settingsetref EnabledMiniModes()
 	{
-		if !${This.CommonRef.FindSet[Enabled MiniModes](exists)}
+		if !${This.ConfigRef.FindSet[Enabled MiniModes](exists)}
 		{
-			This.CommonRef:AddSet[Enabled MiniModes]
+			This.ConfigRef:AddSet[Enabled MiniModes]
 		}
-		return ${This.CommonRef.FindSet[Enabled MiniModes]}
+		return ${This.ConfigRef.FindSet[Enabled MiniModes]}
 	}
 }
 
@@ -129,7 +117,7 @@ objectdef obj_Dynamic
 			while ${BehaviorIterator:Next(exists)}
 		}
 
-		UIElement[Tehbot_Mode@Status@TehbotTab@Tehbot].ItemByValue[${Script[Tehbot].VariableScope.Config.Common.Tehbot_Mode}]:Select
+		UIElement[Tehbot_Mode@Status@TehbotTab@Tehbot].ItemByValue[${Script[Tehbot].VariableScope.CommonConfig.Tehbot_Mode}]:Select
 
 	}
 

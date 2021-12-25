@@ -44,7 +44,7 @@ objectdef obj_Module inherits obj_StateQueue
 	 	RandomDelta:Set[100]
 		LogModuleName:Set["${This.Name}"]
 
-		This.LogLevelBar:Set[${Config.Common.LogLevelBar}]
+		This.LogLevelBar:Set[${CommonConfig.LogLevelBar}]
 
 		This:LogInfo["Initialize module ${ModuleID} ${This.Name}"]
 		This:LogDebug["Test GetFallthroughObject pass: ${This._testGetFallthroughObject}"]

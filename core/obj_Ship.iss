@@ -39,7 +39,7 @@ objectdef obj_Ship inherits obj_StateQueue
 	method Initialize(int64 ID)
 	{
 		This[parent]:Initialize
-		This.LogLevelBar:Set[${Config.Common.LogLevelBar}]
+		This.LogLevelBar:Set[${CommonConfig.LogLevelBar}]
 
 		This.NonGameTiedPulse:Set[TRUE]
 		This:AddModuleList[ArmorProjectors, "ToItem.GroupID = GROUP_ARMOR_PROJECTOR"]

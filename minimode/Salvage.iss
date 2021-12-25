@@ -1,4 +1,4 @@
-objectdef obj_Configuration_Salvage inherits obj_Base_Configuration
+objectdef obj_Configuration_Salvage inherits obj_Configuration_Base
 {
 	method Initialize()
 	{
@@ -7,9 +7,9 @@ objectdef obj_Configuration_Salvage inherits obj_Base_Configuration
 
 	method Set_Default_Values()
 	{
-		This.CommonRef:AddSetting[LockCount, 2]
-		This.CommonRef:AddSetting[Size, "Small"]
-		This.CommonRef:AddSetting[LogLevelBar, LOG_INFO]
+		This.ConfigRef:AddSetting[LockCount, 2]
+		This.ConfigRef:AddSetting[Size, "Small"]
+		This.ConfigRef:AddSetting[LogLevelBar, LOG_INFO]
 	}
 
 	Setting(int, LockCount, SetLockCount)
@@ -35,6 +35,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 	{
 		This[parent]:Initialize
 		DynamicAddMiniMode("Salvage", "Salvage")
+		This.NonGameTiedPulse:Set[TRUE]
 		PulseFrequency:Set[500]
 
 		This.LogLevelBar:Set[${Config.LogLevelBar}]
@@ -179,6 +180,12 @@ objectdef obj_Salvage inherits obj_StateQueue
 
 	member:bool Salvage()
 	{
+		; This minimode should always work in 'minimode only' mode, but stop with Mission and Salvage mode.
+		if !${CommonConfig.Tehbot_Mode.Equal["MiniMode"]} && ${${CommonConfig.Tehbot_Mode}.IsIdle}
+		{
+			return FALSE
+		}
+
 		if !${Client.InSpace} || ${Me.ToEntity.Mode} == MOVE_WARPING || ${MyShip.CapacitorPct.Int} < 35 || ${FightOrFlight.IsEngagingGankers}
 		{
 			return FALSE

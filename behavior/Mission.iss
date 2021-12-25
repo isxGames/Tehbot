@@ -1,31 +1,19 @@
-objectdef obj_Configuration_Agents
+objectdef obj_Configuration_Agents inherits obj_Configuration_Base
 {
-	variable string SetName = "Agents"
-
 	method Initialize()
 	{
-		if !${BaseConfig.BaseRef.FindSet[${This.SetName}](exists)}
-		{
-			Logger:Log["Warning: ${This.SetName} settings missing - initializing"]
-			This:Set_Default_Values
-		}
-		Logger:Log["Configuration", " ${This.SetName}: Initialized", "-g"]
-	}
-
-	member:settingsetref AgentsRef()
-	{
-		return ${BaseConfig.BaseRef.FindSet[${This.SetName}]}
+		This[parent]:Initialize["Agents"]
 	}
 
 	member:settingsetref AgentRef(string name)
 	{
-		return ${This.AgentsRef.FindSet[${name}]}
+		return ${This.ConfigRef.FindSet[${name}]}
 	}
 
 	method Set_Default_Values()
 	{
-		BaseConfig.BaseRef:AddSet[${This.SetName}]
-		This.AgentsRef:AddSet["Fykalia Adaferid"]
+		ConfigManager.ConfigRoot:AddSet[${This.SetName}]
+		This.ConfigRef:AddSet["Fykalia Adaferid"]
 		This.AgentRef["Fykalia Adaferid"]:AddSetting[AgentIndex, 9591]
 		This.AgentRef["Fykalia Adaferid"]:AddSetting[AgentID, 3018920]
 		This.AgentRef["Fykalia Adaferid"]:AddSetting[NextDeclineableTime, ${Utility.EVETimestamp}]
@@ -40,9 +28,9 @@ objectdef obj_Configuration_Agents
 	method SetAgentIndex(string name, int value)
 	{
 		;Logger:Log["obj_Configuration_Agents: SetAgentIndex ${name} ${value}"]
-		if !${This.AgentsRef.FindSet[${name}](exists)}
+		if !${This.ConfigRef.FindSet[${name}](exists)}
 		{
-			This.AgentsRef:AddSet[${name}]
+			This.ConfigRef:AddSet[${name}]
 		}
 
 		This.AgentRef[${name}]:AddSetting[AgentIndex, ${value}]
@@ -57,9 +45,9 @@ objectdef obj_Configuration_Agents
 	method SetAgentID(string name, int value)
 	{
 		;Logger:Log["obj_Configuration_Agents: SetAgentID ${name} ${value}"]
-		if !${This.AgentsRef.FindSet[${name}](exists)}
+		if !${This.ConfigRef.FindSet[${name}](exists)}
 		{
-			This.AgentsRef:AddSet[${name}]
+			This.ConfigRef:AddSet[${name}]
 		}
 
 		This.AgentRef[${name}]:AddSetting[AgentID, ${value}]
@@ -94,45 +82,33 @@ objectdef obj_Configuration_Agents
 	method SetNextDeclineableTime(string name, int value)
 	{
 		; Logger:Log["obj_Configuration_Agents", "SetNextDeclineableTime ${name} ${value}", "", LOG_DEBUG]
-		if !${This.AgentsRef.FindSet[${name}](exists)}
+		if !${This.ConfigRef.FindSet[${name}](exists)}
 		{
-			This.AgentsRef:AddSet[${name}]
+			This.ConfigRef:AddSet[${name}]
 		}
 
 		This.AgentRef[${name}]:AddSetting[NextDeclineableTime, ${value}]
 	}
 }
 
-objectdef obj_Configuration_Mission
+objectdef obj_Configuration_Mission inherits obj_Configuration_Base
 {
-	variable string SetName = "Mission"
-
 	method Initialize()
 	{
-		if !${BaseConfig.BaseRef.FindSet[${This.SetName}](exists)}
-		{
-			Logger:Log["Configuration", " ${This.SetName} settings missing - initializing", "o"]
-			This:Set_Default_Values
-		}
-		Logger:Log["Configuration", " ${This.SetName}: Initialized", "-g"]
-	}
-
-	member:settingsetref CommonRef()
-	{
-		return ${BaseConfig.BaseRef.FindSet[${This.SetName}]}
+		This[parent]:Initialize["Mission"]
 	}
 
 	method Set_Default_Values()
 	{
-		BaseConfig.BaseRef:AddSet[${This.SetName}]
-		This.CommonRef:AddSetting[AmmoAmountToLoad, 100]
-		This.CommonRef:AddSetting[DeclineLowSec, TRUE]
-		This.CommonRef:AddSetting[AggressiveMode, FALSE]
-		This.CommonRef:AddSetting[IgnoreNPCSentries, FALSE]
-		This.CommonRef:AddSetting[OverloadThrust, FALSE]
-		This.CommonRef:AddSetting[DeactivateSiegeModuleEarly, FALSE]
-		This.CommonRef:AddSetting[SalvagePrefix, "Salvage: "]
-		This.CommonRef:AddSetting[LogLevelBar, LOG_INFO]
+		ConfigManager.ConfigRoot:AddSet[${This.SetName}]
+		This.ConfigRef:AddSetting[AmmoAmountToLoad, 100]
+		This.ConfigRef:AddSetting[DeclineLowSec, TRUE]
+		This.ConfigRef:AddSetting[AggressiveMode, FALSE]
+		This.ConfigRef:AddSetting[IgnoreNPCSentries, FALSE]
+		This.ConfigRef:AddSetting[OverloadThrust, FALSE]
+		This.ConfigRef:AddSetting[DeactivateSiegeModuleEarly, FALSE]
+		This.ConfigRef:AddSetting[SalvagePrefix, "Salvage: "]
+		This.ConfigRef:AddSetting[LogLevelBar, LOG_INFO]
 	}
 
 	Setting(bool, Halt, SetHalt)
@@ -542,7 +518,7 @@ objectdef obj_Mission inherits obj_StateQueue
 								else
 								{
 									This:LogCritical["Don't know where to deliver, halting."]
-									This:Clear
+									This:Stop
 									return TRUE
 								}
 							}
@@ -1066,7 +1042,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 							This:LogCritical["Can't find the delivery in cargo"]
 							; Don't halt here to help surviving
-							; This:Clear
+							; This:Stop
 							; return TRUE
 						}
 						else
@@ -2181,7 +2157,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		}
 
 		This:LogCritical["Can't find the delivery ${deliverItem}, halting."]
-		This:Clear
+		This:Stop
 		return TRUE
 	}
 
@@ -2476,19 +2452,19 @@ objectdef obj_Mission inherits obj_StateQueue
 		if ${defaultAmmoAmountToLoad} > 0
 		{
 			This:LogCritical["You're out of ${ammo}, halting."]
-			This:Clear
+			This:Stop
 			return TRUE
 		}
 		elseif ${Config.UseSecondaryAmmo} && ${secondaryAmmoAmountToLoad} > 0
 		{
 			This:LogCritical["You're out of ${secondaryAmmo}, halting."]
-			This:Clear
+			This:Stop
 			return TRUE
 		}
 		elseif ${Config.UseDrones} && ${droneAmountToLoad} > 0
 		{
 			This:LogCritical["You're out of drones, halting."]
-			This:Clear
+			This:Stop
 			return TRUE
 		}
 		else

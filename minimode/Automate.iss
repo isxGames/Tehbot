@@ -1,28 +1,17 @@
-objectdef obj_Configuration_Automate
+objectdef obj_Configuration_Automate inherits obj_Configuration_Base
 {
-	variable string SetName = "Automate"
-
 	method Initialize()
 	{
-		if !${BaseConfig.BaseRef.FindSet[${This.SetName}](exists)}
-		{
-			Logger:Log["Automate", " ${This.SetName} settings missing - initializing", "o"]
-			This:Set_Default_Values[]
-		}
-	}
-
-	member:settingsetref CommonRef()
-	{
-		return ${BaseConfig.BaseRef.FindSet[${This.SetName}]}
+		This[parent]:Initialize["Automate"]
 	}
 
 	method Set_Default_Values()
 	{
-		BaseConfig.BaseRef:AddSet[${This.SetName}]
-		This.CommonRef:AddSetting[Hour, 20]
-		This.CommonRef:AddSetting[Minute, 0]
-		This.CommonRef:AddSetting[Bookmark, ""]
-		This.CommonRef:AddSetting[LaunchCommand, ""]
+		ConfigManager.ConfigRoot:AddSet[${This.SetName}]
+		This.ConfigRef:AddSetting[Hour, 20]
+		This.ConfigRef:AddSetting[Minute, 0]
+		This.ConfigRef:AddSetting[Bookmark, ""]
+		This.ConfigRef:AddSetting[LaunchCommand, ""]
 	}
 
 	Setting(int, Hour, SetHour)

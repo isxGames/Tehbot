@@ -1,29 +1,18 @@
-objectdef obj_Configuration_AutoThrust
+objectdef obj_Configuration_AutoThrust inherits obj_Configuration_Base
 {
-	variable string SetName = "AutoThrust"
-
 	method Initialize()
 	{
-		if !${BaseConfig.BaseRef.FindSet[${This.SetName}](exists)}
-		{
-			Logger:Log["obj_AutoThrust", " ${This.SetName} settings missing - initializing", "o"]
-			This:Set_Default_Values[]
-		}
-	}
-
-	member:settingsetref CommonRef()
-	{
-		return ${BaseConfig.BaseRef.FindSet[${This.SetName}]}
+		This[parent]:Initialize["AutoThrust"]
 	}
 
 	method Set_Default_Values()
 	{
-		BaseConfig.BaseRef:AddSet[${This.SetName}]
-		This.CommonRef:AddSetting[Approach_Threshold, 50]
-		This.CommonRef:AddSetting[KeepAtRange_Threshold, 50]
-		This.CommonRef:AddSetting[Orbit_Threshold, 50]
-		This.CommonRef:AddSetting[Velocity_Trigger, 50]
-		This.CommonRef:AddSetting[Velocity_Threshold, 50]
+		ConfigManager.ConfigRoot:AddSet[${This.SetName}]
+		This.ConfigRef:AddSetting[Approach_Threshold, 50]
+		This.ConfigRef:AddSetting[KeepAtRange_Threshold, 50]
+		This.ConfigRef:AddSetting[Orbit_Threshold, 50]
+		This.ConfigRef:AddSetting[Velocity_Trigger, 50]
+		This.ConfigRef:AddSetting[Velocity_Threshold, 50]
 	}
 
 	Setting(bool, NeverDeactivate, SetNeverDeactivate)

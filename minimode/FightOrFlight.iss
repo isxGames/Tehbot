@@ -1,4 +1,4 @@
-objectdef obj_Configuration_FightOrFlight inherits obj_Base_Configuration
+objectdef obj_Configuration_FightOrFlight inherits obj_Configuration_Base
 {
 	method Initialize()
 	{
@@ -7,12 +7,12 @@ objectdef obj_Configuration_FightOrFlight inherits obj_Base_Configuration
 
 	method Set_Default_Values()
 	{
-		This.CommonRef:AddSetting[FleeShieldThreshold, 0]
-		This.CommonRef:AddSetting[FleeArmorThreshold, 50]
-		This.CommonRef:AddSetting[FleeHullThreshold, 100]
-		This.CommonRef:AddSetting[FleeCapacitorThreshold, 10]
-		This.CommonRef:AddSetting[FleeLocalRedThreshold, 7]
-		This.CommonRef:AddSetting[LogLevelBar, LOG_INFO]
+		This.ConfigRef:AddSetting[FleeShieldThreshold, 0]
+		This.ConfigRef:AddSetting[FleeArmorThreshold, 50]
+		This.ConfigRef:AddSetting[FleeHullThreshold, 100]
+		This.ConfigRef:AddSetting[FleeCapacitorThreshold, 10]
+		This.ConfigRef:AddSetting[FleeLocalRedThreshold, 7]
+		This.ConfigRef:AddSetting[LogLevelBar, LOG_INFO]
 	}
 
 	Setting(int, FleeShieldThreshold, SetFleeShieldThreshold)
@@ -26,7 +26,7 @@ objectdef obj_Configuration_FightOrFlight inherits obj_Base_Configuration
 objectdef obj_FightOrFlight inherits obj_StateQueue
 {
 	; Avoid name conflict with common config.
-	variable obj_Configuration_FightOrFlight FoFConfig
+	variable obj_Configuration_FightOrFlight Config
 
 	variable bool IsWarpScrambled = FALSE
 	variable bool IsOtherPilotsDetected = FALSE
@@ -52,7 +52,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		This:BuildPC
 		NPCs:AddAllNPCs
 
-		This.LogLevelBar:Set[${FoFConfig.LogLevelBar}]
+		This.LogLevelBar:Set[${Config.LogLevelBar}]
 	}
 
 	method Start()
@@ -196,7 +196,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 	member:bool FightOrFlight()
 	{
 		; Do not disturb manual operation.
-		if ${${Config.Common.Tehbot_Mode}.IsIdle}
+		if ${${CommonConfig.Tehbot_Mode}.IsIdle}
 		{
 			This:LogDebug["Bot is not running."]
 			BotRunningFlag:Set[FALSE]
@@ -212,7 +212,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		if ${Me.InStation} && !${This.LocalSafe}
 		{
 			This:LogInfo["Detected many hostile pilots in local, wait until they are gone."]
-			${Config.Common.Tehbot_Mode}:Stop
+			${CommonConfig.Tehbot_Mode}:Stop
 			Move:Stop
 			This:QueueState["LocalSafe"]
 			This:QueueState["ResumeBot"]
@@ -236,7 +236,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		if ${IsAttackedByGankers}
 		{
 			This:LogCritical["Entering engage ganker stage."]
-			${Config.Common.Tehbot_Mode}:Stop
+			${CommonConfig.Tehbot_Mode}:Stop
 			Ship.ModuleList_Siege:ActivateOne
 			This:QueueState["EngageGankers", 500, FALSE]
 			return TRUE
@@ -266,20 +266,20 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		if ${MyShip.ToEntity.Type.Equal["Capsule"]}
 		{
 			This:LogInfo["I am in egg, I should flee."]
-			${Config.Common.Tehbot_Mode}:Stop
+			${CommonConfig.Tehbot_Mode}:Stop
 			Move:Stop
 			This:QueueState["FleeToStation"]
 			This:QueueState["FightOrFlight"]
 			return TRUE
 		}
-		elseif ${MyShip.ShieldPct.Int} < ${FoFConfig.FleeShieldThreshold} || \
-			${MyShip.ArmorPct.Int} < ${FoFConfig.FleeArmorThreshold} || \
-			${MyShip.StructurePct.Int} < ${FoFConfig.FleeHullThreshold} || \
-			${MyShip.CapacitorPct.Int} < ${FoFConfig.FleeCapacitorThreshold}
+		elseif ${MyShip.ShieldPct.Int} < ${Config.FleeShieldThreshold} || \
+			${MyShip.ArmorPct.Int} < ${Config.FleeArmorThreshold} || \
+			${MyShip.StructurePct.Int} < ${Config.FleeHullThreshold} || \
+			${MyShip.CapacitorPct.Int} < ${Config.FleeCapacitorThreshold}
 		{
 			; TODO align and 75% speed before entering flee status, in case last second.
 			This:LogInfo["PVE Low HP - Shield: ${MyShip.ShieldPct.Int}%, Armor: ${MyShip.ArmorPct.Int}%, Hull: ${MyShip.StructurePct.Int}%, Capacitor: ${MyShip.CapacitorPct.Int}%, I should flee."]
-			${Config.Common.Tehbot_Mode}:Stop
+			${CommonConfig.Tehbot_Mode}:Stop
 			Move:Stop
 			DroneControl:Recall
 			This:QueueState["FleeToStation"]
@@ -292,7 +292,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		elseif !${Move.Traveling} && !${This.LocalSafe}
 		{
 			This:LogInfo["Detected many red in local, I should flee."]
-			${Config.Common.Tehbot_Mode}:Stop
+			${CommonConfig.Tehbot_Mode}:Stop
 			Move:Stop
 			DroneControl:Recall
 			This:QueueState["FleeToStation"]
@@ -506,7 +506,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		variable index:pilot pilotIndex
 		EVE:GetLocalPilots[pilotIndex]
 
-		if ${pilotIndex.Used} < ${FoFConfig.FleeLocalRedThreshold}
+		if ${pilotIndex.Used} < ${Config.FleeLocalRedThreshold}
 		{
 			return 0
 		}
@@ -572,7 +572,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 				Move:Undock
 			}
 
-			${Config.Common.Tehbot_Mode}:Start
+			${CommonConfig.Tehbot_Mode}:Start
 		}
 
 		return TRUE
@@ -582,7 +582,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 	{
 		if ${Me.InStation}
 		{
-			Logger:Log["Dock called, but we're already instation!"]
+			This:LogInfo["Dock called, but we're already instation!"]
 			return TRUE
 		}
 
@@ -614,7 +614,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		}
 		else
 		{
-			Logger:Log["No stations in this system!", LOG_CRITICAL]
+			This:LogCritical["No stations in this system!"]
 			return TRUE
 		}
 	}

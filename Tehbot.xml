@@ -91,7 +91,7 @@
 					<Height>40</Height>
 					<Text>Hide</Text>
 					<OnLoad>
-						if ${Script[Tehbot].VariableScope.Config.Common.Hidden}
+						if ${Script[Tehbot].VariableScope.CommonConfig.Hidden}
 						{
 							UIElement[TehbotTab@Tehbot]:Hide
 							This:SetText[Show]
@@ -107,13 +107,13 @@
 						{
 							UIElement[TehbotTab@Tehbot]:Hide
 							This:SetText[Show]
-							Script[Tehbot].VariableScope.Config.Common:SetHidden[TRUE]
+							Script[Tehbot].VariableScope.CommonConfig:SetHidden[TRUE]
 						}
 						else
 						{
 							UIElement[TehbotTab@Tehbot]:Show
 							This:SetText[Hide]
-							Script[Tehbot].VariableScope.Config.Common:SetHidden[FALSE]
+							Script[Tehbot].VariableScope.CommonConfig:SetHidden[FALSE]
 						}
 					</OnLeftClick>
 				</button>
@@ -185,9 +185,9 @@
 							<Height>6%</Height>
 							<OnSelect>
 								variable int counter
-								if !${This.SelectedItem.Value.Equal[${Script[Tehbot].VariableScope.Config.Common.Tehbot_Mode}]}
+								if !${This.SelectedItem.Value.Equal[${Script[Tehbot].VariableScope.CommonConfig.Tehbot_Mode}]}
 								{
-									Script[Tehbot].VariableScope.Config.Common:SetTehbot_Mode[${This.SelectedItem.Value}]
+									Script[Tehbot].VariableScope.CommonConfig:SetTehbot_Mode[${This.SelectedItem.Value}]
 									for ( counter:Set[1] ; ${counter} &lt;= ${This.Items} ; counter:Inc )
 									{
 										Script[Tehbot].VariableScope.${This.OrderedItem[${counter}].Value}:Stop
@@ -212,7 +212,7 @@
 							<Height>6%</Height>
 							<Text>Configuration</Text>
 							<OnLeftClick>
-								timedcommand 0 "ui -load \"${Script[Tehbot].VariableScope.Dynamic.Behaviors[${Script[Tehbot].VariableScope.Config.Common.Tehbot_Mode}].ConfigPath}${Script[Tehbot].VariableScope.Config.Common.Tehbot_Mode}.xml\""
+								timedcommand 0 "ui -load \"${Script[Tehbot].VariableScope.Dynamic.Behaviors[${Script[Tehbot].VariableScope.CommonConfig.Tehbot_Mode}].ConfigPath}${Script[Tehbot].VariableScope.CommonConfig.Tehbot_Mode}.xml\""
 							</OnLeftClick>
 						</button>
 						<Checkbox name='AutoStart'>
@@ -222,13 +222,13 @@
 							<Height>6%</Height>
 							<Text>Start automatically</Text>
 							<OnLoad>
-								if ${Script[Tehbot].VariableScope.Config.Common.AutoStart}
+								if ${Script[Tehbot].VariableScope.CommonConfig.AutoStart}
 								{
 									This:SetChecked
 								}
 							</OnLoad>
 							<OnLeftClick>
-								Script[Tehbot].VariableScope.Config.Common:SetAutoStart[${This.Checked}]
+								Script[Tehbot].VariableScope.CommonConfig:SetAutoStart[${This.Checked}]
 							</OnLeftClick>
 						</Checkbox>
 					</Tab>
@@ -262,10 +262,10 @@
 							<Border>1</Border>
 							<Range>3</Range>
 							<OnLoad>
-								This:SetValue[${Script[Tehbot].VariableScope.Config.Common.LogLevelBar:Dec}]
+								This:SetValue[${Script[Tehbot].VariableScope.CommonConfig.LogLevelBar:Dec}]
 							</OnLoad>
 							<OnChange>
-								Script[Tehbot].VariableScope.Config.Common:SetLogLevelBar[${This.Value:Inc}]
+								Script[Tehbot].VariableScope.CommonConfig:SetLogLevelBar[${This.Value:Inc}]
 							</OnChange>
 						</Slider>
 
@@ -276,14 +276,14 @@
 							<Height>6%</Height>
 							<Text>Disable 3D Rendering</Text>
 							<OnLoad>
-								if ${Script[Tehbot].VariableScope.Config.Common.Disable3D}
+								if ${Script[Tehbot].VariableScope.CommonConfig.Disable3D}
 								{
 									This:SetChecked
 								}
 								This:SetZOrder[movetop]
 							</OnLoad>
 							<OnLeftClick>
-								Script[Tehbot].VariableScope.Config.Common:SetDisable3D[${This.Checked}]
+								Script[Tehbot].VariableScope.CommonConfig:SetDisable3D[${This.Checked}]
 								This:SetZOrder[movetop]
 							</OnLeftClick>
 						</Checkbox>
@@ -294,14 +294,14 @@
 							<Height>6%</Height>
 							<Text>Auto-close Chat Invites</Text>
 							<OnLoad>
-								if ${Script[Tehbot].VariableScope.Config.Common.CloseChatInvites}
+								if ${Script[Tehbot].VariableScope.CommonConfig.CloseChatInvites}
 								{
 									This:SetChecked
 								}
 								This:SetZOrder[movetop]
 							</OnLoad>
 							<OnLeftClick>
-								Script[Tehbot].VariableScope.Config.Common:SetCloseChatInvites[${This.Checked}]
+								Script[Tehbot].VariableScope.CommonConfig:SetCloseChatInvites[${This.Checked}]
 								This:SetZOrder[movetop]
 							</OnLeftClick>
 						</Checkbox>
@@ -312,14 +312,14 @@
 							<Height>6%</Height>
 							<Text>Disable User Interface</Text>
 							<OnLoad>
-								if ${Script[Tehbot].VariableScope.Config.Common.DisableUI}
+								if ${Script[Tehbot].VariableScope.CommonConfig.DisableUI}
 								{
 									This:SetChecked
 								}
 								This:SetZOrder[movetop]
 							</OnLoad>
 							<OnLeftClick>
-								Script[Tehbot].VariableScope.Config.Common:SetDisableUI[${This.Checked}]
+								Script[Tehbot].VariableScope.CommonConfig:SetDisableUI[${This.Checked}]
 								This:SetZOrder[movetop]
 							</OnLeftClick>
 						</Checkbox>
@@ -330,14 +330,14 @@
 							<Height>6%</Height>
 							<Text>Disable Texture Loading</Text>
 							<OnLoad>
-								if ${Script[Tehbot].VariableScope.Config.Common.DisableTexture}
+								if ${Script[Tehbot].VariableScope.CommonConfig.DisableTexture}
 								{
 									This:SetChecked
 								}
 								This:SetZOrder[movetop]
 							</OnLoad>
 							<OnLeftClick>
-								Script[Tehbot].VariableScope.Config.Common:SetDisableTexture[${This.Checked}]
+								Script[Tehbot].VariableScope.CommonConfig:SetDisableTexture[${This.Checked}]
 								This:SetZOrder[movetop]
 							</OnLeftClick>
 						</Checkbox>
@@ -454,7 +454,7 @@
 					</Tab>
 				</Tabs>
 				<OnSelect>
-					Script[Tehbot].VariableScope.Config.Common:SetActiveTab[${This.SelectedTab.Name}]
+					Script[Tehbot].VariableScope.CommonConfig:SetActiveTab[${This.SelectedTab.Name}]
 				</OnSelect>
 			</TabControl>
 		</Children>
