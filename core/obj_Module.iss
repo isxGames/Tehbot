@@ -1211,7 +1211,14 @@ objectdef obj_Module inherits obj_StateQueue
 ; 		drf:Set[${This._getDRF}]
 ; This:LogInfo["drf ${drf}"]
 ; 		variable float64 velocityFactor
-; 		velocityFactor:Set[${Math.Calc[(${radiusFactor} * ${missileExplosionVelocity} / ${targetVelocity}) ^^ ${drf}]}]
+; 		if !${targetVelocity.Equal[0]}
+; 		{
+; 			velocityFactor:Set[${Math.Calc[(${radiusFactor} * ${missileExplosionVelocity} / ${targetVelocity}) ^^ ${drf}]}]
+; 		}
+; 		else
+; 		{
+; 			velocityFactor:Set[1]
+; 		}
 
 ; This:LogInfo["velocityFactor ${velocityFactor}"]
 ; 		variable float64 efficiency
