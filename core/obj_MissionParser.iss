@@ -28,7 +28,6 @@ objectdef obj_MissionParser inherits obj_Logger
 
 	method Initialize(string Details)
 	{
-		This[parent]:Initializes
 		This.LogLevelBar:Set[${CommonConfig.LogLevelBar}]
 		; This.LogLevelBar:Set[LOG_DEBUG]
 	}
