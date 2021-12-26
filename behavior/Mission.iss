@@ -953,7 +953,7 @@ objectdef obj_Mission inherits obj_StateQueue
 								}
 								else
 								{
-									Ship.ModuleList_TractorBeams:DeactivateOneNotOn[${currentLootContainer}]
+									Ship.ModuleList_TractorBeams:ForceActivateOne[${currentLootContainer}]
 								}
 								return FALSE
 							}

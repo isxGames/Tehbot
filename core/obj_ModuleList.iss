@@ -25,6 +25,17 @@ objectdef obj_ModuleList
 		}
 	}
 
+	; When all tractor beams are already assigned, force re-assign one tractor beam to the prioritized target.
+	method ForceActivateOne(int64 targetID = TARGET_NA)
+	{
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
+		{
+			Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:GiveInstruction[INSTRUCTION_ACTIVATE_ON, ${targetID}]
+		}
+	}
+
 	method ActivateAll(int64 targetID = TARGET_NA)
 	{
 		variable iterator moduleIDIterator
