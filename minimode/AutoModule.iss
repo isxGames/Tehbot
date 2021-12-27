@@ -153,7 +153,7 @@ objectdef obj_AutoModule inherits obj_StateQueue
 			Ship.ModuleList_Ancillary_Shield_Booster:ReloadDefaultAmmo
 		}
 
-		; Only difference to the Regen_Shield group is CapPct bound is 25 when engaging gankers.
+		; Only difference to the Regen_Shield group is start/stop condition when engaging gankers.
 		if ${Ship.ModuleList_Ancillary_Shield_Booster.InactiveCount} && \
 			((${MyShip.ShieldPct.Int} < ${Config.ActiveShieldBoost} && ${MyShip.CapacitorPct.Int} > ${Config.ActiveShieldCap}) || \
 			(${MyShip.ShieldPct.Int} < 90 && ${MyShip.CapacitorPct.Int} > 25 && ${FightOrFlight.IsEngagingGankers}) || \
@@ -172,8 +172,15 @@ objectdef obj_AutoModule inherits obj_StateQueue
 		}
 		if ${Ship.ModuleList_Ancillary_Shield_Booster.ActiveCount} && \
 			!${Config.AlwaysShieldBoost} && \
-			(((${MyShip.ShieldPct.Int} > ${Config.ActiveShieldBoost} || ${MyShip.CapacitorPct.Int} < ${Config.ActiveShieldCap}) && !${FightOrFlight.IsEngagingGankers}) || \
-			((${MyShip.ShieldPct.Int} >= 90 || ${MyShip.CapacitorPct.Int} <= 25) && ${FightOrFlight.IsEngagingGankers}))
+			( \
+				(!${FightOrFlight.IsEngagingGankers} && (${MyShip.ShieldPct.Int} > ${Config.ActiveShieldBoost} || ${MyShip.CapacitorPct.Int} < ${Config.ActiveShieldCap})) || \
+				(${FightOrFlight.IsEngagingGankers} && \
+					( \
+						((${MyShip.ShieldPct.Int} >= 90) && ${Ship.RegisteredModule.Element[${Ship.ModuleList_Ancillary_Shield_Booster.ModuleID.Get[1]}].CurrentCharges(exists)}) || \
+						(!${Ship.RegisteredModule.Element[${Ship.ModuleList_Ancillary_Shield_Booster.ModuleID.Get[1]}].CurrentCharges(exists)} && (${MyShip.CapacitorPct.Int} <= 25)) \
+					) \
+				) \
+			)
 		{
 			Ship.ModuleList_Ancillary_Shield_Booster:SetOverloadHPThreshold[100]
 			Ship.ModuleList_Ancillary_Shield_Booster:DeactivateAll
