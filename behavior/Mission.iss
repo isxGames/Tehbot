@@ -1868,11 +1868,15 @@ objectdef obj_Mission inherits obj_StateQueue
 					dropOffContainerID:Set[${itemIterator.Value.ID}]
 					itemIterator.Value:Open
 
-					if !${EVEWindow[Inventory].ChildWindow[${dropOffContainerID}](exists)}
+					if !${EVEWindow[Inventory].ChildWindow[${dropOffContainerID}](exists)} || \
+						!${EVEWindow[Inventory].ActiveChild.ItemID.Equal[${dropOffContainerID}]} || \
+						!${EVEWindow[Inventory].ChildWindow[${dropOffContainerID}].Capacity(exists)} || \
+						(${EVEWindow[Inventory].ChildWindow[${dropOffContainerID}].Capacity} < 0)
 					{
 						EVEWindow[Inventory].ChildWindow[${dropOffContainerID}]:MakeActive
 						return FALSE
 					}
+
 					EVEWindow[Inventory].ChildWindow[${dropOffContainerID}]:StackAll
 					break
 				}
@@ -1987,7 +1991,10 @@ objectdef obj_Mission inherits obj_StateQueue
 						dropOffContainerID:Set[${itemIterator.Value.ID}]
 						itemIterator.Value:Open
 
-						if !${EVEWindow[Inventory].ChildWindow[${dropOffContainerID}](exists)}
+						if !${EVEWindow[Inventory].ChildWindow[${dropOffContainerID}](exists)} || \
+							!${EVEWindow[Inventory].ActiveChild.ItemID.Equal[${dropOffContainerID}]} || \
+							!${EVEWindow[Inventory].ChildWindow[${dropOffContainerID}].Capacity(exists)} || \
+							(${EVEWindow[Inventory].ChildWindow[${dropOffContainerID}].Capacity} < 0)
 						{
 							EVEWindow[Inventory].ChildWindow[${dropOffContainerID}]:MakeActive
 							return FALSE
@@ -2031,7 +2038,7 @@ objectdef obj_Mission inherits obj_StateQueue
 					if ${Config.DropOffToContainer} && ${Config.DropOffContainerName.NotNULLOrEmpty} && ${dropOffContainerID} > 0
 					{
 						itemIterator.Value:MoveTo[${dropOffContainerID}, CargoHold]
-						return FALSE
+						; return FALSE
 					}
 					elseif ${Config.MunitionStorage.Equal[Corporation Hangar]}
 					{
