@@ -99,7 +99,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 		; }
 
 		; Ship.ModuleList.Count is NULL at early stage
-		variable string canLoot = "&& !IsWreckEmpty && !IsWreckViewed"
+		variable string canLoot = "&& !IsWreckEmpty"
 		if ${Ship.ModuleList_Salvagers.Count} > 0
 		{
 			canLoot:Set[""]
@@ -159,7 +159,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 		WrecksNoLock:ClearQueryString
 
 		variable string group = "(Group = \"Wreck\" || (Group = \"Cargo Container\"))"
-		variable string canLoot = "&& !IsWreckEmpty && !IsWreckViewed"
+		variable string canLoot = "&& !IsWreckEmpty"
 		variable string lootYellow = "&& HaveLootRights"
 		if ${Config.SalvageYellow}
 		{
@@ -204,7 +204,7 @@ objectdef obj_Salvage inherits obj_StateQueue
 				{
 					; Abandon targets of no value
 					if (!${Config.SalvageYellow} && !${wreckIterator.Value.HaveLootRights}) || \
-						((${wreckIterator.Value.IsWreckEmpty} || ${wreckIterator.Value.IsWreckViewed}) && ${Ship.ModuleList_Salvagers.Count} == 0)
+						(${wreckIterator.Value.IsWreckEmpty} && ${Ship.ModuleList_Salvagers.Count} == 0)
 					{
 						wreckIterator.Value:UnlockTarget
 						return FALSE
@@ -321,17 +321,24 @@ objectdef obj_LootCans inherits obj_StateQueue
 				if !${wreckIterator.Value(exists)} || \
 					${wreckIterator.Value.Distance} >= 2500 || \
 					${wreckIterator.Value.IsWreckEmpty} || \
-					${wreckIterator.Value.IsWreckViewed} || \
 					${wreckIterator.Value.IsMoribund}
 				{
 					continue
 				}
 
 				; BUG of ISXEVE: Finding windows, getting items and looting all are not working for Wrecks, only for cargos.
-				if !${EVEWindow[Inventory].ChildWindow[${wreckIterator.Value}](exists)}
+				if !${EVEWindow[Inventory].ChildWindow[${wreckIterator.Value.ID}](exists)}
 				{
 					This:LogInfo["Opening - \ap${wreckIterator.Value.Name}"]
 					wreckIterator.Value:Open
+					return FALSE
+				}
+
+				if !${EVEWindow[Inventory].ActiveChild.ItemID.Equal[${wreckIterator.Value.ID}]}
+					; || (${EVEWindow[Inventory].ChildWindow[${wreckIterator.Value.ID}].Capacity} < 0) -- For wrecks this value is always -1
+				{
+					This:LogInfo["Activating child window - \ap${wreckIterator.Value.Name}"]
+					EVEWindow[Inventory].ChildWindow[${wreckIterator.Value}]:MakeActive
 					return FALSE
 				}
 
