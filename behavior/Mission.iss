@@ -1795,6 +1795,26 @@ objectdef obj_Mission inherits obj_StateQueue
 				EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}]:MakeActive
 				return FALSE
 			}
+
+			; Bug: IsRepackable and Repackage are not working
+			; Repackage unloaded drones.
+			; EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:GetItems[items]
+			; items:GetIterator[itemIterator]
+			; if ${itemIterator:First(exists)}
+			; {
+			; 	do
+			; 	{
+			; 		This:LogInfo[ ${itemIterator.Value.Name} ${itemIterator.Value.Group} is repackageable ${itemIterator.Value.IsRepackable}]
+			; 		if ${itemIterator.Value.Group.Find[Drone]}
+			; 		{
+			; 			echo repackaging ${itemIterator.Value.Name}
+			; 			itemIterator.Value:Repackage
+			; 			return FALSE
+			; 		}
+			; 	}
+			; 	while ${itemIterator:Next(exists)}
+			; }
+
 			EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}]:StackAll
 
 			if ${Config.DropOffToContainer} && ${Config.DropOffContainerName.NotNULLOrEmpty}
@@ -1810,6 +1830,26 @@ objectdef obj_Mission inherits obj_StateQueue
 				EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:MakeActive
 				return FALSE
 			}
+
+			; Bug: IsRepackable and Repackage are not working
+			; Repackage unloaded drones.
+			; EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:GetItems[items]
+			; items:GetIterator[itemIterator]
+			; if ${itemIterator:First(exists)}
+			; {
+			; 	do
+			; 	{
+			; 		This:LogInfo[ ${itemIterator.Value.Name} ${itemIterator.Value.Group} is repackageable ${itemIterator.Value.IsRepackable}]
+			; 		if ${itemIterator.Value.Group.Find[Drone]}
+			; 		{
+			; 			echo repackaging ${itemIterator.Value.Name}
+			; 			itemIterator.Value:Repackage
+			; 			return FALSE
+			; 		}
+			; 	}
+			; 	while ${itemIterator:Next(exists)}
+			; }
+
 			EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:StackAll
 
 			if ${Config.DropOffToContainer} && ${Config.DropOffContainerName.NotNULLOrEmpty}
