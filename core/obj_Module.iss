@@ -1002,6 +1002,8 @@ objectdef obj_Module inherits obj_StateQueue
 				return "Scourge Rage Torpedo"
 			case TYPE_800MM_REPEATING_CANNON
 				return "Hail L"
+			case TYPE_XLARGE_ANCILLARY_SHIELD_BOOSTER
+				return "Cap Booster 400"
 		}
 
 		return ""
@@ -1264,6 +1266,20 @@ objectdef obj_Module inherits obj_StateQueue
 		}
 	}
 
+	; We want to reload charge in advance for aucillary shield booster to
+	; ensure that we always have more than this charge when engaging gankers.
+	; when this value is 3, we can run approximately 5 cycles in 25 seconds before
+	; the capacitor is empty. Which is equvilant to 67500 EHP.
+	member:int ReloadChargeThreshold()
+	{
+		switch ${This.ToItem.TypeID}
+		{
+			case TYPE_XLARGE_ANCILLARY_SHIELD_BOOSTER
+				return 3
+		}
+
+		return 0
+	}
 }
 
 	; 		elseif ${This.ToItem.GroupID} == GROUP_PRECURSORWEAPON

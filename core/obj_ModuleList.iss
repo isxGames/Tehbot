@@ -293,6 +293,16 @@ objectdef obj_ModuleList
 		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].FallbackLongRangeAmmo}
 	}
 
+	member:int ReloadChargeThreshold()
+	{
+		if ${ModuleID.Used}
+		{
+			return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].ReloadChargeThreshold}
+		}
+
+		return 0
+	}
+
 	member:string GetFallthroughObject()
 	{
 		return "Ship.${This.ObjectName}.ModuleID"

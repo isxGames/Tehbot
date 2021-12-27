@@ -102,6 +102,8 @@ objectdef obj_Configuration_Mission inherits obj_Configuration_Base
 	{
 		ConfigManager.ConfigRoot:AddSet[${This.SetName}]
 		This.ConfigRef:AddSetting[AmmoAmountToLoad, 100]
+		This.ConfigRef:AddSetting[BatteryToBring, ""]
+		This.ConfigRef:AddSetting[BatteryAmountToBring, 0]
 		This.ConfigRef:AddSetting[DeclineLowSec, TRUE]
 		This.ConfigRef:AddSetting[AggressiveMode, FALSE]
 		This.ConfigRef:AddSetting[IgnoreNPCSentries, FALSE]
@@ -136,6 +138,8 @@ objectdef obj_Configuration_Mission inherits obj_Configuration_Base
 	Setting(string, EMAmmoSecondary, SetEMAmmoSecondary)
 	Setting(string, ExplosiveAmmoSecondary, SetExplosiveAmmoSecondary)
 	Setting(int, AmmoAmountToLoad, SetAmmoAmountToLoad)
+	Setting(string, BatteryToBring, SetBatteryToBring)
+	Setting(int, BatteryAmountToBring, SetBatteryAmountToBring)
 	Setting(int, LogLevelBar, SetLogLevelBar)
 }
 
@@ -575,6 +579,7 @@ objectdef obj_Mission inherits obj_StateQueue
 							}
 
 							Ship.ModuleList_Weapon:ConfigureAmmo[${ammo}, ${secondaryAmmo}]
+							Ship.ModuleList_Ancillary_Shield_Booster:ConfigureAmmo[${Config.BatteryToBring}]
 
 							if ${Client.InSpace} && (${Entity[Type = "Beacon"]} || ${Entity[Type = "Acceleration Gate"]})
 							{
@@ -1288,11 +1293,17 @@ objectdef obj_Mission inherits obj_StateQueue
 			}
 
 			; Shoot at out of range target to trigger them.
-			if ${Ship.ModuleList_Weapon.Range} > ${Entity[${currentTarget}].Distance} || !${Config.RangeLimit} || !${Entity[${currentTarget}].IsTargetingMe}
+			if (${Ship.ModuleList_Weapon.Range} > ${Entity[${currentTarget}].Distance}) || !${Config.RangeLimit} || !${Entity[${currentTarget}].IsTargetingMe}
 			{
 				Ship.ModuleList_Weapon:ActivateAll[${currentTarget}]
 				Ship.ModuleList_TrackingComputer:ActivateFor[${currentTarget}]
 			}
+			else
+			{
+				Ship.ModuleList_Weapon:DeactivateAll[${currentTarget}]
+				Ship.ModuleList_Siege:DeactivateAll
+			}
+
 			if ${Entity[${currentTarget}].Distance} <= ${Ship.ModuleList_TargetPainter.Range}
 			{
 				Ship.ModuleList_TargetPainter:ActivateAll[${currentTarget}]
@@ -2028,6 +2039,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				   !${itemIterator.Value.Name.Equal[${Config.ExplosiveAmmoSecondary}]} && \
 				   !${itemIterator.Value.Name.Equal[${Ship.ModuleList_Weapon.FallbackAmmo}]} && \
 				   !${itemIterator.Value.Name.Equal[${Ship.ModuleList_Weapon.FallbackLongRangeAmmo}]} && \
+				   !${itemIterator.Value.Name.Equal[${Config.BatteryToBring}]} && \
 				   ; Anomaly gate key
 				   !${itemIterator.Value.Name.Equal["Oura Madusaari"]} && \
 				   !${itemIterator.Value.Group.Equal["Acceleration Gate Keys"]} && \
@@ -2222,6 +2234,12 @@ objectdef obj_Mission inherits obj_StateQueue
 		variable string preferredDroneType
 		variable string fallbackDroneType
 
+		variable string batteryType
+		batteryType:Set[${Config.BatteryToBring}]
+		variable int batteryToLoad
+		batteryToLoad:Set[${Config.BatteryAmountToBring}]
+		; echo load ${batteryToLoad} X ${batteryType}
+
 		if (!${EVEWindow[Inventory](exists)})
 		{
 			EVE:Execute[OpenInventory]
@@ -2306,6 +2324,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 		defaultAmmoAmountToLoad:Dec[${This.InventoryItemQuantity[${ammo}, ${Me.ShipID}, "ShipCargo"]}]
 		secondaryAmmoAmountToLoad:Dec[${This.InventoryItemQuantity[${secondaryAmmo}, ${Me.ShipID}, "ShipCargo"]}]
+		batteryToLoad:Dec[${This.InventoryItemQuantity[${batteryType}, ${Me.ShipID}, "ShipCargo"]}]
 
 		EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:GetItems[items]
 		items:GetIterator[itemIterator]
@@ -2438,6 +2457,22 @@ objectdef obj_Mission inherits obj_StateQueue
 						return FALSE
 					}
 				}
+
+				if ${batteryToLoad} > 0 && ${itemIterator.Value.Name.Equal[${batteryType}]}
+				{
+					if ${itemIterator.Value.Quantity} >= ${batteryToLoad}
+					{
+						itemIterator.Value:MoveTo[${MyShip.ID}, CargoHold, ${batteryToLoad}]
+						batteryToLoad:Set[0]
+						return FALSE
+					}
+					else
+					{
+						itemIterator.Value:MoveTo[${MyShip.ID}, CargoHold, ${itemIterator.Value.Quantity}]
+						batteryToLoad:Dec[${itemIterator.Value.Quantity}]
+						return FALSE
+					}
+				}
 			}
 			while ${itemIterator:Next(exists)}
 		}
@@ -2514,6 +2549,12 @@ objectdef obj_Mission inherits obj_StateQueue
 			This:Stop
 			return TRUE
 		}
+		elseif ${batteryToLoad} > 0
+		{
+			This:LogCritical["You're out of ${batteryType}, halting."]
+			This:Stop
+			return TRUE
+		}
 		else
 		{
 			This:InsertState["StackShip"]
@@ -2570,6 +2611,11 @@ objectdef obj_Mission inherits obj_StateQueue
 				if ${ammo.NotNULLOrEmpty}
 				{
 					Ship.ModuleList_Weapon:ConfigureAmmo[${ammo}, ${secondaryAmmo}]
+				}
+
+				if ${Config.BatteryToBring.NotNULLOrEmpty}
+				{
+					Ship.ModuleList_Ancillary_Shield_Booster:ConfigureAmmo[${Config.BatteryToBring}]
 				}
 
 				Ship.ModuleList_Weapon:ReloadDefaultAmmo

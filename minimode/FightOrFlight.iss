@@ -246,7 +246,8 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		if ${IsOtherPilotsDetected}
 		{
 			This:UnlockNPCsAndLockPCs
-			Ship.ModuleList_Weapon:ReloadDefaultAmmo
+			; Disable this until we can reload weapon and ancillary repairers seperately.
+			; Ship.ModuleList_Weapon:ReloadDefaultAmmo
 		}
 		else
 		{
