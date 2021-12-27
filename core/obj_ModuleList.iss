@@ -288,9 +288,9 @@ objectdef obj_ModuleList
 		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].FallbackAmmo}
 	}
 
-	member:string FallbackSecondaryAmmo()
+	member:string FallbackLongRangeAmmo()
 	{
-		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].FallbackSecondaryAmmo}
+		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].FallbackLongRangeAmmo}
 	}
 
 	member:string GetFallthroughObject()

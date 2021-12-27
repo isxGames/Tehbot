@@ -340,7 +340,7 @@ objectdef obj_Module inherits obj_StateQueue
 		{
 			_lastDeactivationTimestamp:Set[0]
 
-			defaultAmmo:Set[${This._getShortRangeAmmo}]
+			defaultAmmo:Set[${This._getDefaultAmmo}]
 
 			; ${MyShip.Cargo[${defaultAmmo}]} will return the first unstacked item instance of item, for crystals, the quantity is likely to be 1.
 			; so we set the Quantity threshold to 0 instead of ModuleList_Weapon.Count until a (TODO) improved quantity method is implemented.
@@ -597,10 +597,10 @@ objectdef obj_Module inherits obj_StateQueue
 		}
 
 		variable string shortRangeAmmo
-		shortRangeAmmo:Set[${This._getShortRangeAmmo}]
+		shortRangeAmmo:Set[${This._getDefaultAmmo}]
 
 		variable string longRangeAmmo
-		longRangeAmmo:Set[${This._getLongRangeAmmo}]
+		longRangeAmmo:Set[${This._getDefaultLongRangeAmmo}]
 
 		if ${This.Charge(exists)} && ${This.Charge.Type.Equal[${shortRangeAmmo}]}
 		{
@@ -690,10 +690,10 @@ objectdef obj_Module inherits obj_StateQueue
 		}
 
 		variable string shortRangeAmmo
-		shortRangeAmmo:Set[${This._getShortRangeAmmo}]
+		shortRangeAmmo:Set[${This._getDefaultAmmo}]
 
 		variable string longRangeAmmo
-		longRangeAmmo:Set[${This._getLongRangeAmmo}]
+		longRangeAmmo:Set[${This._getDefaultLongRangeAmmo}]
 
 		; Giveup timing ammo change according to remaining ammo quantity.
 		; Because it won't work correctly unless enemy HP is taken into account, which is too much work.
@@ -845,7 +845,7 @@ objectdef obj_Module inherits obj_StateQueue
 		return ""
 	}
 
-	member:string _getShortRangeAmmo()
+	member:string _getDefaultAmmo()
 	{
 		if !${Ammo.NotNULLOrEmpty} || (!${MyShip.Cargo[${Ammo}].Quantity} && !${This.Charge.Type.Equal[${Ammo}]})
 		{
@@ -857,11 +857,11 @@ objectdef obj_Module inherits obj_StateQueue
 		}
 	}
 
-	member:string _getLongRangeAmmo()
+	member:string _getDefaultLongRangeAmmo()
 	{
 		if !${LongRangeAmmo.NotNULLOrEmpty} || (!${MyShip.Cargo[${LongRangeAmmo}].Quantity} && !${This.Charge.Type.Equal[${LongRangeAmmo}]})
 		{
-			return ${This.FallbackSecondaryAmmo}
+			return ${This.FallbackLongRangeAmmo}
 		}
 		else
 		{
@@ -1007,7 +1007,7 @@ objectdef obj_Module inherits obj_StateQueue
 		return ""
 	}
 
-	member:string FallbackSecondaryAmmo()
+	member:string FallbackLongRangeAmmo()
 	{
 		switch ${This.ToItem.TypeID}
 		{
@@ -1297,19 +1297,4 @@ objectdef obj_Module inherits obj_StateQueue
 	; 		}
 	;
 
-	; member:bool UnloadAmmoToCargo()
-	; {
-	; 	if !${This.Charge(exists)}
-	; 	{
-	; 		return TRUE
-	; 	}
-	; 	else
-	; 	{
-	; 		This:LogInfo["Unloading \ay${This.Charge.Type}"]
-	; 		This:UnloadToCargo
-	; 		return TRUE
-	; 	}
-
-	; 	return FALSE
-	; }
 
