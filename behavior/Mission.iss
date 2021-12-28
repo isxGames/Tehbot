@@ -278,6 +278,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		This:BuildNpcQueries
 		ActiveNPCs.AutoLock:Set[FALSE]
 		NPCs.AutoLock:Set[FALSE]
+		Tehbot.Paused:Set[FALSE]
 		UIElement[Run@TitleBar@Tehbot]:SetText[Stop]
 	}
 
