@@ -168,6 +168,7 @@ objectdef obj_Move inherits obj_StateQueue
 		{
 			return
 		}
+
 		variable index:agentmission Missions
 		variable iterator m
 
@@ -242,6 +243,7 @@ objectdef obj_Move inherits obj_StateQueue
 		Logger:Log["Move", "Movement queued", "o"]
 		Logger:Log["Move", " ${Entity[${ID}].Name}", "-g"]
 		This.Traveling:Set[TRUE]
+		Entity[${ID}]:AlignTo
 		This:QueueState["EntityMove", 2000, "${ID}, ${Distance}, ${FleetWarp}"]
 	}
 
@@ -279,10 +281,37 @@ objectdef obj_Move inherits obj_StateQueue
 
 	method Gate(int64 ID, bool CalledFromMove=FALSE)
 	{
+		if ${This.Traveling}
+		{
+			return
+		}
+
 		Logger:Log["Move", "Movement queued", "o"]
 		Logger:Log["Move", " ${Entity[${ID}].Name}", "-g"]
 		This.Traveling:Set[TRUE]
 		This:QueueState["GateMove", 2000, "${ID}, ${CalledFromMove}"]
+	}
+
+	; Non-exclusive approach
+	method SafeApproach(int64 ID, int distance = 0)
+	{
+		if ${This.Traveling}
+		{
+			return
+		}
+
+		Entity[${ID}]:Approach[${distance}]
+	}
+
+	; Non-exclusive orbit
+	method SafeOrbit(int64 ID, int distance = 0)
+	{
+		if ${This.Traveling}
+		{
+			return
+		}
+
+		Entity[${ID}]:Orbit[${distance}]
 	}
 
 	member:bool GateMove(int64 ID, bool CalledFromMove)

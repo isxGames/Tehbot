@@ -597,6 +597,10 @@ objectdef obj_Mission inherits obj_StateQueue
 						{
 							This:LogInfo["Loading Secondary Ammo \ao${secondaryAmmo}", "o"]
 						}
+						if ${Config.BatteryToBring.NotNULLOrEmpty} && ${Config.BatteryAmountToBring}
+						{
+							This:LogInfo["Loading Charge \ao${Config.BatteryToBring}", "o"]
+						}
 						reload:Set[FALSE]
 						This:InsertState["CheckForWork"]
 						isLoadingFallbackDrones:Set[FALSE]
@@ -939,7 +943,7 @@ objectdef obj_Mission inherits obj_StateQueue
 						if ${MyShip.ToEntity.Mode} != MOVE_APPROACHING || ${LavishScript.RunningTime} > ${approachTimer}
 						{
 							This:ManageThrusterOverload[${Entity[${currentLootContainer}].ID}]
-							Entity[${currentLootContainer}]:Approach[1000]
+							Move:SafeApproach[${currentLootContainer}, 1000]
 							This:InsertState["PerformMission"]
 							approachTimer:Set[${Math.Calc[${LavishScript.RunningTime} + 10000]}]
 							return TRUE
@@ -1074,7 +1078,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			{
 				if ${MyShip.ToEntity.Mode} != MOVE_ORBITING && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
 				{
-					Entity[Type = "Acceleration Gate"]:Orbit[2000]
+					Move:SafeOrbit[${Entity[Type = "Acceleration Gate"].ID}, 2000]
 					This:InsertState["PerformMission"]
 					return TRUE
 				}
@@ -1083,7 +1087,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			{
 				if ${MyShip.ToEntity.Mode} != MOVE_ORBITING && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
 				{
-					Entity[Name = "Acceleration Gate (Locked Down)"]:Orbit[2000]
+					Move:SafeOrbit[${Entity[Name = "Acceleration Gate (Locked Down)"].ID}, 2000]
 					This:InsertState["PerformMission"]
 					return TRUE
 				}
@@ -1092,7 +1096,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			{
 				if ${MyShip.ToEntity.Mode} != MOVE_ORBITING && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
 				{
-					Entity[Type = "Beacon"]:Orbit[2000]
+					Move:SafeOrbit[${Entity[Type = "Beacon"].ID}, 2000]
 					This:InsertState["PerformMission"]
 					return TRUE
 				}
@@ -1272,7 +1276,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			}
 			This:LogInfo["Approaching distanced target: \ar${ActiveNPCs.TargetList.Get[1].Name}"]
 			This:ManageThrusterOverload[${ActiveNPCs.TargetList.Get[1].ID}]
-			ActiveNPCs.TargetList.Get[1]:Approach
+			Move:SafeApproach[${ActiveNPCs.TargetList.Get[1].ID}]
 			This:InsertState["PerformMission"]
 			return TRUE
 		}
@@ -1325,7 +1329,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				{
 					This:LogInfo["Approaching out of range target: \ar${Entity[${currentTarget}].Name}"]
 					This:ManageThrusterOverload[${Entity[${currentTarget}].ID}]
-					Entity[${currentTarget}]:Approach
+					Move:SafeApproach[${currentTarget}]
 				}
 			}
 
@@ -1366,7 +1370,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				}
 
 				This:ManageThrusterOverload[${NPCs.TargetList.Get[1].ID}]
-				NPCs.TargetList.Get[1]:Approach
+				Move:SafeApproach[${NPCs.TargetList.Get[1].ID}]
 			}
 
 			if ${currentTarget} == 0 || ${Entity[${currentTarget}].IsMoribund} || !${Entity[${currentTarget}]}
@@ -1393,7 +1397,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				}
 
 				This:ManageThrusterOverload[${Entity[${targetToDestroy}].ID}]
-				Entity[${targetToDestroy}]:Approach
+				Move:SafeApproach[${Entity[${targetToDestroy}].ID}]
 			}
 
 			if !${Entity[${targetToDestroy}].IsLockedTarget} && !${Entity[${targetToDestroy}].BeingTargeted} && \

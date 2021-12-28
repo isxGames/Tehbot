@@ -523,13 +523,13 @@ objectdef obj_Module inherits obj_StateQueue
 	{
 		if ${_lastChangeAmmoTimestamp} == 0
 		{
-			This:LogInfo["Switching ${This.Name} ammo to \ay${ammoName}"]
+			This:LogInfo["Switching ${This.Name} charge to \ay${ammoName}"]
 			_lastChangeAmmoTimestamp:Set[${LavishScript.RunningTime}]
 			This:ChangeAmmo[${ammoID}, ${ammoAmount}]
 		}
 		elseif ${LavishScript.RunningTime} > ${Math.Calc[${_lastChangeAmmoTimestamp} + ${_changeAmmoRetryInterval}]}
 		{
-			This:LogInfo["Retrying ${This.Name} switching ammo to \ay${ammoName}"]
+			This:LogInfo["Retrying ${This.Name} switching charge to \ay${ammoName}"]
 			_lastChangeAmmoTimestamp:Set[${LavishScript.RunningTime}]
 			This:ChangeAmmo[${ammoID}, ${ammoAmount}]
 		}
@@ -539,13 +539,13 @@ objectdef obj_Module inherits obj_StateQueue
 	{
 		if ${_lastChangeAmmoTimestamp} == 0
 		{
-			This:LogInfo["Reloading ammo."]
+			This:LogInfo["Reloading charge."]
 			_lastChangeAmmoTimestamp:Set[${LavishScript.RunningTime}]
 			EVE:Execute[CmdReloadAmmo]
 		}
 		elseif ${LavishScript.RunningTime} > ${Math.Calc[${_lastChangeAmmoTimestamp} + ${_changeAmmoRetryInterval}]}
 		{
-			This:LogInfo["Retrying reload ammo."]
+			This:LogInfo["Retrying reload charge."]
 			_lastChangeAmmoTimestamp:Set[${LavishScript.RunningTime}]
 			EVE:Execute[CmdReloadAmmo]
 		}
