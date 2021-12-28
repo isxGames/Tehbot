@@ -87,10 +87,13 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			do
 			{
 				; Oh it's me.
-				if ${pilotIterator.Value.ID.Equal[${MyShip.ID}]} || ${pilotIterator.Value.Mode} == 3
+				if ${pilotIterator.Value.ID.Equal[${MyShip.ID}]}
 				{
 					continue
 				}
+
+				; ${pilotIterator.Value.Mode} == MOVE_WARPING
+				; No longer ignore warping pilots for they can still shoot me and the last one may cause the bot start/stop repeatly.
 
 				; Lock and destroy everything only in vigilant mode.
 				if (${threshold} > 1) && (${pilotIterator.Value.Type.Equal["Capsule"]} || ${pilotIterator.Value.Type.Find["Shuttle"]})
@@ -181,7 +184,6 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 						if ${jamsIterator.Value.Lower.Find["warp"]}
 						{
 							detected:Set[TRUE]
-							return
 						}
 					}
 					while ${jamsIterator:Next(exists)}
@@ -645,6 +647,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			}
 			elseif ${MyShip.ToEntity.Velocity} < 10000
 			{
+				; Haven't entered real warp stage and not scrambled, can scoop drones.
 				DroneControl:Recall
 			}
 			elseif !${${CommonConfig.Tehbot_Mode}.IsIdle}
