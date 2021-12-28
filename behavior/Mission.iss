@@ -2386,19 +2386,20 @@ objectdef obj_Mission inherits obj_StateQueue
 
 				; Move fallback drones together(to station hanger) before moving them to drone bay to ensure preferred type is loaded before fallback type.
 				; Also move ammos not in use to release cargo space.
-				if (!${itemIterator.Value.Name.Equal[${Ship.ModuleList_Weapon.FallbackAmmo}]} && \
+				if ((${Ship.ModuleList_Weapon.Count} && \
+					!${itemIterator.Value.Name.Equal[${Ship.ModuleList_Weapon.FallbackAmmo}]} && \
 					!${itemIterator.Value.Name.Equal[${Ship.ModuleList_Weapon.FallbackLongRangeAmmo}]} && \
 					!${itemIterator.Value.Name.Equal[${ammo}]} && \
 					!${itemIterator.Value.Name.Equal[${secondaryAmmo}]}) && \
-					(${itemIterator.Value.Name.Equal[${fallbackDroneType}]} || \
-					${itemIterator.Value.Name.Equal[${Config.KineticAmmo}]} || \
+					(${itemIterator.Value.Name.Equal[${Config.KineticAmmo}]} || \
 					${itemIterator.Value.Name.Equal[${Config.ThermalAmmo}]} || \
 					${itemIterator.Value.Name.Equal[${Config.EMAmmo}]} || \
 					${itemIterator.Value.Name.Equal[${Config.ExplosiveAmmo}]} || \
 				 	${itemIterator.Value.Name.Equal[${Config.KineticAmmoSecondary}]} || \
 				 	${itemIterator.Value.Name.Equal[${Config.ThermalAmmoSecondary}]} || \
 					${itemIterator.Value.Name.Equal[${Config.EMAmmoSecondary}]} || \
-					${itemIterator.Value.Name.Equal[${Config.ExplosiveAmmoSecondary}]})
+					${itemIterator.Value.Name.Equal[${Config.ExplosiveAmmoSecondary}]})) || \
+					${itemIterator.Value.Name.Equal[${fallbackDroneType}]}
 				{
 					if ${Config.MunitionStorage.Equal[Corporation Hangar]}
 					{
