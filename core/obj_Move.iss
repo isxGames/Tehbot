@@ -31,7 +31,8 @@ objectdef obj_Move inherits obj_StateQueue
 		{
 			Entity[${ID}]:WarpTo[${Dist}]
 		}
-		Client:Wait[5000]
+		; Don't pause the combat bot when fleeing but before warp start
+		; Client:Wait[5000]
 	}
 
 	method ActivateAutoPilot()
@@ -290,28 +291,6 @@ objectdef obj_Move inherits obj_StateQueue
 		Logger:Log["Move", " ${Entity[${ID}].Name}", "-g"]
 		This.Traveling:Set[TRUE]
 		This:QueueState["GateMove", 2000, "${ID}, ${CalledFromMove}"]
-	}
-
-	; Non-exclusive approach
-	method SafeApproach(int64 ID, int distance = 0)
-	{
-		if ${This.Traveling}
-		{
-			return
-		}
-
-		Entity[${ID}]:Approach[${distance}]
-	}
-
-	; Non-exclusive orbit
-	method SafeOrbit(int64 ID, int distance = 0)
-	{
-		if ${This.Traveling}
-		{
-			return
-		}
-
-		Entity[${ID}]:Orbit[${distance}]
 	}
 
 	member:bool GateMove(int64 ID, bool CalledFromMove)

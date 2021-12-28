@@ -650,7 +650,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			elseif !${${CommonConfig.Tehbot_Mode}.IsIdle}
 			{
 				; Only stop bot after entered real warping, in case ship got scrambled in the last second.
-				This:LogDebug["Stopping bot at velocity ${MyShip.ToEntity.Velocity}"]
+				This:LogInfo["Stopping bot at velocity ${MyShip.ToEntity.Velocity}"]
 				${CommonConfig.Tehbot_Mode}:Stop
 			}
 

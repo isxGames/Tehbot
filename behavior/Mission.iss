@@ -940,10 +940,10 @@ objectdef obj_Mission inherits obj_StateQueue
 				{
 					if ${Entity[${currentLootContainer}].Distance} > 2500
 					{
-						if ${MyShip.ToEntity.Mode} != MOVE_APPROACHING || ${LavishScript.RunningTime} > ${approachTimer}
+						if (${MyShip.ToEntity.Mode} != MOVE_APPROACHING || ${LavishScript.RunningTime} > ${approachTimer}) && !${Move.Traveling}
 						{
 							This:ManageThrusterOverload[${Entity[${currentLootContainer}].ID}]
-							Move:SafeApproach[${currentLootContainer}, 1000]
+							Entity[${currentLootContainer}]:Approach[1000]
 							This:InsertState["PerformMission"]
 							approachTimer:Set[${Math.Calc[${LavishScript.RunningTime} + 10000]}]
 							return TRUE
@@ -1074,31 +1074,34 @@ objectdef obj_Mission inherits obj_StateQueue
 		else
 		{
 			notDone:Set[FALSE]
-			if ${Entity[Type = "Acceleration Gate"]}
+			if !${Move.Traveling}
 			{
-				if ${MyShip.ToEntity.Mode} != MOVE_ORBITING && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
+				if ${Entity[Type = "Acceleration Gate"]}
 				{
-					Move:SafeOrbit[${Entity[Type = "Acceleration Gate"].ID}, 2000]
-					This:InsertState["PerformMission"]
-					return TRUE
+					if ${MyShip.ToEntity.Mode} != MOVE_ORBITING && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
+					{
+						Entity[Type = "Acceleration Gate"]:Orbit[2000]
+						This:InsertState["PerformMission"]
+						return TRUE
+					}
 				}
-			}
-			elseif ${Entity[Name = "Acceleration Gate (Locked Down)"]}
-			{
-				if ${MyShip.ToEntity.Mode} != MOVE_ORBITING && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
+				elseif ${Entity[Name = "Acceleration Gate (Locked Down)"]}
 				{
-					Move:SafeOrbit[${Entity[Name = "Acceleration Gate (Locked Down)"].ID}, 2000]
-					This:InsertState["PerformMission"]
-					return TRUE
+					if ${MyShip.ToEntity.Mode} != MOVE_ORBITING && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
+					{
+						Entity[Name = "Acceleration Gate (Locked Down)"]:Orbit[2000]
+						This:InsertState["PerformMission"]
+						return TRUE
+					}
 				}
-			}
-			elseif ${Entity[Type = "Beacon"]}
-			{
-				if ${MyShip.ToEntity.Mode} != MOVE_ORBITING && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
+				elseif ${Entity[Type = "Beacon"]}
 				{
-					Move:SafeOrbit[${Entity[Type = "Beacon"].ID}, 2000]
-					This:InsertState["PerformMission"]
-					return TRUE
+					if ${MyShip.ToEntity.Mode} != MOVE_ORBITING && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
+					{
+						Entity[Type = "Beacon"]:Orbit[2000]
+						This:InsertState["PerformMission"]
+						return TRUE
+					}
 				}
 			}
 		}
@@ -1266,8 +1269,9 @@ objectdef obj_Mission inherits obj_StateQueue
 		; Nothing is locked.
 		if ${ActiveNPCs.TargetList.Used} && \
 		;    (${currentTarget} == 0 || ${currentTarget} == ${ActiveNPCs.TargetList.Get[1].ID}) && \
-		   ${ActiveNPCs.TargetList.Get[1].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * 0.95]} && \
-		   !${MyShip.ToEntity.Approaching.ID.Equal[${ActiveNPCs.TargetList.Get[1].ID}]}
+		 	${ActiveNPCs.TargetList.Get[1].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * 0.95]} && \
+			!${MyShip.ToEntity.Approaching.ID.Equal[${ActiveNPCs.TargetList.Get[1].ID}]} && \
+			!${Move.Traveling}
 		{
 			if ${Ship.ModuleList_Siege.ActiveCount}
 			{
@@ -1276,7 +1280,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			}
 			This:LogInfo["Approaching distanced target: \ar${ActiveNPCs.TargetList.Get[1].Name}"]
 			This:ManageThrusterOverload[${ActiveNPCs.TargetList.Get[1].ID}]
-			Move:SafeApproach[${ActiveNPCs.TargetList.Get[1].ID}]
+			ActiveNPCs.TargetList.Get[1]:Approach
 			This:InsertState["PerformMission"]
 			return TRUE
 		}
@@ -1313,6 +1317,9 @@ objectdef obj_Mission inherits obj_StateQueue
 			{
 				; Using long range ammo and within range if siege module is on.
 				Ship.ModuleList_Siege:ActivateOne
+				; Switch target
+				Ship.ModuleList_Weapon:ActivateAll[${currentTarget}]
+				Ship.ModuleList_TrackingComputer:ActivateFor[${currentTarget}]
 			}
 			elseif !${Entity[${currentTarget}].IsTargetingMe}
 			{
@@ -1325,11 +1332,11 @@ objectdef obj_Mission inherits obj_StateQueue
 				Ship.ModuleList_Weapon:DeactivateAll[${currentTarget}]
 				Ship.ModuleList_Siege:DeactivateAll
 
-				if !${MyShip.ToEntity.Approaching.ID.Equal[${currentTarget}]}
+				if !${MyShip.ToEntity.Approaching.ID.Equal[${currentTarget}]} && !${Move.Traveling}
 				{
 					This:LogInfo["Approaching out of range target: \ar${Entity[${currentTarget}].Name}"]
 					This:ManageThrusterOverload[${Entity[${currentTarget}].ID}]
-					Move:SafeApproach[${currentTarget}]
+					Entity[${currentTarget}]:Approach
 				}
 			}
 
@@ -1361,7 +1368,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 		if ${NPCs.TargetList.Used}
 		{
-			if ${NPCs.TargetList.Get[1].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * .95]} && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
+			if ${NPCs.TargetList.Get[1].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * .95]} && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING && !${Move.Traveling}
 			{
 				if ${Ship.ModuleList_Siege.ActiveCount}
 				{
@@ -1370,7 +1377,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				}
 
 				This:ManageThrusterOverload[${NPCs.TargetList.Get[1].ID}]
-				Move:SafeApproach[${NPCs.TargetList.Get[1].ID}]
+				NPCs.TargetList.Get[1]:Approach
 			}
 
 			if ${currentTarget} == 0 || ${Entity[${currentTarget}].IsMoribund} || !${Entity[${currentTarget}]}
@@ -1388,7 +1395,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 		if ${Entity[${targetToDestroy}]}
 		{
-			if ${Entity[${targetToDestroy}].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * .95]} && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
+			if ${Entity[${targetToDestroy}].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * .95]} && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING && !${Move.Traveling}
 			{
 				if ${Ship.ModuleList_Siege.ActiveCount}
 				{
@@ -1397,7 +1404,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				}
 
 				This:ManageThrusterOverload[${Entity[${targetToDestroy}].ID}]
-				Move:SafeApproach[${Entity[${targetToDestroy}].ID}]
+				Entity[${targetToDestroy}]:Approach
 			}
 
 			if !${Entity[${targetToDestroy}].IsLockedTarget} && !${Entity[${targetToDestroy}].BeingTargeted} && \
