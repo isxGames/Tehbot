@@ -1261,9 +1261,9 @@ objectdef obj_Mission inherits obj_StateQueue
 
 		; Nothing is locked.
 		if ${ActiveNPCs.TargetList.Used} && \
-		   (${currentTarget} == 0 || ${currentTarget} == ${ActiveNPCs.TargetList.Get[1].ID}) && \
+		;    (${currentTarget} == 0 || ${currentTarget} == ${ActiveNPCs.TargetList.Get[1].ID}) && \
 		   ${ActiveNPCs.TargetList.Get[1].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * 0.95]} && \
-		   ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
+		   !${MyShip.ToEntity.Approaching.ID.Equal[${ActiveNPCs.TargetList.Get[1].ID}]}
 		{
 			if ${Ship.ModuleList_Siege.ActiveCount}
 			{
@@ -1287,14 +1287,32 @@ objectdef obj_Mission inherits obj_StateQueue
 				DroneControl:Recall
 			}
 
-			if ${allowSiegeModule}
+			if (${Ship.ModuleList_Weapon.Range} > ${Entity[${currentTarget}].Distance}) || \
+				!${Config.RangeLimit}
 			{
+				Ship.ModuleList_Weapon:ActivateAll[${currentTarget}]
+				Ship.ModuleList_TrackingComputer:ActivateFor[${currentTarget}]
+				if ${allowSiegeModule}
+				{
+					Ship.ModuleList_Siege:ActivateOne
+				}
+			}
+			elseif !${Ship.ModuleList_Weapon.IsUsingLongRangeAmmo}
+			{
+				; Activate weapon to switch ammo to long.
+				Ship.ModuleList_Weapon:ActivateAll[${currentTarget}]
+				Ship.ModuleList_TrackingComputer:ActivateFor[${currentTarget}]
+			}
+			elseif ${allowSiegeModule} && \
+				!${Ship.RegisteredModule.Element[${Ship.ModuleList_Siege.ModuleID.Get[1]}].IsActive} && \
+			 	(${Math.Calc[${Entity[${currentTarget}].Distance} / (${Ship.ModuleList_Weapon.Range} + 1)]} < 1.25)
+			{
+				; Using long range ammo and within range if siege module is on.
 				Ship.ModuleList_Siege:ActivateOne
 			}
-
-			; Shoot at out of range target to trigger them.
-			if (${Ship.ModuleList_Weapon.Range} > ${Entity[${currentTarget}].Distance}) || !${Config.RangeLimit} || !${Entity[${currentTarget}].IsTargetingMe}
+			elseif !${Entity[${currentTarget}].IsTargetingMe}
 			{
+				; Shoot at out of range target to trigger them.
 				Ship.ModuleList_Weapon:ActivateAll[${currentTarget}]
 				Ship.ModuleList_TrackingComputer:ActivateFor[${currentTarget}]
 			}
@@ -1302,6 +1320,13 @@ objectdef obj_Mission inherits obj_StateQueue
 			{
 				Ship.ModuleList_Weapon:DeactivateAll[${currentTarget}]
 				Ship.ModuleList_Siege:DeactivateAll
+
+				if !${MyShip.ToEntity.Approaching.ID.Equal[${currentTarget}]}
+				{
+					This:LogInfo["Approaching out of range target: \ar${Entity[${currentTarget}].Name}"]
+					This:ManageThrusterOverload[${Entity[${currentTarget}].ID}]
+					Entity[${currentTarget}]:Approach
+				}
 			}
 
 			if ${Entity[${currentTarget}].Distance} <= ${Ship.ModuleList_TargetPainter.Range}

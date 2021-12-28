@@ -303,6 +303,11 @@ objectdef obj_ModuleList
 		return 0
 	}
 
+	member:bool IsUsingLongRangeAmmo()
+	{
+		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].IsUsingLongRangeAmmo}
+	}
+
 	member:string GetFallthroughObject()
 	{
 		return "Ship.${This.ObjectName}.ModuleID"

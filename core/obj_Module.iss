@@ -988,7 +988,7 @@ objectdef obj_Module inherits obj_StateQueue
 				return ${This._shortRangeAmmoRange}
 			}
 
-			return 500000
+			return 50000
 		}
 	}
 
@@ -1279,6 +1279,19 @@ objectdef obj_Module inherits obj_StateQueue
 		}
 
 		return 0
+	}
+
+	member:bool IsUsingLongRangeAmmo()
+	{
+		variable string shortRangeAmmo
+		shortRangeAmmo:Set[${This._getDefaultAmmo}]
+
+		if !${This.Charge(exists)} || ${This.Charge.Type.Equal[${shortRangeAmmo}]}
+		{
+			return FALSE
+		}
+
+		return TRUE
 	}
 }
 
