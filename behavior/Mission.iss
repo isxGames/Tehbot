@@ -1269,7 +1269,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 		; Nothing is locked.
 		if ${ActiveNPCs.TargetList.Used} && \
-		;    (${currentTarget} == 0 || ${currentTarget} == ${ActiveNPCs.TargetList.Get[1].ID}) && \
+			${currentTarget.Equal[0]} && \
 		 	${ActiveNPCs.TargetList.Get[1].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * 0.95]} && \
 			!${MyShip.ToEntity.Approaching.ID.Equal[${ActiveNPCs.TargetList.Get[1].ID}]} && \
 			!${Move.Traveling}
@@ -1308,14 +1308,18 @@ objectdef obj_Mission inherits obj_StateQueue
 			}
 			elseif !${Ship.ModuleList_Weapon.IsUsingLongRangeAmmo}
 			{
+				This:LogDebug["Far switch ammo to long"]
 				; Activate weapon to switch ammo to long.
 				Ship.ModuleList_Weapon:ActivateAll[${currentTarget}]
 				Ship.ModuleList_TrackingComputer:ActivateFor[${currentTarget}]
 			}
 			elseif ${allowSiegeModule} && \
+				${Ship.ModuleList_Siege.Allowed} && \
+				${Ship.ModuleList_Siege.Count} && \
 				!${Ship.RegisteredModule.Element[${Ship.ModuleList_Siege.ModuleID.Get[1]}].IsActive} && \
-			 	(${Math.Calc[${Entity[${currentTarget}].Distance} / (${Ship.ModuleList_Weapon.Range} + 1)]} < 1.25)
+			 	(${Math.Calc[${Entity[${currentTarget}].Distance} / (${Ship.ModuleList_Weapon.Range} + 1)]} < 1.2)
 			{
+				This:LogDebug["Far need siege"]
 				; Using long range ammo and within range if siege module is on.
 				Ship.ModuleList_Siege:ActivateOne
 				; Switch target
@@ -1324,12 +1328,14 @@ objectdef obj_Mission inherits obj_StateQueue
 			}
 			elseif !${Entity[${currentTarget}].IsTargetingMe}
 			{
+				This:LogDebug["Far trigger"]
 				; Shoot at out of range target to trigger them.
 				Ship.ModuleList_Weapon:ActivateAll[${currentTarget}]
 				Ship.ModuleList_TrackingComputer:ActivateFor[${currentTarget}]
 			}
 			else
 			{
+				This:LogDebug["Far approach"]
 				Ship.ModuleList_Weapon:DeactivateAll[${currentTarget}]
 				Ship.ModuleList_Siege:DeactivateAll
 
