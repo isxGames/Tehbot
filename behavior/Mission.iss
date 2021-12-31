@@ -102,6 +102,8 @@ objectdef obj_Configuration_Mission inherits obj_Configuration_Base
 	{
 		ConfigManager.ConfigRoot:AddSet[${This.SetName}]
 		This.ConfigRef:AddSetting[AmmoAmountToLoad, 100]
+		This.ConfigRef:AddSetting[BatteryToBring, ""]
+		This.ConfigRef:AddSetting[BatteryAmountToBring, 0]
 		This.ConfigRef:AddSetting[DeclineLowSec, TRUE]
 		This.ConfigRef:AddSetting[AggressiveMode, FALSE]
 		This.ConfigRef:AddSetting[IgnoreNPCSentries, FALSE]
@@ -136,6 +138,8 @@ objectdef obj_Configuration_Mission inherits obj_Configuration_Base
 	Setting(string, EMAmmoSecondary, SetEMAmmoSecondary)
 	Setting(string, ExplosiveAmmoSecondary, SetExplosiveAmmoSecondary)
 	Setting(int, AmmoAmountToLoad, SetAmmoAmountToLoad)
+	Setting(string, BatteryToBring, SetBatteryToBring)
+	Setting(int, BatteryAmountToBring, SetBatteryAmountToBring)
 	Setting(int, LogLevelBar, SetLogLevelBar)
 }
 
@@ -274,6 +278,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		This:BuildNpcQueries
 		ActiveNPCs.AutoLock:Set[FALSE]
 		NPCs.AutoLock:Set[FALSE]
+		Tehbot.Paused:Set[FALSE]
 		UIElement[Run@TitleBar@Tehbot]:SetText[Stop]
 	}
 
@@ -575,6 +580,7 @@ objectdef obj_Mission inherits obj_StateQueue
 							}
 
 							Ship.ModuleList_Weapon:ConfigureAmmo[${ammo}, ${secondaryAmmo}]
+							Ship.ModuleList_Ancillary_Shield_Booster:ConfigureAmmo[${Config.BatteryToBring}]
 
 							if ${Client.InSpace} && (${Entity[Type = "Beacon"]} || ${Entity[Type = "Acceleration Gate"]})
 							{
@@ -591,6 +597,10 @@ objectdef obj_Mission inherits obj_StateQueue
 						if ${Config.UseSecondaryAmmo}
 						{
 							This:LogInfo["Loading Secondary Ammo \ao${secondaryAmmo}", "o"]
+						}
+						if ${Config.BatteryToBring.NotNULLOrEmpty} && ${Config.BatteryAmountToBring}
+						{
+							This:LogInfo["Loading Charge \ao${Config.BatteryToBring}", "o"]
 						}
 						reload:Set[FALSE]
 						This:InsertState["CheckForWork"]
@@ -931,7 +941,7 @@ objectdef obj_Mission inherits obj_StateQueue
 				{
 					if ${Entity[${currentLootContainer}].Distance} > 2500
 					{
-						if ${MyShip.ToEntity.Mode} != MOVE_APPROACHING || ${LavishScript.RunningTime} > ${approachTimer}
+						if (${MyShip.ToEntity.Mode} != MOVE_APPROACHING || ${LavishScript.RunningTime} > ${approachTimer}) && !${Move.Traveling}
 						{
 							This:ManageThrusterOverload[${Entity[${currentLootContainer}].ID}]
 							Entity[${currentLootContainer}]:Approach[1000]
@@ -953,7 +963,7 @@ objectdef obj_Mission inherits obj_StateQueue
 								}
 								else
 								{
-									Ship.ModuleList_TractorBeams:DeactivateOneNotOn[${currentLootContainer}]
+									Ship.ModuleList_TractorBeams:ForceActivateOne[${currentLootContainer}]
 								}
 								return FALSE
 							}
@@ -1065,31 +1075,34 @@ objectdef obj_Mission inherits obj_StateQueue
 		else
 		{
 			notDone:Set[FALSE]
-			if ${Entity[Type = "Acceleration Gate"]}
+			if !${Move.Traveling}
 			{
-				if ${MyShip.ToEntity.Mode} != MOVE_ORBITING && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
+				if ${Entity[Type = "Acceleration Gate"]}
 				{
-					Entity[Type = "Acceleration Gate"]:Orbit[2000]
-					This:InsertState["PerformMission"]
-					return TRUE
+					if ${MyShip.ToEntity.Mode} != MOVE_ORBITING && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
+					{
+						Entity[Type = "Acceleration Gate"]:Orbit[2000]
+						This:InsertState["PerformMission"]
+						return TRUE
+					}
 				}
-			}
-			elseif ${Entity[Name = "Acceleration Gate (Locked Down)"]}
-			{
-				if ${MyShip.ToEntity.Mode} != MOVE_ORBITING && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
+				elseif ${Entity[Name = "Acceleration Gate (Locked Down)"]}
 				{
-					Entity[Name = "Acceleration Gate (Locked Down)"]:Orbit[2000]
-					This:InsertState["PerformMission"]
-					return TRUE
+					if ${MyShip.ToEntity.Mode} != MOVE_ORBITING && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
+					{
+						Entity[Name = "Acceleration Gate (Locked Down)"]:Orbit[2000]
+						This:InsertState["PerformMission"]
+						return TRUE
+					}
 				}
-			}
-			elseif ${Entity[Type = "Beacon"]}
-			{
-				if ${MyShip.ToEntity.Mode} != MOVE_ORBITING && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
+				elseif ${Entity[Type = "Beacon"]}
 				{
-					Entity[Type = "Beacon"]:Orbit[2000]
-					This:InsertState["PerformMission"]
-					return TRUE
+					if ${MyShip.ToEntity.Mode} != MOVE_ORBITING && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
+					{
+						Entity[Type = "Beacon"]:Orbit[2000]
+						This:InsertState["PerformMission"]
+						return TRUE
+					}
 				}
 			}
 		}
@@ -1256,9 +1269,10 @@ objectdef obj_Mission inherits obj_StateQueue
 
 		; Nothing is locked.
 		if ${ActiveNPCs.TargetList.Used} && \
-		   (${currentTarget} == 0 || ${currentTarget} == ${ActiveNPCs.TargetList.Get[1].ID}) && \
-		   ${ActiveNPCs.TargetList.Get[1].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * 0.95]} && \
-		   ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
+			${currentTarget.Equal[0]} && \
+		 	${ActiveNPCs.TargetList.Get[1].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * 0.95]} && \
+			!${MyShip.ToEntity.Approaching.ID.Equal[${ActiveNPCs.TargetList.Get[1].ID}]} && \
+			!${Move.Traveling}
 		{
 			if ${Ship.ModuleList_Siege.ActiveCount}
 			{
@@ -1282,17 +1296,57 @@ objectdef obj_Mission inherits obj_StateQueue
 				DroneControl:Recall
 			}
 
-			if ${allowSiegeModule}
-			{
-				Ship.ModuleList_Siege:ActivateOne
-			}
-
-			; Shoot at out of range target to trigger them.
-			if ${Ship.ModuleList_Weapon.Range} > ${Entity[${currentTarget}].Distance} || !${Config.RangeLimit} || !${Entity[${currentTarget}].IsTargetingMe}
+			if (${Ship.ModuleList_Weapon.Range} > ${Entity[${currentTarget}].Distance}) || \
+				!${Config.RangeLimit}
 			{
 				Ship.ModuleList_Weapon:ActivateAll[${currentTarget}]
 				Ship.ModuleList_TrackingComputer:ActivateFor[${currentTarget}]
+				if ${allowSiegeModule}
+				{
+					Ship.ModuleList_Siege:ActivateOne
+				}
 			}
+			elseif !${Ship.ModuleList_Weapon.IsUsingLongRangeAmmo}
+			{
+				This:LogDebug["Far switch ammo to long"]
+				; Activate weapon to switch ammo to long.
+				Ship.ModuleList_Weapon:ActivateAll[${currentTarget}]
+				Ship.ModuleList_TrackingComputer:ActivateFor[${currentTarget}]
+			}
+			elseif ${allowSiegeModule} && \
+				${Ship.ModuleList_Siege.Allowed} && \
+				${Ship.ModuleList_Siege.Count} && \
+				!${Ship.RegisteredModule.Element[${Ship.ModuleList_Siege.ModuleID.Get[1]}].IsActive} && \
+			 	(${Math.Calc[${Entity[${currentTarget}].Distance} / (${Ship.ModuleList_Weapon.Range} + 1)]} < 1.2)
+			{
+				This:LogDebug["Far need siege"]
+				; Using long range ammo and within range if siege module is on.
+				Ship.ModuleList_Siege:ActivateOne
+				; Switch target
+				Ship.ModuleList_Weapon:ActivateAll[${currentTarget}]
+				Ship.ModuleList_TrackingComputer:ActivateFor[${currentTarget}]
+			}
+			elseif !${Entity[${currentTarget}].IsTargetingMe}
+			{
+				This:LogDebug["Far trigger"]
+				; Shoot at out of range target to trigger them.
+				Ship.ModuleList_Weapon:ActivateAll[${currentTarget}]
+				Ship.ModuleList_TrackingComputer:ActivateFor[${currentTarget}]
+			}
+			else
+			{
+				This:LogDebug["Far approach"]
+				Ship.ModuleList_Weapon:DeactivateAll[${currentTarget}]
+				Ship.ModuleList_Siege:DeactivateAll
+
+				if !${MyShip.ToEntity.Approaching.ID.Equal[${currentTarget}]} && !${Move.Traveling}
+				{
+					This:LogInfo["Approaching out of range target: \ar${Entity[${currentTarget}].Name}"]
+					This:ManageThrusterOverload[${Entity[${currentTarget}].ID}]
+					Entity[${currentTarget}]:Approach
+				}
+			}
+
 			if ${Entity[${currentTarget}].Distance} <= ${Ship.ModuleList_TargetPainter.Range}
 			{
 				Ship.ModuleList_TargetPainter:ActivateAll[${currentTarget}]
@@ -1321,7 +1375,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 		if ${NPCs.TargetList.Used}
 		{
-			if ${NPCs.TargetList.Get[1].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * .95]} && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
+			if ${NPCs.TargetList.Get[1].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * .95]} && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING && !${Move.Traveling}
 			{
 				if ${Ship.ModuleList_Siege.ActiveCount}
 				{
@@ -1348,7 +1402,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 		if ${Entity[${targetToDestroy}]}
 		{
-			if ${Entity[${targetToDestroy}].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * .95]} && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING
+			if ${Entity[${targetToDestroy}].Distance} > ${Math.Calc[${Ship.ModuleList_Weapon.Range} * .95]} && ${MyShip.ToEntity.Mode} != MOVE_APPROACHING && !${Move.Traveling}
 			{
 				if ${Ship.ModuleList_Siege.ActiveCount}
 				{
@@ -1795,6 +1849,26 @@ objectdef obj_Mission inherits obj_StateQueue
 				EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}]:MakeActive
 				return FALSE
 			}
+
+			; Bug: IsRepackable and Repackage are not working
+			; Repackage unloaded drones.
+			; EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:GetItems[items]
+			; items:GetIterator[itemIterator]
+			; if ${itemIterator:First(exists)}
+			; {
+			; 	do
+			; 	{
+			; 		This:LogInfo[ ${itemIterator.Value.Name} ${itemIterator.Value.Group} is repackageable ${itemIterator.Value.IsRepackable}]
+			; 		if ${itemIterator.Value.Group.Find[Drone]}
+			; 		{
+			; 			echo repackaging ${itemIterator.Value.Name}
+			; 			itemIterator.Value:Repackage
+			; 			return FALSE
+			; 		}
+			; 	}
+			; 	while ${itemIterator:Next(exists)}
+			; }
+
 			EVEWindow[Inventory].ChildWindow["StationCorpHangar", ${Config.MunitionStorageFolder}]:StackAll
 
 			if ${Config.DropOffToContainer} && ${Config.DropOffContainerName.NotNULLOrEmpty}
@@ -1810,6 +1884,26 @@ objectdef obj_Mission inherits obj_StateQueue
 				EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:MakeActive
 				return FALSE
 			}
+
+			; Bug: IsRepackable and Repackage are not working
+			; Repackage unloaded drones.
+			; EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:GetItems[items]
+			; items:GetIterator[itemIterator]
+			; if ${itemIterator:First(exists)}
+			; {
+			; 	do
+			; 	{
+			; 		This:LogInfo[ ${itemIterator.Value.Name} ${itemIterator.Value.Group} is repackageable ${itemIterator.Value.IsRepackable}]
+			; 		if ${itemIterator.Value.Group.Find[Drone]}
+			; 		{
+			; 			echo repackaging ${itemIterator.Value.Name}
+			; 			itemIterator.Value:Repackage
+			; 			return FALSE
+			; 		}
+			; 	}
+			; 	while ${itemIterator:Next(exists)}
+			; }
+
 			EVEWindow[Inventory].ChildWindow[${Me.Station.ID}, StationItems]:StackAll
 
 			if ${Config.DropOffToContainer} && ${Config.DropOffContainerName.NotNULLOrEmpty}
@@ -1828,11 +1922,15 @@ objectdef obj_Mission inherits obj_StateQueue
 					dropOffContainerID:Set[${itemIterator.Value.ID}]
 					itemIterator.Value:Open
 
-					if !${EVEWindow[Inventory].ChildWindow[${dropOffContainerID}](exists)}
+					if !${EVEWindow[Inventory].ChildWindow[${dropOffContainerID}](exists)} || \
+						!${EVEWindow[Inventory].ActiveChild.ItemID.Equal[${dropOffContainerID}]} || \
+						!${EVEWindow[Inventory].ChildWindow[${dropOffContainerID}].Capacity(exists)} || \
+						(${EVEWindow[Inventory].ChildWindow[${dropOffContainerID}].Capacity} < 0)
 					{
 						EVEWindow[Inventory].ChildWindow[${dropOffContainerID}]:MakeActive
 						return FALSE
 					}
+
 					EVEWindow[Inventory].ChildWindow[${dropOffContainerID}]:StackAll
 					break
 				}
@@ -1947,7 +2045,10 @@ objectdef obj_Mission inherits obj_StateQueue
 						dropOffContainerID:Set[${itemIterator.Value.ID}]
 						itemIterator.Value:Open
 
-						if !${EVEWindow[Inventory].ChildWindow[${dropOffContainerID}](exists)}
+						if !${EVEWindow[Inventory].ChildWindow[${dropOffContainerID}](exists)} || \
+							!${EVEWindow[Inventory].ActiveChild.ItemID.Equal[${dropOffContainerID}]} || \
+							!${EVEWindow[Inventory].ChildWindow[${dropOffContainerID}].Capacity(exists)} || \
+							(${EVEWindow[Inventory].ChildWindow[${dropOffContainerID}].Capacity} < 0)
 						{
 							EVEWindow[Inventory].ChildWindow[${dropOffContainerID}]:MakeActive
 							return FALSE
@@ -1980,7 +2081,8 @@ objectdef obj_Mission inherits obj_StateQueue
 				   !${itemIterator.Value.Name.Equal[${Config.EMAmmoSecondary}]} && \
 				   !${itemIterator.Value.Name.Equal[${Config.ExplosiveAmmoSecondary}]} && \
 				   !${itemIterator.Value.Name.Equal[${Ship.ModuleList_Weapon.FallbackAmmo}]} && \
-				   !${itemIterator.Value.Name.Equal[${Ship.ModuleList_Weapon.FallbackSecondaryAmmo}]} && \
+				   !${itemIterator.Value.Name.Equal[${Ship.ModuleList_Weapon.FallbackLongRangeAmmo}]} && \
+				   !${itemIterator.Value.Name.Equal[${Config.BatteryToBring}]} && \
 				   ; Anomaly gate key
 				   !${itemIterator.Value.Name.Equal["Oura Madusaari"]} && \
 				   !${itemIterator.Value.Group.Equal["Acceleration Gate Keys"]} && \
@@ -1991,7 +2093,7 @@ objectdef obj_Mission inherits obj_StateQueue
 					if ${Config.DropOffToContainer} && ${Config.DropOffContainerName.NotNULLOrEmpty} && ${dropOffContainerID} > 0
 					{
 						itemIterator.Value:MoveTo[${dropOffContainerID}, CargoHold]
-						return FALSE
+						; return FALSE
 					}
 					elseif ${Config.MunitionStorage.Equal[Corporation Hangar]}
 					{
@@ -2175,6 +2277,12 @@ objectdef obj_Mission inherits obj_StateQueue
 		variable string preferredDroneType
 		variable string fallbackDroneType
 
+		variable string batteryType
+		batteryType:Set[${Config.BatteryToBring}]
+		variable int batteryToLoad
+		batteryToLoad:Set[${Config.BatteryAmountToBring}]
+		; echo load ${batteryToLoad} X ${batteryType}
+
 		if (!${EVEWindow[Inventory](exists)})
 		{
 			EVE:Execute[OpenInventory]
@@ -2259,6 +2367,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 		defaultAmmoAmountToLoad:Dec[${This.InventoryItemQuantity[${ammo}, ${Me.ShipID}, "ShipCargo"]}]
 		secondaryAmmoAmountToLoad:Dec[${This.InventoryItemQuantity[${secondaryAmmo}, ${Me.ShipID}, "ShipCargo"]}]
+		batteryToLoad:Dec[${This.InventoryItemQuantity[${batteryType}, ${Me.ShipID}, "ShipCargo"]}]
 
 		EVEWindow[Inventory].ChildWindow[${Me.ShipID}, ShipCargo]:GetItems[items]
 		items:GetIterator[itemIterator]
@@ -2290,7 +2399,21 @@ objectdef obj_Mission inherits obj_StateQueue
 				}
 
 				; Move fallback drones together(to station hanger) before moving them to drone bay to ensure preferred type is loaded before fallback type.
-				if ${itemIterator.Value.Name.Equal[${fallbackDroneType}]}
+				; Also move ammos not in use to release cargo space.
+				if ((${Ship.ModuleList_Weapon.Count} && \
+					!${itemIterator.Value.Name.Equal[${Ship.ModuleList_Weapon.FallbackAmmo}]} && \
+					!${itemIterator.Value.Name.Equal[${Ship.ModuleList_Weapon.FallbackLongRangeAmmo}]} && \
+					!${itemIterator.Value.Name.Equal[${ammo}]} && \
+					!${itemIterator.Value.Name.Equal[${secondaryAmmo}]}) && \
+					(${itemIterator.Value.Name.Equal[${Config.KineticAmmo}]} || \
+					${itemIterator.Value.Name.Equal[${Config.ThermalAmmo}]} || \
+					${itemIterator.Value.Name.Equal[${Config.EMAmmo}]} || \
+					${itemIterator.Value.Name.Equal[${Config.ExplosiveAmmo}]} || \
+				 	${itemIterator.Value.Name.Equal[${Config.KineticAmmoSecondary}]} || \
+				 	${itemIterator.Value.Name.Equal[${Config.ThermalAmmoSecondary}]} || \
+					${itemIterator.Value.Name.Equal[${Config.EMAmmoSecondary}]} || \
+					${itemIterator.Value.Name.Equal[${Config.ExplosiveAmmoSecondary}]})) || \
+					${itemIterator.Value.Name.Equal[${fallbackDroneType}]}
 				{
 					if ${Config.MunitionStorage.Equal[Corporation Hangar]}
 					{
@@ -2308,7 +2431,7 @@ objectdef obj_Mission inherits obj_StateQueue
 						}
 
 						itemIterator.Value:MoveTo[MyStationCorporateHangar, StationCorporateHangar, ${itemIterator.Value.Quantity}, ${This.CorporationFolder}]
-						return FALSE
+						; return FALSE
 					}
 					elseif ${Config.MunitionStorage.Equal[Personal Hangar]}
 					{
@@ -2319,7 +2442,7 @@ objectdef obj_Mission inherits obj_StateQueue
 						}
 
 						itemIterator.Value:MoveTo[MyStationHangar, Hangar]
-						return FALSE
+						; return FALSE
 					}
 					continue
 				}
@@ -2388,6 +2511,22 @@ objectdef obj_Mission inherits obj_StateQueue
 					{
 						itemIterator.Value:MoveTo[${MyShip.ID}, CargoHold, ${itemIterator.Value.Quantity}]
 						secondaryAmmoAmountToLoad:Dec[${itemIterator.Value.Quantity}]
+						return FALSE
+					}
+				}
+
+				if ${batteryToLoad} > 0 && ${itemIterator.Value.Name.Equal[${batteryType}]}
+				{
+					if ${itemIterator.Value.Quantity} >= ${batteryToLoad}
+					{
+						itemIterator.Value:MoveTo[${MyShip.ID}, CargoHold, ${batteryToLoad}]
+						batteryToLoad:Set[0]
+						return FALSE
+					}
+					else
+					{
+						itemIterator.Value:MoveTo[${MyShip.ID}, CargoHold, ${itemIterator.Value.Quantity}]
+						batteryToLoad:Dec[${itemIterator.Value.Quantity}]
 						return FALSE
 					}
 				}
@@ -2467,6 +2606,12 @@ objectdef obj_Mission inherits obj_StateQueue
 			This:Stop
 			return TRUE
 		}
+		elseif ${batteryToLoad} > 0
+		{
+			This:LogCritical["You're out of ${batteryType}, halting."]
+			This:Stop
+			return TRUE
+		}
 		else
 		{
 			This:InsertState["StackShip"]
@@ -2523,6 +2668,11 @@ objectdef obj_Mission inherits obj_StateQueue
 				if ${ammo.NotNULLOrEmpty}
 				{
 					Ship.ModuleList_Weapon:ConfigureAmmo[${ammo}, ${secondaryAmmo}]
+				}
+
+				if ${Config.BatteryToBring.NotNULLOrEmpty}
+				{
+					Ship.ModuleList_Ancillary_Shield_Booster:ConfigureAmmo[${Config.BatteryToBring}]
 				}
 
 				Ship.ModuleList_Weapon:ReloadDefaultAmmo

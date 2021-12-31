@@ -1,6 +1,12 @@
-objectdef obj_ModuleList
+objectdef obj_ModuleList inherits obj_Logger
 {
 	variable index:int64 ModuleID
+	variable bool Allowed = TRUE
+
+	method Initialize(string Details)
+	{
+		This.LogLevelBar:Set[${CommonConfig.LogLevelBar}]
+	}
 
 	method Insert(int64 ID)
 	{
@@ -9,6 +15,12 @@ objectdef obj_ModuleList
 
 	method ActivateOne(int64 targetID = TARGET_NA)
 	{
+		if !${Allowed}
+		{
+			This:LogInfo["Not allowed to activate."]
+			return
+		}
+
 		variable iterator moduleIDIterator
 		ModuleID:GetIterator[moduleIDIterator]
 		if ${moduleIDIterator:First(exists)}
@@ -25,8 +37,31 @@ objectdef obj_ModuleList
 		}
 	}
 
+	; When all tractor beams are already assigned, force re-assign one tractor beam to the prioritized target.
+	method ForceActivateOne(int64 targetID = TARGET_NA)
+	{
+		if !${Allowed}
+		{
+			This:LogInfo["Not allowed to activate."]
+			return
+		}
+
+		variable iterator moduleIDIterator
+		ModuleID:GetIterator[moduleIDIterator]
+		if ${moduleIDIterator:First(exists)}
+		{
+			Ship.RegisteredModule.Element[${moduleIDIterator.Value}]:GiveInstruction[INSTRUCTION_ACTIVATE_ON, ${targetID}]
+		}
+	}
+
 	method ActivateAll(int64 targetID = TARGET_NA)
 	{
+		if !${Allowed}
+		{
+			This:LogInfo["Not allowed to activate."]
+			return
+		}
+
 		variable iterator moduleIDIterator
 		ModuleID:GetIterator[moduleIDIterator]
 		if ${moduleIDIterator:First(exists)}
@@ -55,6 +90,12 @@ objectdef obj_ModuleList
 
 	method ActivateFor(int64 targetID = TARGET_NA)
 	{
+		if !${Allowed}
+		{
+			This:LogInfo["Not allowed to activate."]
+			return
+		}
+
 		variable iterator moduleIDIterator
 		ModuleID:GetIterator[moduleIDIterator]
 		if ${moduleIDIterator:First(exists)}
@@ -277,9 +318,24 @@ objectdef obj_ModuleList
 		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].FallbackAmmo}
 	}
 
-	member:string FallbackSecondaryAmmo()
+	member:string FallbackLongRangeAmmo()
 	{
-		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].FallbackSecondaryAmmo}
+		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].FallbackLongRangeAmmo}
+	}
+
+	member:int ReloadChargeThreshold()
+	{
+		if ${ModuleID.Used}
+		{
+			return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].ReloadChargeThreshold}
+		}
+
+		return 0
+	}
+
+	member:bool IsUsingLongRangeAmmo()
+	{
+		return ${Ship.RegisteredModule.Element[${ModuleID.Get[1]}].IsUsingLongRangeAmmo}
 	}
 
 	member:string GetFallthroughObject()

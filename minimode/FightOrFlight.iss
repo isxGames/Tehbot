@@ -87,10 +87,13 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			do
 			{
 				; Oh it's me.
-				if ${pilotIterator.Value.ID.Equal[${MyShip.ID}]} || ${pilotIterator.Value.Mode} == 3
+				if ${pilotIterator.Value.ID.Equal[${MyShip.ID}]}
 				{
 					continue
 				}
+
+				; ${pilotIterator.Value.Mode} == MOVE_WARPING
+				; No longer ignore warping pilots for they can still shoot me and the last one may cause the bot start/stop repeatly.
 
 				; Lock and destroy everything only in vigilant mode.
 				if (${threshold} > 1) && (${pilotIterator.Value.Type.Equal["Capsule"]} || ${pilotIterator.Value.Type.Find["Shuttle"]})
@@ -181,7 +184,6 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 						if ${jamsIterator.Value.Lower.Find["warp"]}
 						{
 							detected:Set[TRUE]
-							return
 						}
 					}
 					while ${jamsIterator:Next(exists)}
@@ -246,7 +248,8 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		if ${IsOtherPilotsDetected}
 		{
 			This:UnlockNPCsAndLockPCs
-			Ship.ModuleList_Weapon:ReloadDefaultAmmo
+			; Disable this until we can reload weapon and ancillary repairers seperately.
+			; Ship.ModuleList_Weapon:ReloadDefaultAmmo
 		}
 		else
 		{
@@ -266,7 +269,6 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		if ${MyShip.ToEntity.Type.Equal["Capsule"]}
 		{
 			This:LogInfo["I am in egg, I should flee."]
-			${CommonConfig.Tehbot_Mode}:Stop
 			Move:Stop
 			This:QueueState["FleeToStation"]
 			This:QueueState["FightOrFlight"]
@@ -279,9 +281,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		{
 			; TODO align and 75% speed before entering flee status, in case last second.
 			This:LogInfo["PVE Low HP - Shield: ${MyShip.ShieldPct.Int}%, Armor: ${MyShip.ArmorPct.Int}%, Hull: ${MyShip.StructurePct.Int}%, Capacitor: ${MyShip.CapacitorPct.Int}%, I should flee."]
-			${CommonConfig.Tehbot_Mode}:Stop
 			Move:Stop
-			DroneControl:Recall
 			This:QueueState["FleeToStation"]
 			This:QueueState["Repair"]
 			This:QueueState["LocalSafe"]
@@ -292,9 +292,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		elseif !${Move.Traveling} && !${This.LocalSafe}
 		{
 			This:LogInfo["Detected many red in local, I should flee."]
-			${CommonConfig.Tehbot_Mode}:Stop
 			Move:Stop
-			DroneControl:Recall
 			This:QueueState["FleeToStation"]
 			This:QueueState["Repair"]
 			This:QueueState["LocalSafe"]
@@ -330,6 +328,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 		Ship.ModuleList_Weapon:SetOverloadHPThreshold[50]
 		Ship.ModuleList_ActiveResists:SetOverloadHPThreshold[50]
 		Ship.ModuleList_Regen_Shield:SetOverloadHPThreshold[50]
+		Ship.ModuleList_Ancillary_Shield_Booster:SetOverloadHPThreshold[50]
 		Ship.ModuleList_Repair_Armor:SetOverloadHPThreshold[50]
 
 		This:DetectWarpScrambleStatus
@@ -484,6 +483,7 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			Ship.ModuleList_Weapon:SetOverloadHPThreshold[100]
 			Ship.ModuleList_ActiveResists:SetOverloadHPThreshold[100]
 			Ship.ModuleList_Regen_Shield:SetOverloadHPThreshold[100]
+			Ship.ModuleList_Ancillary_Shield_Booster:SetOverloadHPThreshold[100]
 			Ship.ModuleList_Repair_Armor:SetOverloadHPThreshold[100]
 
 			This:QueueState["ResumeBot"]
@@ -572,13 +572,14 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 				Move:Undock
 			}
 
+			Ship.ModuleList_Siege.Allowed:Set[TRUE]
 			${CommonConfig.Tehbot_Mode}:Start
 		}
 
 		return TRUE
 	}
 
-	member:bool FleeToStation(bool waitForDrones = FALSE)
+	member:bool FleeToStation()
 	{
 		if ${Me.InStation}
 		{
@@ -586,20 +587,10 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 			return TRUE
 		}
 
+		Ship.ModuleList_Siege.Allowed:Set[FALSE]
 		if ${Ship.ModuleList_Siege.ActiveCount}
 		{
 			Ship.ModuleList_Siege:DeactivateAll
-		}
-
-		variable index:activedrone activeDrones
-		Me:GetActiveDrones[activeDrones]
-		if ${activeDrones.Used} > 0
-		{
-			DroneControl:Recall
-			if ${waitForDrones}
-			{
-				return FALSE
-			}
 		}
 
 		variable int64 StationID
@@ -621,10 +612,9 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 
 	member:bool Traveling()
 	{
-		; This:LogDebug["Traveling."]
-		if ${Cargo.Processing} || ${Move.Traveling} || ${Me.ToEntity.Mode} == MOVE_WARPING
+		if ${Me.InSpace}
 		{
-			if ${Me.InSpace}
+			if ${Cargo.Processing} || ${Move.Traveling} || ${Me.ToEntity.Mode} == MOVE_WARPING
 			{
 				if ${Ship.ModuleList_Siege.ActiveCount}
 				{
@@ -649,6 +639,29 @@ objectdef obj_FightOrFlight inherits obj_StateQueue
 				}
 			}
 
+			This:DetectWarpScrambleStatus
+			if ${IsWarpScrambled}
+			{
+				This:LogCritical["Warp Scrambled while trying to warp"]
+				return FALSE
+			}
+			elseif ${MyShip.ToEntity.Velocity} < 10000
+			{
+				; Haven't entered real warp stage and not scrambled, can scoop drones.
+				DroneControl:Recall
+			}
+			elseif !${${CommonConfig.Tehbot_Mode}.IsIdle}
+			{
+				; Only stop bot after entered real warping, in case ship got scrambled in the last second.
+				This:LogInfo["Stopping bot at velocity ${MyShip.ToEntity.Velocity}"]
+				${CommonConfig.Tehbot_Mode}:Stop
+			}
+
+			return FALSE
+		}
+
+		if !${Me.InStation}
+		{
 			return FALSE
 		}
 

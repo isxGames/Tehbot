@@ -31,7 +31,8 @@ objectdef obj_Move inherits obj_StateQueue
 		{
 			Entity[${ID}]:WarpTo[${Dist}]
 		}
-		Client:Wait[5000]
+		; Don't pause the combat bot when fleeing but before warp start
+		; Client:Wait[5000]
 	}
 
 	method ActivateAutoPilot()
@@ -168,6 +169,7 @@ objectdef obj_Move inherits obj_StateQueue
 		{
 			return
 		}
+
 		variable index:agentmission Missions
 		variable iterator m
 
@@ -242,6 +244,7 @@ objectdef obj_Move inherits obj_StateQueue
 		Logger:Log["Move", "Movement queued", "o"]
 		Logger:Log["Move", " ${Entity[${ID}].Name}", "-g"]
 		This.Traveling:Set[TRUE]
+		Entity[${ID}]:AlignTo
 		This:QueueState["EntityMove", 2000, "${ID}, ${Distance}, ${FleetWarp}"]
 	}
 
@@ -279,6 +282,11 @@ objectdef obj_Move inherits obj_StateQueue
 
 	method Gate(int64 ID, bool CalledFromMove=FALSE)
 	{
+		if ${This.Traveling}
+		{
+			return
+		}
+
 		Logger:Log["Move", "Movement queued", "o"]
 		Logger:Log["Move", " ${Entity[${ID}].Name}", "-g"]
 		This.Traveling:Set[TRUE]

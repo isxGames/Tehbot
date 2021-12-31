@@ -11,6 +11,7 @@
 #define TYPE_MEGA_PULSE_LASER                                                                                   3057
 #define TYPE_TORPEDO_LAUNCHER                                                                                   2420
 #define TYPE_800MM_REPEATING_CANNON                                                                             2929
+#define TYPE_XLARGE_ANCILLARY_SHIELD_BOOSTER                                                                    32780
 
 ; Module group id
 #define GROUPID_CONTROL_TOWER                                                                                   365
@@ -42,7 +43,7 @@
 #define GROUP_DRONECONTROLUNIT																					407
 #define GROUP_AFTERBURNER 																						46
 #define GROUP_SHIELD_BOOSTER 																					40
-#define GROUP_ANCILLARY_SHIELD_BOOSTER 																					1156
+#define GROUP_ANCILLARY_SHIELD_BOOSTER 																			1156
 #define GROUP_SHIELD_HARDENER 																					77
 #define GROUP_ARMOR_REPAIRERS 																					62
 #define GROUP_ARMOR_HARDENERS 																					328

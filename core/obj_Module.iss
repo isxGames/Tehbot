@@ -340,7 +340,7 @@ objectdef obj_Module inherits obj_StateQueue
 		{
 			_lastDeactivationTimestamp:Set[0]
 
-			defaultAmmo:Set[${This._getShortRangeAmmo}]
+			defaultAmmo:Set[${This._getDefaultAmmo}]
 
 			; ${MyShip.Cargo[${defaultAmmo}]} will return the first unstacked item instance of item, for crystals, the quantity is likely to be 1.
 			; so we set the Quantity threshold to 0 instead of ModuleList_Weapon.Count until a (TODO) improved quantity method is implemented.
@@ -523,13 +523,13 @@ objectdef obj_Module inherits obj_StateQueue
 	{
 		if ${_lastChangeAmmoTimestamp} == 0
 		{
-			This:LogInfo["Switching ${This.Name} ammo to \ay${ammoName}"]
+			This:LogInfo["Switching ${This.Name} charge to \ay${ammoName}"]
 			_lastChangeAmmoTimestamp:Set[${LavishScript.RunningTime}]
 			This:ChangeAmmo[${ammoID}, ${ammoAmount}]
 		}
 		elseif ${LavishScript.RunningTime} > ${Math.Calc[${_lastChangeAmmoTimestamp} + ${_changeAmmoRetryInterval}]}
 		{
-			This:LogInfo["Retrying ${This.Name} switching ammo to \ay${ammoName}"]
+			This:LogInfo["Retrying ${This.Name} switching charge to \ay${ammoName}"]
 			_lastChangeAmmoTimestamp:Set[${LavishScript.RunningTime}]
 			This:ChangeAmmo[${ammoID}, ${ammoAmount}]
 		}
@@ -539,13 +539,13 @@ objectdef obj_Module inherits obj_StateQueue
 	{
 		if ${_lastChangeAmmoTimestamp} == 0
 		{
-			This:LogInfo["Reloading ammo."]
+			This:LogInfo["Reloading charge."]
 			_lastChangeAmmoTimestamp:Set[${LavishScript.RunningTime}]
 			EVE:Execute[CmdReloadAmmo]
 		}
 		elseif ${LavishScript.RunningTime} > ${Math.Calc[${_lastChangeAmmoTimestamp} + ${_changeAmmoRetryInterval}]}
 		{
-			This:LogInfo["Retrying reload ammo."]
+			This:LogInfo["Retrying reload charge."]
 			_lastChangeAmmoTimestamp:Set[${LavishScript.RunningTime}]
 			EVE:Execute[CmdReloadAmmo]
 		}
@@ -597,10 +597,10 @@ objectdef obj_Module inherits obj_StateQueue
 		}
 
 		variable string shortRangeAmmo
-		shortRangeAmmo:Set[${This._getShortRangeAmmo}]
+		shortRangeAmmo:Set[${This._getDefaultAmmo}]
 
 		variable string longRangeAmmo
-		longRangeAmmo:Set[${This._getLongRangeAmmo}]
+		longRangeAmmo:Set[${This._getDefaultLongRangeAmmo}]
 
 		if ${This.Charge(exists)} && ${This.Charge.Type.Equal[${shortRangeAmmo}]}
 		{
@@ -690,10 +690,10 @@ objectdef obj_Module inherits obj_StateQueue
 		}
 
 		variable string shortRangeAmmo
-		shortRangeAmmo:Set[${This._getShortRangeAmmo}]
+		shortRangeAmmo:Set[${This._getDefaultAmmo}]
 
 		variable string longRangeAmmo
-		longRangeAmmo:Set[${This._getLongRangeAmmo}]
+		longRangeAmmo:Set[${This._getDefaultLongRangeAmmo}]
 
 		; Giveup timing ammo change according to remaining ammo quantity.
 		; Because it won't work correctly unless enemy HP is taken into account, which is too much work.
@@ -845,7 +845,7 @@ objectdef obj_Module inherits obj_StateQueue
 		return ""
 	}
 
-	member:string _getShortRangeAmmo()
+	member:string _getDefaultAmmo()
 	{
 		if !${Ammo.NotNULLOrEmpty} || (!${MyShip.Cargo[${Ammo}].Quantity} && !${This.Charge.Type.Equal[${Ammo}]})
 		{
@@ -857,11 +857,11 @@ objectdef obj_Module inherits obj_StateQueue
 		}
 	}
 
-	member:string _getLongRangeAmmo()
+	member:string _getDefaultLongRangeAmmo()
 	{
 		if !${LongRangeAmmo.NotNULLOrEmpty} || (!${MyShip.Cargo[${LongRangeAmmo}].Quantity} && !${This.Charge.Type.Equal[${LongRangeAmmo}]})
 		{
-			return ${This.FallbackSecondaryAmmo}
+			return ${This.FallbackLongRangeAmmo}
 		}
 		else
 		{
@@ -988,7 +988,7 @@ objectdef obj_Module inherits obj_StateQueue
 				return ${This._shortRangeAmmoRange}
 			}
 
-			return 500000
+			return 50000
 		}
 	}
 
@@ -1002,12 +1002,14 @@ objectdef obj_Module inherits obj_StateQueue
 				return "Scourge Rage Torpedo"
 			case TYPE_800MM_REPEATING_CANNON
 				return "Hail L"
+			case TYPE_XLARGE_ANCILLARY_SHIELD_BOOSTER
+				return "Cap Booster 400"
 		}
 
 		return ""
 	}
 
-	member:string FallbackSecondaryAmmo()
+	member:string FallbackLongRangeAmmo()
 	{
 		switch ${This.ToItem.TypeID}
 		{
@@ -1211,7 +1213,14 @@ objectdef obj_Module inherits obj_StateQueue
 ; 		drf:Set[${This._getDRF}]
 ; This:LogInfo["drf ${drf}"]
 ; 		variable float64 velocityFactor
-; 		velocityFactor:Set[${Math.Calc[(${radiusFactor} * ${missileExplosionVelocity} / ${targetVelocity}) ^^ ${drf}]}]
+; 		if !${targetVelocity.Equal[0]}
+; 		{
+; 			velocityFactor:Set[${Math.Calc[(${radiusFactor} * ${missileExplosionVelocity} / ${targetVelocity}) ^^ ${drf}]}]
+; 		}
+; 		else
+; 		{
+; 			velocityFactor:Set[1]
+; 		}
 
 ; This:LogInfo["velocityFactor ${velocityFactor}"]
 ; 		variable float64 efficiency
@@ -1257,6 +1266,33 @@ objectdef obj_Module inherits obj_StateQueue
 		}
 	}
 
+	; We want to reload charge in advance for aucillary shield booster to
+	; ensure that we always have more than this charge when engaging gankers.
+	; when this value is 3, we can run approximately 5 cycles in 25 seconds before
+	; the capacitor is empty. Which is equvilant to 67500 EHP.
+	member:int ReloadChargeThreshold()
+	{
+		switch ${This.ToItem.TypeID}
+		{
+			case TYPE_XLARGE_ANCILLARY_SHIELD_BOOSTER
+				return 3
+		}
+
+		return 0
+	}
+
+	member:bool IsUsingLongRangeAmmo()
+	{
+		variable string shortRangeAmmo
+		shortRangeAmmo:Set[${This._getDefaultAmmo}]
+
+		if !${This.Charge(exists)} || ${This.Charge.Type.Equal[${shortRangeAmmo}]}
+		{
+			return FALSE
+		}
+
+		return TRUE
+	}
 }
 
 	; 		elseif ${This.ToItem.GroupID} == GROUP_PRECURSORWEAPON
@@ -1290,19 +1326,4 @@ objectdef obj_Module inherits obj_StateQueue
 	; 		}
 	;
 
-	; member:bool UnloadAmmoToCargo()
-	; {
-	; 	if !${This.Charge(exists)}
-	; 	{
-	; 		return TRUE
-	; 	}
-	; 	else
-	; 	{
-	; 		This:LogInfo["Unloading \ay${This.Charge.Type}"]
-	; 		This:UnloadToCargo
-	; 		return TRUE
-	; 	}
-
-	; 	return FALSE
-	; }
 

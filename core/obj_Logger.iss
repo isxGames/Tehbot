@@ -1,7 +1,7 @@
 objectdef obj_Logger
 {
 	variable string LogFile
-	variable string LogLevelBar = LOG_DEBUG
+	variable string LogLevelBar = LOG_INFO
 	variable string LogModuleName
 	variable string LogInfoColor
 
