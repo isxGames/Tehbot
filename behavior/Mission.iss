@@ -1445,6 +1445,40 @@ objectdef obj_Mission inherits obj_StateQueue
 			return TRUE
 		}
 
+		if ${Entity[Type = "Acceleration Gate"]} && !${EVEWindow[byName, modal].Text.Find[This gate is locked!]}
+		{
+			if ${Lootables.TargetList.Used} && ${Config.SalvagePrefix.NotNULLOrEmpty}
+			{
+				EVE:GetBookmarks[BookmarkIndex]
+				BookmarkIndex:RemoveByQuery[${LavishScript.CreateQuery[SolarSystemID == ${Me.SolarSystemID}]}, FALSE]
+				BookmarkIndex:RemoveByQuery[${LavishScript.CreateQuery[Distance < 200000]}, FALSE]
+				BookmarkIndex:Collapse
+
+				if !${BookmarkIndex.Used}
+					Lootables.TargetList.Get[1]:CreateBookmark["${Config.SalvagePrefix} ${EVE.Agent[${currentAgentIndex}].Name} ${Me.Name} ${EVETime.Time.Left[5]}", "", "Corporation Locations", 1]
+			}
+
+			currentTarget:Set[0]
+			Move:Gate[${Entity[Type = "Acceleration Gate"]}]
+			; Blitz cargo delivery and recon 1 of 3
+			This:InsertState["CheckForWork"]
+			This:InsertState["Idle", 2000]
+			This:InsertState["Traveling"]
+			This:InsertState["ReloadWeapons"]
+			return TRUE
+		}
+
+		if ${Lootables.TargetList.Used} && ${Config.SalvagePrefix.NotNULLOrEmpty}
+		{
+			EVE:GetBookmarks[BookmarkIndex]
+			BookmarkIndex:RemoveByQuery[${LavishScript.CreateQuery[SolarSystemID == ${Me.SolarSystemID}]}, FALSE]
+			BookmarkIndex:RemoveByQuery[${LavishScript.CreateQuery[Distance < 200000]}, FALSE]
+			BookmarkIndex:Collapse
+
+			if !${BookmarkIndex.Used}
+				Lootables.TargetList.Get[1]:CreateBookmark["${Config.SalvagePrefix} ${EVE.Agent[${currentAgentIndex}].Name} ${EVETime.Time.Left[5]}", "", "Corporation Locations", 1]
+		}
+
 		; Check mission complete for World Collide and Extravaganza before activating an extra gate
 		variable index:agentmission missions
 		variable iterator missionIterator
@@ -1505,39 +1539,6 @@ objectdef obj_Mission inherits obj_StateQueue
 			while ${missionIterator:Next(exists)}
 		}
 
-		if ${Entity[Type = "Acceleration Gate"]} && !${EVEWindow[byName, modal].Text.Find[This gate is locked!]}
-		{
-			if ${Lootables.TargetList.Used} && ${Config.SalvagePrefix.NotNULLOrEmpty}
-			{
-				EVE:GetBookmarks[BookmarkIndex]
-				BookmarkIndex:RemoveByQuery[${LavishScript.CreateQuery[SolarSystemID == ${Me.SolarSystemID}]}, FALSE]
-				BookmarkIndex:RemoveByQuery[${LavishScript.CreateQuery[Distance < 200000]}, FALSE]
-				BookmarkIndex:Collapse
-
-				if !${BookmarkIndex.Used}
-					Lootables.TargetList.Get[1]:CreateBookmark["${Config.SalvagePrefix} ${EVE.Agent[${currentAgentIndex}].Name} ${Me.Name} ${EVETime.Time.Left[5]}", "", "Corporation Locations", 1]
-			}
-
-			currentTarget:Set[0]
-			Move:Gate[${Entity[Type = "Acceleration Gate"]}]
-			; Blitz cargo delivery and recon 1 of 3
-			This:InsertState["CheckForWork"]
-			This:InsertState["Idle", 2000]
-			This:InsertState["Traveling"]
-			This:InsertState["ReloadWeapons"]
-			return TRUE
-		}
-
-		if ${Lootables.TargetList.Used} && ${Config.SalvagePrefix.NotNULLOrEmpty}
-		{
-			EVE:GetBookmarks[BookmarkIndex]
-			BookmarkIndex:RemoveByQuery[${LavishScript.CreateQuery[SolarSystemID == ${Me.SolarSystemID}]}, FALSE]
-			BookmarkIndex:RemoveByQuery[${LavishScript.CreateQuery[Distance < 200000]}, FALSE]
-			BookmarkIndex:Collapse
-
-			if !${BookmarkIndex.Used}
-				Lootables.TargetList.Get[1]:CreateBookmark["${Config.SalvagePrefix} ${EVE.Agent[${currentAgentIndex}].Name} ${EVETime.Time.Left[5]}", "", "Corporation Locations", 1]
-		}
 
 		currentTarget:Set[0]
 		This:InsertState["CheckForWork"]
@@ -1559,9 +1560,9 @@ objectdef obj_Mission inherits obj_StateQueue
 			EVEWindow[AgentBrowser]:Close
 			return FALSE
 		}
-		if ${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}](exists)}
+		if ${EVEWindow[byCaption, Agent Conversation](exists)}
 		{
-			EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}]:Close
+			EVEWindow[byCaption, Agent Conversation]:Close
 			return FALSE
 		}
 		if ${EVEWindow[ByCaption, Mission journal](exists)}
@@ -1605,21 +1606,21 @@ objectdef obj_Mission inherits obj_StateQueue
 			return TRUE
 		}
 
-		if !${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}](exists)}
+		if !${EVEWindow[byCaption, Agent Conversation](exists)}
 		{
 			EVE.Agent[${currentAgentIndex}]:StartConversation
 			return FALSE
 		}
 
-		if ${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["View Mission"](exists)}
+		if ${EVEWindow[byCaption, Agent Conversation].Button["View Mission"](exists)}
 		{
-			EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["View Mission"]:Press
+			EVEWindow[byCaption, Agent Conversation].Button["View Mission"]:Press
 			return FALSE
 		}
 
-		if ${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["Complete Mission"](exists)}
+		if ${EVEWindow[byCaption, Agent Conversation].Button["Complete Mission"](exists)}
 		{
-			EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["Complete Mission"]:Press
+			EVEWindow[byCaption, Agent Conversation].Button["Complete Mission"]:Press
 			relay "all" -event Tehbot_SalvageBookmark ${Me.ID}
 		}
 
@@ -1674,7 +1675,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			return TRUE
 		}
 
-		if !${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}](exists)}
+		if !${EVEWindow[byCaption, Agent Conversation](exists)}
 		{
 			EVE.Agent[${currentAgentIndex}]:StartConversation
 			return FALSE
@@ -1683,37 +1684,37 @@ objectdef obj_Mission inherits obj_StateQueue
 		switch ${Action}
 		{
 			case OFFER
-				if ${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["View Mission"](exists)}
+				if ${EVEWindow[byCaption, Agent Conversation].Button["View Mission"](exists)}
 				{
-					EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["View Mission"]:Press
+					EVEWindow[byCaption, Agent Conversation].Button["View Mission"]:Press
 					return TRUE
 				}
-				if ${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["Request Mission"](exists)}
+				if ${EVEWindow[byCaption, Agent Conversation].Button["Request Mission"](exists)}
 				{
-					EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["Request Mission"]:Press
+					EVEWindow[byCaption, Agent Conversation].Button["Request Mission"]:Press
 					return TRUE
 				}
 
 				break
 			case ACCEPT
-				if ${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["Request Mission"](exists)}
+				if ${EVEWindow[byCaption, Agent Conversation].Button["Request Mission"](exists)}
 				{
-					EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["Request Mission"]:Press
+					EVEWindow[byCaption, Agent Conversation].Button["Request Mission"]:Press
 					return FALSE
 				}
-				if ${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["View Mission"](exists)}
+				if ${EVEWindow[byCaption, Agent Conversation].Button["View Mission"](exists)}
 				{
-					EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["View Mission"]:Press
+					EVEWindow[byCaption, Agent Conversation].Button["View Mission"]:Press
 					return FALSE
 				}
-				if ${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["Accept"](exists)}
+				if ${EVEWindow[byCaption, Agent Conversation].Button["Accept"](exists)}
 				{
-					EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["Accept"]:Press
+					EVEWindow[byCaption, Agent Conversation].Button["Accept"]:Press
 					return FALSE
 				}
-				if ${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["Close"](exists)}
+				if ${EVEWindow[byCaption, Agent Conversation].Button["Close"](exists)}
 				{
-					EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["Close"]:Press
+					EVEWindow[byCaption, Agent Conversation].Button["Close"]:Press
 					return TRUE
 				}
 				break
@@ -1724,14 +1725,14 @@ objectdef obj_Mission inherits obj_StateQueue
 					This:InsertState["PickAgent"]
 					return TRUE
 				}
-				if ${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["View Mission"](exists)}
+				if ${EVEWindow[byCaption, Agent Conversation].Button["View Mission"](exists)}
 				{
-					EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["View Mission"]:Press
+					EVEWindow[byCaption, Agent Conversation].Button["View Mission"]:Press
 					return FALSE
 				}
-				if ${EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["Decline"](exists)}
+				if ${EVEWindow[byCaption, Agent Conversation].Button["Decline"](exists)}
 				{
-					EVEWindow[agentinteraction_${EVE.Agent[${currentAgentIndex}].ID}].Button["Decline"]:Press
+					EVEWindow[byCaption, Agent Conversation].Button["Decline"]:Press
 					This:InsertState["CatchDeclineWarning", 1500]
 					return TRUE
 				}
