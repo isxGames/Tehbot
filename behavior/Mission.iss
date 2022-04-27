@@ -1560,9 +1560,9 @@ objectdef obj_Mission inherits obj_StateQueue
 			EVEWindow[AgentBrowser]:Close
 			return FALSE
 		}
-		if ${EVEWindow[byCaption, Agent Conversation](exists)}
+		if ${EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}](exists)}
 		{
-			EVEWindow[byCaption, Agent Conversation]:Close
+			EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}]:Close
 			return FALSE
 		}
 		if ${EVEWindow[ByCaption, Mission journal](exists)}
@@ -1606,21 +1606,21 @@ objectdef obj_Mission inherits obj_StateQueue
 			return TRUE
 		}
 
-		if !${EVEWindow[byCaption, Agent Conversation](exists)}
+		if !${EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}](exists)}
 		{
 			EVE.Agent[${currentAgentIndex}]:StartConversation
 			return FALSE
 		}
 
-		if ${EVEWindow[byCaption, Agent Conversation].Button["View Mission"](exists)}
+		if ${EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["View Mission"](exists)}
 		{
-			EVEWindow[byCaption, Agent Conversation].Button["View Mission"]:Press
+			EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["View Mission"]:Press
 			return FALSE
 		}
 
-		if ${EVEWindow[byCaption, Agent Conversation].Button["Complete Mission"](exists)}
+		if ${EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["Complete Mission"](exists)}
 		{
-			EVEWindow[byCaption, Agent Conversation].Button["Complete Mission"]:Press
+			EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["Complete Mission"]:Press
 			relay "all" -event Tehbot_SalvageBookmark ${Me.ID}
 		}
 
@@ -1675,7 +1675,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			return TRUE
 		}
 
-		if !${EVEWindow[byCaption, Agent Conversation](exists)}
+		if !${EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}](exists)}
 		{
 			EVE.Agent[${currentAgentIndex}]:StartConversation
 			return FALSE
@@ -1684,37 +1684,37 @@ objectdef obj_Mission inherits obj_StateQueue
 		switch ${Action}
 		{
 			case OFFER
-				if ${EVEWindow[byCaption, Agent Conversation].Button["View Mission"](exists)}
+				if ${EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["View Mission"](exists)}
 				{
-					EVEWindow[byCaption, Agent Conversation].Button["View Mission"]:Press
+					EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["View Mission"]:Press
 					return TRUE
 				}
-				if ${EVEWindow[byCaption, Agent Conversation].Button["Request Mission"](exists)}
+				if ${EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["Request Mission"](exists)}
 				{
-					EVEWindow[byCaption, Agent Conversation].Button["Request Mission"]:Press
+					EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["Request Mission"]:Press
 					return TRUE
 				}
 
 				break
 			case ACCEPT
-				if ${EVEWindow[byCaption, Agent Conversation].Button["Request Mission"](exists)}
+				if ${EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["Request Mission"](exists)}
 				{
-					EVEWindow[byCaption, Agent Conversation].Button["Request Mission"]:Press
+					EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["Request Mission"]:Press
 					return FALSE
 				}
-				if ${EVEWindow[byCaption, Agent Conversation].Button["View Mission"](exists)}
+				if ${EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["View Mission"](exists)}
 				{
-					EVEWindow[byCaption, Agent Conversation].Button["View Mission"]:Press
+					EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["View Mission"]:Press
 					return FALSE
 				}
-				if ${EVEWindow[byCaption, Agent Conversation].Button["Accept"](exists)}
+				if ${EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["Accept"](exists)}
 				{
-					EVEWindow[byCaption, Agent Conversation].Button["Accept"]:Press
+					EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["Accept"]:Press
 					return FALSE
 				}
-				if ${EVEWindow[byCaption, Agent Conversation].Button["Close"](exists)}
+				if ${EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["Close"](exists)}
 				{
-					EVEWindow[byCaption, Agent Conversation].Button["Close"]:Press
+					EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["Close"]:Press
 					return TRUE
 				}
 				break
@@ -1725,14 +1725,14 @@ objectdef obj_Mission inherits obj_StateQueue
 					This:InsertState["PickAgent"]
 					return TRUE
 				}
-				if ${EVEWindow[byCaption, Agent Conversation].Button["View Mission"](exists)}
+				if ${EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["View Mission"](exists)}
 				{
-					EVEWindow[byCaption, Agent Conversation].Button["View Mission"]:Press
+					EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["View Mission"]:Press
 					return FALSE
 				}
-				if ${EVEWindow[byCaption, Agent Conversation].Button["Decline"](exists)}
+				if ${EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["Decline"](exists)}
 				{
-					EVEWindow[byCaption, Agent Conversation].Button["Decline"]:Press
+					EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["Decline"]:Press
 					This:InsertState["CatchDeclineWarning", 1500]
 					return TRUE
 				}
@@ -2697,9 +2697,9 @@ objectdef obj_Mission inherits obj_StateQueue
 
 			}
 
-			if ${EVEWindow[byCaption, Agent Conversation](exists)}
+			if ${EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}](exists)}
 			{
-				EVEWindow[byCaption, Agent Conversation]:Close
+				EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}]:Close
 				return FALSE
 			}
 			if ${EVEWindow[ByCaption, Mission journal](exists)}
