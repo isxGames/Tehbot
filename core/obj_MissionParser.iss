@@ -277,7 +277,7 @@ objectdef obj_MissionParser inherits obj_Logger
     member:string AquireItem()
 	{
         ; Find[] is not case sensitive so it may confuse quantity x with moon index X.
-		variable string journalText = ${EVEWindow[ByCaption, Agent Conversation - ${AgentName}].ObjectivesHTML.Escape.ReplaceSubstring[" X -", "MOON_10_ESCAPE-"]}
+		variable string journalText = ${EVEWindow[ByCaption, Agent Conversation - ${AgentName}].ObjectivesHTML.AsJSON.ReplaceSubstring[" X -", "MOON_10_ESCAPE-"]}
         if !${journalText.Find["The following rewards will be yours if you complete this mission"]}
         {
             This:LogCritical["journal length not fully retrieved."]
