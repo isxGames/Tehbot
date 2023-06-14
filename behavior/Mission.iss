@@ -21,13 +21,13 @@ objectdef obj_Configuration_Agents inherits obj_Configuration_Base
 
 	member:int AgentIndex(string name)
 	{
-		;Logger:Log["obj_Configuration_Agents: AgentIndex ${name}"]
-		return ${This.AgentRef[${name}].FindSetting[AgentIndex, 9591]}
+		Logger:Log["obj_Configuration_Agents: AgentIndex ${name}"]
+		return ${This.AgentRef[${name}].FindSetting[AgentIndex, 9494]}
 	}
 
 	method SetAgentIndex(string name, int value)
 	{
-		;Logger:Log["obj_Configuration_Agents: SetAgentIndex ${name} ${value}"]
+		Logger:Log["obj_Configuration_Agents: SetAgentIndex ${name} ${value}"]
 		if !${This.ConfigRef.FindSet[${name}](exists)}
 		{
 			This.ConfigRef:AddSet[${name}]
@@ -38,13 +38,13 @@ objectdef obj_Configuration_Agents inherits obj_Configuration_Base
 
 	member:int AgentID(string name)
 	{
-		;Logger:Log["obj_Configuration_Agents: AgentID ${name}"]
-		return ${This.AgentRef[${name}].FindSetting[AgentID, 3018920]}
+		Logger:Log["obj_Configuration_Agents: AgentID ${name}"]
+		return ${This.AgentRef[${name}].FindSetting[AgentID, 3012267]}
 	}
 
 	method SetAgentID(string name, int value)
 	{
-		;Logger:Log["obj_Configuration_Agents: SetAgentID ${name} ${value}"]
+		Logger:Log["obj_Configuration_Agents: SetAgentID ${name} ${value}"]
 		if !${This.ConfigRef.FindSet[${name}](exists)}
 		{
 			This.ConfigRef:AddSet[${name}]
@@ -55,7 +55,7 @@ objectdef obj_Configuration_Agents inherits obj_Configuration_Base
 
 	member:int NextDeclineableTime(string name)
 	{
-		; Logger:Log["obj_Configuration_Agents", "NextDeclineableTime ${name} ${This.AgentRef[${name}].FindSetting[NextDeclineableTime, 0]}", "", LOG_DEBUG]
+		Logger:Log["obj_Configuration_Agents", "NextDeclineableTime ${name} ${This.AgentRef[${name}].FindSetting[NextDeclineableTime, 0]}", "", LOG_DEBUG]
 		return ${This.AgentRef[${name}].FindSetting[NextDeclineableTime, 0]}
 	}
 
@@ -208,7 +208,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		This[parent]:Initialize
 
 		DynamicAddBehavior("Mission", "Combat Missions")
-		This.PulseFrequency:Set[500]
+		This.PulseFrequency:Set[1500]
 
 		This.LogInfoColor:Set["g"]
 		This.LogLevelBar:Set[${Config.LogLevelBar}]
@@ -336,25 +336,31 @@ objectdef obj_Mission inherits obj_StateQueue
 				{
 					continue
 				}
-
-				missionIterator.Value:GetDetails
-				if !${EVEWindow[ByCaption, Mission journal - ${EVE.Agent[${currentAgentIndex}].Name}](exists)}
+				
+				;missionIterator.Value:GetDetails
+				if !${EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}](exists)}
 				{
-					if ${EVEWindow[ByCaption, Mission journal](exists)}
-					{
-						; Close journal of other mission.
-						EVEWindow[ByCaption, Mission journal]:Close
-					}
-					missionIterator.Value:GetDetails
+					;missionIterator.Value:GetDetails
+					EVE.Agent[${currentAgentIndex}]:StartConversation
 					return FALSE
 				}
-
-				; Must ensure that ${EVEWindow[ByCaption, Mission journal - ${AgentName}].HTML.Escape} already returns full length
+				if ${EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["Request Mission"](exists)}
+				{
+					EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["Request Mission"]:Press
+					return FALSE
+				}
+				if ${EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["View Mission"](exists)}
+				{
+					EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["View Mission"]:Press
+					return FALSE
+				}
+				; Must ensure that ${EVEWindow[ByCaption, Agent Conversation - ${agentName}].ObjectivesHTML.AsJSON} already returns full length
     			; journal BEFORE using mission parser.
-				variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${EVE.Agent[${currentAgentIndex}].Name}].HTML.Escape}
+				variable string missionJournalText = ${EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].ObjectivesHTML.AsJSON}
 				if !${missionJournalText.Find["The following rewards will be yours if you complete this mission"]}
 				{
-					missionIterator.Value:GetDetails
+					;missionIterator.Value:GetDetails
+					echo CFW Location 1
 					return FALSE
 				}
 
@@ -393,6 +399,7 @@ objectdef obj_Mission inherits obj_StateQueue
 
 					if ${DamageType.Element[${missionName}](exists)}
 					{
+						echo ${EVE.Agent[${currentAgentIndex}].Index}
 						This:LogInfo["Accepting mission \ao${missionName}"]
 						This:InsertState["Cleanup"]
 						This:InsertState["CheckForWork"]
@@ -839,6 +846,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		Lootables:RequestUpdate
 		Ship.ModuleList_ActiveResists:ActivateAll
 		variable index:bookmark BookmarkIndex
+		variable index:bookmark BookmarkIndex2
 
 		if ${Me.ToEntity.Mode} == MOVE_WARPING
 		{
@@ -849,7 +857,7 @@ objectdef obj_Mission inherits obj_StateQueue
 		variable bool allowSiegeModule
 		variable iterator targetIterator
 		allowSiegeModule:Set[TRUE]
-		if ${Config.DeactivateSiegeModuleEarly} && (${NPCs.TargetList.Used} < 2) && !${Entity[${targetToDestroy}]}
+		if ${Config.DeactivateSiegeModuleEarly} && (${NPCs.TargetList.Used} < 1) && !${Entity[${targetToDestroy}]}
 		{
 			allowSiegeModule:Set[FALSE]
 			NPCs.TargetList:GetIterator[targetIterator]
@@ -1444,10 +1452,10 @@ objectdef obj_Mission inherits obj_StateQueue
 			This:InsertState["PerformMission"]
 			return TRUE
 		}
-
+		
 		if ${Entity[Type = "Acceleration Gate"]} && !${EVEWindow[byName, modal].Text.Find[This gate is locked!]}
 		{
-			if ${Lootables.TargetList.Used} && ${Config.SalvagePrefix.NotNULLOrEmpty}
+			if (${Lootables.TargetList.Used} > 14 && ${Config.SalvagePrefix.NotNULLOrEmpty}) || (${Lootables.TargetList.Used} > 5 && ${Entity[Name =- "Imperial"](exists)}) || (${Lootables.TargetList.Used} > 5 && ${Entity[Name =- "State"](exists)})
 			{
 				EVE:GetBookmarks[BookmarkIndex]
 				BookmarkIndex:RemoveByQuery[${LavishScript.CreateQuery[SolarSystemID == ${Me.SolarSystemID}]}, FALSE]
@@ -1455,7 +1463,10 @@ objectdef obj_Mission inherits obj_StateQueue
 				BookmarkIndex:Collapse
 
 				if !${BookmarkIndex.Used}
-					Lootables.TargetList.Get[1]:CreateBookmark["${Config.SalvagePrefix} ${EVE.Agent[${currentAgentIndex}].Name} ${Me.Name} ${EVETime.Time.Left[5]}", "", "Corporation Locations", 1]
+				{
+					Lootables.TargetList.Get[1]:CreateBookmark["${Config.SalvagePrefix} ${Lootables.TargetList.Used} ${EVETime.Time.Left[5]}", "", "Salvaging", 1]
+									
+				}
 			}
 
 			currentTarget:Set[0]
@@ -1467,16 +1478,21 @@ objectdef obj_Mission inherits obj_StateQueue
 			This:InsertState["ReloadWeapons"]
 			return TRUE
 		}
-
-		if ${Lootables.TargetList.Used} && ${Config.SalvagePrefix.NotNULLOrEmpty}
+		
+		;Lootables:RequestUpdate
+		
+		echo ${Lootables.TargetList.Used}
+		
+		if (${Lootables.TargetList.Used} > 14 && ${Config.SalvagePrefix.NotNULLOrEmpty}) || (${Lootables.TargetList.Used} > 5 && ${Entity[Name =- "Imperial"](exists)}) || (${Lootables.TargetList.Used} > 5 && ${Entity[Name =- "State"](exists)})
 		{
-			EVE:GetBookmarks[BookmarkIndex]
-			BookmarkIndex:RemoveByQuery[${LavishScript.CreateQuery[SolarSystemID == ${Me.SolarSystemID}]}, FALSE]
-			BookmarkIndex:RemoveByQuery[${LavishScript.CreateQuery[Distance < 200000]}, FALSE]
-			BookmarkIndex:Collapse
+			EVE:GetBookmarks[BookmarkIndex2]
+			BookmarkIndex2:RemoveByQuery[${LavishScript.CreateQuery[SolarSystemID == ${Me.SolarSystemID}]}, FALSE]
+			BookmarkIndex2:RemoveByQuery[${LavishScript.CreateQuery[Distance < 200000]}, FALSE]
+			BookmarkIndex2:Collapse
 
-			if !${BookmarkIndex.Used}
-				Lootables.TargetList.Get[1]:CreateBookmark["${Config.SalvagePrefix} ${EVE.Agent[${currentAgentIndex}].Name} ${EVETime.Time.Left[5]}", "", "Corporation Locations", 1]
+				{
+					Lootables.TargetList.Get[1]:CreateBookmark["${Config.SalvagePrefix} ${Lootables.TargetList.Used} ${EVETime.Time.Left[5]}", "", "Salvaging", 1]		
+				}
 		}
 
 		; Check mission complete for World Collide and Extravaganza before activating an extra gate
@@ -1485,6 +1501,8 @@ objectdef obj_Mission inherits obj_StateQueue
 		variable string missionName
 		EVE:GetAgentMissions[missions]
 		missions:GetIterator[missionIterator]
+		
+		;Lootables:AddQueryString["(GroupID = GROUP_WRECK || GroupID = GROUP_CARGOCONTAINER) && !IsMoribund"]
 
 		if ${missionIterator:First(exists)}
 		{
@@ -1495,24 +1513,36 @@ objectdef obj_Mission inherits obj_StateQueue
 					continue
 				}
 
-				missionIterator.Value:GetDetails
-				if !${EVEWindow[ByCaption, Mission journal - ${EVE.Agent[${currentAgentIndex}].Name}](exists)}
+				;missionIterator.Value:GetDetails
+				EVE.Agent[${currentAgentIndex}]:StartConversation
+				if !${EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}](exists)}
 				{
-					if ${EVEWindow[ByCaption, Mission journal](exists)}
+					if ${EVEWindow[ByCaption, Agent Conversation](exists)}
 					{
 						; Close journal of other mission.
-						EVEWindow[ByCaption, Mission journal]:Close
+						EVEWindow[ByCaption, Agent Conversation]:Close
 					}
-					missionIterator.Value:GetDetails
+					;missionIterator.Value:GetDetails
+					EVE.Agent[${currentAgentIndex}]:StartConversation
 					return FALSE
 				}
-
-				; Must ensure that ${EVEWindow[ByCaption, Mission journal - ${AgentName}].HTML.Escape} already returns full length
+				if ${EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["Request Mission"](exists)}
+				{
+					EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["Request Mission"]:Press
+					return FALSE
+				}
+				if ${EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["View Mission"](exists)}
+				{
+					EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].Button["View Mission"]:Press
+					return FALSE
+				}
+				; Must ensure that ${EVEWindow[ByCaption, Agent Conversation - ${agentName}].ObjectivesHTML.AsJSON} already returns full length
     			; journal BEFORE using mission parser.
-				variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${EVE.Agent[${currentAgentIndex}].Name}].HTML.Escape}
+				variable string missionJournalText = ${EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}].ObjectivesHTML.AsJSON}
 				if !${missionJournalText.Find["The following rewards will be yours if you complete this mission"]}
 				{
-					missionIterator.Value:GetDetails
+					;missionIterator.Value:GetDetails
+					EVE.Agent[${currentAgentIndex}]:StartConversation
 					return FALSE
 				}
 
@@ -1538,7 +1568,7 @@ objectdef obj_Mission inherits obj_StateQueue
 			}
 			while ${missionIterator:Next(exists)}
 		}
-
+		
 
 		currentTarget:Set[0]
 		This:InsertState["CheckForWork"]
@@ -1565,9 +1595,9 @@ objectdef obj_Mission inherits obj_StateQueue
 			EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}]:Close
 			return FALSE
 		}
-		if ${EVEWindow[ByCaption, Mission journal](exists)}
+		if ${EVEWindow[ByCaption, Agent Conversation](exists)}
 		{
-			EVEWindow[ByCaption, Mission journal]:Close
+			EVEWindow[ByCaption, Agent Conversation]:Close
 			return FALSE
 		}
 		if ${EVEWindow[RepairShop](exists)}
@@ -2087,9 +2117,9 @@ objectdef obj_Mission inherits obj_StateQueue
 				   ; Anomaly gate key
 				   !${itemIterator.Value.Name.Equal["Oura Madusaari"]} && \
 				   !${itemIterator.Value.Group.Equal["Acceleration Gate Keys"]} && \
-				   !${itemIterator.Value.Name.Find["Script"]} && \
+				   !${itemIterator.Value.Name.Find["Script"]} 
 				   ; Insignias for Extravaganza missions
-				   !${itemIterator.Value.Name.Find["Diamond"]}
+				   ;!${itemIterator.Value.Name.Find["Diamond"]}
 				{
 					if ${Config.DropOffToContainer} && ${Config.DropOffContainerName.NotNULLOrEmpty} && ${dropOffContainerID} > 0
 					{
@@ -2702,11 +2732,6 @@ objectdef obj_Mission inherits obj_StateQueue
 				EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${currentAgentIndex}].Name}]:Close
 				return FALSE
 			}
-			if ${EVEWindow[ByCaption, Mission journal](exists)}
-			{
-				EVEWindow[ByCaption, Mission journal]:Close
-				return FALSE
-			}
 
 			return FALSE
 		}
@@ -2870,7 +2895,6 @@ objectdef obj_Mission inherits obj_StateQueue
 			{
 				agentDistance:Set[-1]
 			}
-
 			offered:Set[FALSE]
 			missions:GetIterator[missionIterator]
 			if ${missionIterator:First(exists)}
@@ -2890,24 +2914,30 @@ objectdef obj_Mission inherits obj_StateQueue
 							This:ResetAgentPickingStatus
 							return TRUE
 						}
-
-						missionIterator.Value:GetDetails
-						if !${EVEWindow[ByCaption, Mission journal - ${agentName}](exists)}
+						;missionIterator.Value:GetDetails
+						if !${EVEWindow[ByCaption, Agent Conversation - ${agentName}](exists)}
 						{
-							if ${EVEWindow[ByCaption, Mission journal](exists)}
-							{
-								EVEWindow[ByCaption, Mission journal]:Close
-							}
-							missionIterator.Value:GetDetails
+							;missionIterator.Value:GetDetails
+							EVE.Agent[${agentIndex}]:StartConversation
 							return FALSE
 						}
-
-						; Must ensure that ${EVEWindow[ByCaption, Mission journal - ${AgentName}].HTML.Escape} already returns full length
+						if ${EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${agentIndex}].Name}].Button["Request Mission"](exists)}
+						{
+							EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${agentIndex}].Name}].Button["Request Mission"]:Press
+							return FALSE
+						}
+						if ${EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${agentIndex}].Name}].Button["View Mission"](exists)}
+						{
+							EVEWindow[ByCaption, Agent Conversation - ${EVE.Agent[${agentIndex}].Name}].Button["View Mission"]:Press
+							return FALSE
+						}
+						; Must ensure that ${EVEWindow[ByCaption, Agent Conversation - ${agentName}].ObjectivesHTML.AsJSON} already returns full length
     					; journal BEFORE using mission parser.
-						variable string missionJournalText = ${EVEWindow[ByCaption, Mission journal - ${agentName}].HTML.Escape}
+						variable string missionJournalText = ${EVEWindow[ByCaption, Agent Conversation - ${agentName}].ObjectivesHTML.AsJSON}
 						if !${missionJournalText.Find["The following rewards will be yours if you complete this mission"]}
 						{
-							missionIterator.Value:GetDetails
+							;missionIterator.Value:GetDetails
+							EVE.Agent[${agentIndex}]:StartConversation
 							return FALSE
 						}
 
