@@ -277,7 +277,7 @@ objectdef obj_MissionParser inherits obj_Logger
     member:string AquireItem()
 	{
         ; Find[] is not case sensitive so it may confuse quantity x with moon index X.
-		variable string journalText = ${EVEWindow[ByCaption, Agent Conversation - ${AgentName}].HTML.Escape.ReplaceSubstring[" X -", "MOON_10_ESCAPE-"]}
+		variable string journalText = ${EVEWindow[ByCaption, Agent Conversation - ${AgentName}].ObjectivesHTML.Escape.ReplaceSubstring[" X -", "MOON_10_ESCAPE-"]}
         if !${journalText.Find["The following rewards will be yours if you complete this mission"]}
         {
             This:LogCritical["journal length not fully retrieved."]
@@ -372,7 +372,7 @@ objectdef obj_MissionParser inherits obj_Logger
 
         ; Find[] function won't work correctly with those strings with spaces.
         ; Find[] is not case sensitive so it may confuse quantity x with moon index X.
-        journalText:Set[${EVEWindow[ByCaption, Agent Conversation - ${AgentName}].HTML.Escape.Replace[" ", "_"].ReplaceSubstring["_X_-", "MOON_10_ESCAPE-"]}]
+        journalText:Set[${EVEWindow[ByCaption, Agent Conversation - ${AgentName}].ObjectivesHTML.AsJSON.Replace[" ", "_"].ReplaceSubstring["_X_-", "MOON_10_ESCAPE-"]}]
         variable string quantityIcon = "_x_"
         left:Set[${journalText.Find[${quantityIcon}]}]
 
