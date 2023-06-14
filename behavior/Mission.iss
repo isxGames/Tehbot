@@ -538,6 +538,7 @@ objectdef obj_Mission inherits obj_StateQueue
 							; echo damagetype ${DamageType.Element[${missionName}].Lower}
 							variable string damageType
 							damageType:Set[${DamageType.Element[${missionName}].Lower}]
+							echo damageType ${DamageType.Element[${missionName}].Lower}
 							if ${damageType.Equal["auto"]} && ${MissionParser.EnemyFactionName.NotNULLOrEmpty} && ${MissionParser.EnemyDamageToDeal.NotNULLOrEmpty}
 							{
 								This:LogInfo["Using damage type ${MissionParser.EnemyDamageToDeal} on ${MissionParser.EnemyFactionName}."]

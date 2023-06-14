@@ -47,7 +47,7 @@ objectdef obj_MissionParser inherits obj_Logger
 
         variable int factionID
         variable int left
-		left:Set[${journalText.Find[${factionLogoPrefix.Escape}]}]
+		left:Set[${journalText.Find[${factionLogoPrefix.AsJSON}]}]
 		if ${left} > 0
 		{
 			;This:LogDebug["DEBUG: Found \"factionlogo\" at ${left}."]
@@ -79,7 +79,7 @@ objectdef obj_MissionParser inherits obj_Logger
 
         variable int factionID
         variable int left
-		left:Set[${journalText.Find[${factionLogoPrefix.Escape}]}]
+		left:Set[${journalText.Find[${factionLogoPrefix.AsJSON}]}]
 		if ${left} > 0
 		{
 			;This:LogDebug["DEBUG: Found \"factionlogo\" at ${left}."]
@@ -195,13 +195,13 @@ objectdef obj_MissionParser inherits obj_Logger
 
         variable int left
         variable int right
-        variable string mainHeaderPrefix = "subheader>"
+        variable string mainHeaderPrefix = "subheader><font>"
         left:Set[${journalText.Find[${mainHeaderPrefix}]}]
         variable string missionName
 		if ${left} > 0
 		{
 			left:Inc[${mainHeaderPrefix.Length}]
-			right:Set[${journalText.Mid[${left}, 50].Find["<"]}]
+			right:Set[${journalText.Mid[${left}, 50].Find["Objectives<"]}]
 			if ${right} > 0
 			{
 				right:Dec[1]
@@ -243,13 +243,13 @@ objectdef obj_MissionParser inherits obj_Logger
 
         variable int left
         variable int right
-        variable string mainHeaderPrefix = "mainheader>"
+        variable string mainHeaderPrefix = "subheader><font>"
         left:Set[${journalText.Find[${mainHeaderPrefix}]}]
         variable string missionName
 		if ${left} > 0
 		{
 			left:Inc[${mainHeaderPrefix.Length}]
-			right:Set[${journalText.Mid[${left}, 50].Find["<"]}]
+			right:Set[${journalText.Mid[${left}, 50].Find["Objectives<"]}]
 			if ${right} > 0
 			{
 				right:Dec[1]
